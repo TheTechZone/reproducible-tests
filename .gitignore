@@ -2,3 +2,4 @@ bundletool
 bundletool*.jar
 Signal-Android/
 reproducible-signal/
+.ipynb_checkpoints/
