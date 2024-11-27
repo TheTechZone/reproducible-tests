@@ -1,0 +1,5 @@
+#!/bin/sh
+
+rm -rf reproducible-signal
+rm -rf Signal-Android
+yes | docker system prune -a
