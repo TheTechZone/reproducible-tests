@@ -240,11 +240,14 @@ class SignalBuilder:
             size = os.path.getsize(apk)
             print(f"  {apk.name} ({size:,} bytes)")
 
-    def setup_apkdiff(self):
+    def setup_apkdiff(self, dest=None):
         """Copy apkdiff.py from Signal repo and make it executable."""
         print("\nSetting up apkdiff.py...")
         apkdiff_src = self.repo_dir / "reproducible-builds/apkdiff/apkdiff.py"
-        apkdiff_dest = self.signal_dir / "apkdiff.py"
+        if dest == None:
+            apkdiff_dest = self.signal_dir / "apkdiff.py"
+        else:
+            apkdiff_dest = dest
 
         if not apkdiff_src.exists():
             print("Error: apkdiff.py not found in Signal repository.")

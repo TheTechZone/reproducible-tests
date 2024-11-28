@@ -3,3 +3,6 @@ bundletool*.jar
 Signal-Android/
 reproducible-signal/
 .ipynb_checkpoints/
+__pycache__
+.idea
+apkdiff.py
