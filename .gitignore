@@ -2,3 +2,5 @@ bundletool
 bundletool*.jar
 Signal-Android/
 reproducible-signal/
+.clean_logs/
+*.aab
