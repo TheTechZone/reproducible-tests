@@ -1,0 +1,468 @@
+diff --git a/second_vanilla_run_mudkip/log_no_time.txt b/python_310_swapped_with_312_mudkip/log_no_time.txt
+index 593faa1..580503a 100644
+--- a/second_vanilla_run_mudkip/log_no_time.txt
++++ b/python_310_swapped_with_312_mudkip/log_no_time.txt
+@@ -54,7 +54,7 @@ $ docker build -t signal-android .
+ #4 DONE 
+ 
+ #5 [ 1/16] FROM docker.io/library/ubuntu:jammy-20230624@sha256:b060fffe8e1561c9c3e6dea6db487b900100fc26830b9ea2ec966c151ab4c020
+-#5 sha256:3153aa388d026c26a2235e1ed0163e350e451f41a8a313e1804d7e1afb857ab4 23.07MB / 29.53MB 
++#5 sha256:3153aa388d026c26a2235e1ed0163e350e451f41a8a313e1804d7e1afb857ab4 15.73MB / 29.53MB 
+ #5 sha256:3153aa388d026c26a2235e1ed0163e350e451f41a8a313e1804d7e1afb857ab4 29.53MB / 29.53MB 
+ #5 sha256:3153aa388d026c26a2235e1ed0163e350e451f41a8a313e1804d7e1afb857ab4 29.53MB / 29.53MB  done
+ #5 extracting sha256:3153aa388d026c26a2235e1ed0163e350e451f41a8a313e1804d7e1afb857ab4 
+@@ -74,14 +74,14 @@ $ docker build -t signal-android .
+ #8 Get:3 http://mirror.signalusers.org/ubuntu/1687461439 jammy-updates InRelease [119 kB]
+ #8 Ign:4 http://mirror.signalusers.org/ubuntu/1687461439 jammy/universe amd64 Packages
+ #8 Ign:5 http://mirror.signalusers.org/ubuntu/1687461439 jammy/main amd64 Packages
+-#8 Ign:6 http://mirror.signalusers.org/ubuntu/1687461439 jammy-security/main amd64 Packages
+-#8 Ign:7 http://mirror.signalusers.org/ubuntu/1687461439 jammy-security/universe amd64 Packages
++#8 Ign:6 http://mirror.signalusers.org/ubuntu/1687461439 jammy-security/universe amd64 Packages
++#8 Ign:7 http://mirror.signalusers.org/ubuntu/1687461439 jammy-security/main amd64 Packages
+ #8 Ign:8 http://mirror.signalusers.org/ubuntu/1687461439 jammy-updates/main amd64 Packages
+ #8 Ign:9 http://mirror.signalusers.org/ubuntu/1687461439 jammy-updates/universe amd64 Packages
+ #8 Get:4 http://mirror.signalusers.org/ubuntu/1687461439 jammy/universe amd64 Packages [17.5 MB]
+ #8 Get:5 http://mirror.signalusers.org/ubuntu/1687461439 jammy/main amd64 Packages [1792 kB]
+-#8 Get:6 http://mirror.signalusers.org/ubuntu/1687461439 jammy-security/main amd64 Packages [634 kB]
+-#8 Get:7 http://mirror.signalusers.org/ubuntu/1687461439 jammy-security/universe amd64 Packages [939 kB]
++#8 Get:6 http://mirror.signalusers.org/ubuntu/1687461439 jammy-security/universe amd64 Packages [939 kB]
++#8 Get:7 http://mirror.signalusers.org/ubuntu/1687461439 jammy-security/main amd64 Packages [634 kB]
+ #8 Get:8 http://mirror.signalusers.org/ubuntu/1687461439 jammy-updates/main amd64 Packages [922 kB]
+ #8 Get:9 http://mirror.signalusers.org/ubuntu/1687461439 jammy-updates/universe amd64 Packages [1191 kB]
+ #8 Fetched 23.4 MB in  
+@@ -1186,12 +1186,11 @@ Loading local repository...
+  Fetch remote repository...
+  Fetch remote repository...
+  Fetch remote repository...
+- Fetch remote repository...
+ Warning: Errors during XML parse:
+ #16 Fetch remote repository...
+-
+ Warning: Additionally, the fallback loader failed to parse the XML.
+-#16  Fetch remote repository...
++#16 Fetch remote repository...
++ Fetch remote repository...
+  Fetch remote repository...
+  Computing updates...
+  Computing updates...
+@@ -1667,13 +1666,13 @@ License android-sdk-license:
+  Fetch remote repository...
+  Fetch remote repository...
+  Fetch remote repository...
+- Fetch remote repository...
+- Fetch remote repository...
+ 
+ Warning: Errors during XML parse:
+-#18 Warning: Additionally, the fallback loader failed to parse the XML.
+ #18  Fetch remote repository...
+ 
++Warning: Additionally, the fallback loader failed to parse the XML.
++#18  Fetch remote repository...
++ Fetch remote repository...
+  Fetch remote repository...
+  Fetch remote repository...
+  Fetch remote repository...
+@@ -2040,8 +2039,7 @@ Warning: Errors during XML parse:
+ #21 exporting to image
+ #21 exporting layers
+ #21 exporting layers  done
+-#21 writing image sha256:6f4ebaa0c5ca437af3647e3266150fa55c6b9b0ec5445aacd075203e2a77fd22  done
+-#21 naming to docker.io/library/signal-android
++#21 writing image sha256:934750303b43f11ea239ea19ce528cfca738abf772cb77b68e7bd9ae2bba4f93  done
+ #21 naming to docker.io/library/signal-android  done
+ #21 DONE 
+ Building Signal...
+@@ -2141,9 +2139,9 @@ Path for java installation '/usr/lib/jvm/openjdk-17' (Common Linux Locations) do
+ > Task :core-ui:generateReleaseResValues
+ > Task :core-ui:generateReleaseResources
+ > Task :core-ui:packageReleaseResources
+-> Task :core-ui:compileReleaseLibraryResources
+ > Task :core-util:preBuild UP-TO-DATE
+ > Task :core-util:preReleaseBuild UP-TO-DATE
++> Task :core-ui:compileReleaseLibraryResources
+ > Task :core-util:generateReleaseResValues
+ > Task :core-util:generateReleaseResources
+ > Task :core-util:packageReleaseResources
+@@ -2152,9 +2150,9 @@ Path for java installation '/usr/lib/jvm/openjdk-17' (Common Linux Locations) do
+ > Task :device-transfer:generateReleaseResValues
+ > Task :device-transfer:generateReleaseResources
+ > Task :device-transfer:packageReleaseResources
+-> Task :device-transfer:compileReleaseLibraryResources
+ > Task :donations:preBuild UP-TO-DATE
+ > Task :donations:preReleaseBuild UP-TO-DATE
++> Task :device-transfer:compileReleaseLibraryResources
+ > Task :donations:generateReleaseResValues
+ > Task :donations:generateReleaseResources
+ > Task :core-util:compileReleaseLibraryResources
+@@ -2170,8 +2168,8 @@ Path for java installation '/usr/lib/jvm/openjdk-17' (Common Linux Locations) do
+ > Task :image-editor:generateReleaseResValues
+ > Task :image-editor:generateReleaseResources
+ > Task :image-editor:packageReleaseResources
+-> Task :paging:preBuild UP-TO-DATE
+ > Task :image-editor:compileReleaseLibraryResources
++> Task :paging:preBuild UP-TO-DATE
+ > Task :paging:preReleaseBuild UP-TO-DATE
+ > Task :paging:generateReleaseResValues
+ > Task :paging:generateReleaseResources
+@@ -2183,8 +2181,8 @@ Path for java installation '/usr/lib/jvm/openjdk-17' (Common Linux Locations) do
+ > Task :photoview:generateReleaseResources
+ > Task :photoview:packageReleaseResources
+ > Task :qr:preBuild UP-TO-DATE
+-> Task :qr:preReleaseBuild UP-TO-DATE
+ > Task :photoview:compileReleaseLibraryResources
++> Task :qr:preReleaseBuild UP-TO-DATE
+ > Task :qr:generateReleaseResValues
+ > Task :qr:generateReleaseResources
+ > Task :qr:packageReleaseResources
+@@ -2217,20 +2215,20 @@ Path for java installation '/usr/lib/jvm/openjdk-17' (Common Linux Locations) do
+ > Task :device-transfer:extractDeepLinksRelease
+ > Task :donations:extractDeepLinksRelease
+ > Task :glide-config:extractDeepLinksRelease
+-> Task :image-editor:extractDeepLinksRelease
+-> Task :paging:extractDeepLinksRelease
+-> Task :device-transfer:processReleaseManifest
+-> Task :billing:processReleaseManifest
+-> Task :donations:processReleaseManifest
+ > Task :core-util:processReleaseManifest
+-> Task :image-editor:processReleaseManifest
++> Task :core-ui:processReleaseManifest
++> Task :donations:processReleaseManifest
++> Task :billing:processReleaseManifest
++> Task :device-transfer:processReleaseManifest
+ > Task :contacts:processReleaseManifest
+ > Task :glide-config:processReleaseManifest
+-> Task :core-ui:processReleaseManifest
++> Task :image-editor:extractDeepLinksRelease
++> Task :image-editor:processReleaseManifest
++> Task :paging:extractDeepLinksRelease
+ > Task :photoview:extractDeepLinksRelease
+ > Task :paging:processReleaseManifest
+-> Task :qr:extractDeepLinksRelease
+ > Task :photoview:processReleaseManifest
++> Task :qr:extractDeepLinksRelease
+ > Task :qr:processReleaseManifest
+ > Task :Signal-Android:extractDeepLinksPlayProdRelease
+ > Task :sticky-header-grid:extractDeepLinksRelease
+@@ -2246,27 +2244,27 @@ Path for java installation '/usr/lib/jvm/openjdk-17' (Common Linux Locations) do
+ > Task :Signal-Android:processPlayProdReleaseManifest
+ > Task :Signal-Android:processApplicationManifestPlayProdReleaseForBundle
+ > Task :contacts:parseReleaseLocalResources
+-> Task :billing:generateReleaseRFile
+-> Task :contacts:generateReleaseRFile
+-> Task :glide-config:parseReleaseLocalResources
+ > Task :core-util:parseReleaseLocalResources
+ > Task :core-ui:parseReleaseLocalResources
++> Task :billing:generateReleaseRFile
+ > Task :device-transfer:parseReleaseLocalResources
+-> Task :image-editor:parseReleaseLocalResources
+-> Task :glide-config:generateReleaseRFile
+ > Task :core-ui:generateReleaseRFile
+-> Task :donations:parseReleaseLocalResources
++> Task :contacts:generateReleaseRFile
+ > Task :core-util:generateReleaseRFile
+-> Task :paging:parseReleaseLocalResources
+ > Task :device-transfer:generateReleaseRFile
++> Task :glide-config:parseReleaseLocalResources
++> Task :image-editor:parseReleaseLocalResources
++> Task :paging:parseReleaseLocalResources
++> Task :glide-config:generateReleaseRFile
++> Task :photoview:parseReleaseLocalResources
++> Task :donations:parseReleaseLocalResources
++> Task :paging:generateReleaseRFile
+ > Task :image-editor:generateReleaseRFile
+ > Task :donations:generateReleaseRFile
+-> Task :paging:generateReleaseRFile
+-> Task :photoview:parseReleaseLocalResources
+ > Task :qr:parseReleaseLocalResources
+ > Task :photoview:generateReleaseRFile
+-> Task :billing:writeReleaseAarMetadata
+ > Task :qr:generateReleaseRFile
++> Task :billing:writeReleaseAarMetadata
+ > Task :contacts:writeReleaseAarMetadata
+ > Task :core-ui:writeReleaseAarMetadata
+ > Task :core-util:writeReleaseAarMetadata
+@@ -2279,13 +2277,13 @@ Path for java installation '/usr/lib/jvm/openjdk-17' (Common Linux Locations) do
+ > Task :qr:writeReleaseAarMetadata
+ > Task :sticky-header-grid:writeReleaseAarMetadata
+ > Task :video:writeReleaseAarMetadata
+-> Task :Signal-Android:packagePlayProdReleaseResources
+ > Task :Signal-Android:checkPlayProdReleaseAarMetadata
++> Task :Signal-Android:packagePlayProdReleaseResources
+ > Task :sticky-header-grid:compileReleaseLibraryResources
+-> Task :sticky-header-grid:parseReleaseLocalResources
+ > Task :video:compileReleaseLibraryResources
+-> Task :sticky-header-grid:generateReleaseRFile
++> Task :sticky-header-grid:parseReleaseLocalResources
+ > Task :video:parseReleaseLocalResources
++> Task :sticky-header-grid:generateReleaseRFile
+ > Task :Signal-Android:extractPlayProdReleaseVersionControlInfo
+ > Task :billing:prepareReleaseArtProfile
+ > Task :contacts:prepareReleaseArtProfile
+@@ -2306,6 +2304,7 @@ Path for java installation '/usr/lib/jvm/openjdk-17' (Common Linux Locations) do
+ > Task :Signal-Android:mergePlayProdReleaseArtProfile
+ > Task :Signal-Android:parsePlayProdReleaseLocalResources
+ > Task :core-util-jvm:compileKotlin
++> Task :Signal-Android:processPlayProdReleaseManifestForPackage
+ > Task :Signal-Android:expandPlayProdReleaseL8ArtProfileWildcards
+ > Task :core-util-jvm:compileJava
+ > Task :libsignal-service:checkKotlinGradlePluginConfigurationErrors
+@@ -2320,47 +2319,46 @@ Unused includes in targets:
+ > Task :core-util-jvm:jar
+ > Task :core-util:checkKotlinGradlePluginConfigurationErrors
+ > Task :core-util:generateReleaseProtos
+-> Task :Signal-Android:processPlayProdReleaseManifestForPackage
++> Task :Signal-Android:processPlayProdReleaseResources
+ > Task :paging:checkKotlinGradlePluginConfigurationErrors
+ > Task :core-util:javaPreCompileRelease
+-> Task :paging:javaPreCompileRelease
+ > Task :video:checkKotlinGradlePluginConfigurationErrors
+-> Task :video:javaPreCompileRelease
++> Task :paging:javaPreCompileRelease
+ > Task :device-transfer:checkKotlinGradlePluginConfigurationErrors
++> Task :video:javaPreCompileRelease
+ > Task :image-editor:checkKotlinGradlePluginConfigurationErrors
+ > Task :device-transfer:javaPreCompileRelease
+ > Task :donations:checkKotlinGradlePluginConfigurationErrors
+ > Task :image-editor:javaPreCompileRelease
+ > Task :donations:generateReleaseBuildConfig
+-> Task :contacts:checkKotlinGradlePluginConfigurationErrors
+ > Task :donations:javaPreCompileRelease
+-> Task :qr:checkKotlinGradlePluginConfigurationErrors
++> Task :contacts:checkKotlinGradlePluginConfigurationErrors
+ > Task :contacts:javaPreCompileRelease
+-> Task :qr:javaPreCompileRelease
++> Task :qr:checkKotlinGradlePluginConfigurationErrors
+ > Task :billing:checkKotlinGradlePluginConfigurationErrors
++> Task :qr:javaPreCompileRelease
+ > Task :glide-config:checkKotlinGradlePluginConfigurationErrors
+ > Task :billing:javaPreCompileRelease
+-> Task :libsignal-service:compileKotlin
++> Task :sticky-header-grid:checkKotlinGradlePluginConfigurationErrors
++> Task :glide-config:javaPreCompileRelease
++> Task :sticky-header-grid:compileReleaseKotlin NO-SOURCE
++> Task :photoview:checkKotlinGradlePluginConfigurationErrors
++> Task :sticky-header-grid:javaPreCompileRelease
++> Task :glide-config:kspReleaseKotlin
++> Task :Signal-Android:bundlePlayProdReleaseResources
+ 
+ > Task :core-util:compileReleaseKotlin
+ w: file:///project/core-util/src/main/java/org/signal/core/util/Serializer.kt:38:28 The corresponding parameter in the supertype 'StringSerializer' is named 'input'. This may cause problems when calling this function with named arguments.
+ 
+-> Task :glide-config:kspReleaseKotlin
+-
+-> Task :core-util:compileReleaseJavaWithJavac
++> Task :sticky-header-grid:compileReleaseJavaWithJavac
+ Note: Some input files use or override a deprecated API.
+ Note: Recompile with -Xlint:deprecation for details.
+ 
+-> Task :Signal-Android:processPlayProdReleaseResources
++> Task :core-util:compileReleaseJavaWithJavac
++
+ > Task :core-util:mergeReleaseGeneratedProguardFiles
+ > Task :core-util:exportReleaseConsumerProguardFiles
+-> Task :sticky-header-grid:checkKotlinGradlePluginConfigurationErrors
+-> Task :glide-config:javaPreCompileRelease
+-> Task :sticky-header-grid:compileReleaseKotlin NO-SOURCE
+-> Task :photoview:checkKotlinGradlePluginConfigurationErrors
+-> Task :sticky-header-grid:javaPreCompileRelease
+ > Task :core-util:bundleLibCompileToJarRelease
+-> Task :photoview:compileReleaseKotlin NO-SOURCE
+ > Task :paging:compileReleaseKotlin NO-SOURCE
+ > Task :glide-config:compileReleaseKotlin
+ > Task :paging:compileReleaseJavaWithJavac
+@@ -2375,14 +2373,15 @@ Note: Recompile with -Xlint:deprecation for details.
+ > Task :device-transfer:mergeReleaseGeneratedProguardFiles
+ > Task :device-transfer:exportReleaseConsumerProguardFiles
+ > Task :video:compileReleaseKotlin
++> Task :libsignal-service:compileKotlin
+ > Task :image-editor:compileReleaseKotlin
+-Note: Some input files use or override a deprecated API.
+-Note: Recompile with -Xlint:deprecation for details.
+ 
+ > Task :video:compileReleaseJavaWithJavac
+ 
+ > Task :video:mergeReleaseGeneratedProguardFiles
+ > Task :video:exportReleaseConsumerProguardFiles
++Note: Some input files use or override a deprecated API.
++Note: Recompile with -Xlint:deprecation for details.
+ 
+ > Task :image-editor:compileReleaseJavaWithJavac
+ 
+@@ -2390,42 +2389,39 @@ Note: Recompile with -Xlint:deprecation for details.
+ > Task :image-editor:exportReleaseConsumerProguardFiles
+ Note: Some input files use or override a deprecated API.
+ Note: Recompile with -Xlint:deprecation for details.
+-> Task :donations:compileReleaseKotlin
++> Task :glide-config:compileReleaseJavaWithJavac NO-SOURCE
++> Task :glide-config:mergeReleaseGeneratedProguardFiles
++> Task :glide-config:exportReleaseConsumerProguardFiles
++> Task :sticky-header-grid:mergeReleaseGeneratedProguardFiles
++> Task :sticky-header-grid:exportReleaseConsumerProguardFiles
++> Task :photoview:compileReleaseKotlin NO-SOURCE
++> Task :core-ui:checkKotlinGradlePluginConfigurationErrors
++> Task :photoview:javaPreCompileRelease
+ > Task :contacts:compileReleaseKotlin
+-> Task :donations:compileReleaseJavaWithJavac
+-> Task :donations:mergeReleaseGeneratedProguardFiles
+-> Task :donations:exportReleaseConsumerProguardFiles
++> Task :photoview:compileReleaseJavaWithJavac
+ > Task :contacts:compileReleaseJavaWithJavac NO-SOURCE
+ > Task :contacts:mergeReleaseGeneratedProguardFiles
+ > Task :contacts:exportReleaseConsumerProguardFiles
++> Task :photoview:mergeReleaseGeneratedProguardFiles
++> Task :photoview:exportReleaseConsumerProguardFiles
++> Task :donations:compileReleaseKotlin
+ 
+ > Task :qr:compileReleaseKotlin
+ w: file:///project/qr/lib/src/main/java/org/signal/qr/ScannerView21.kt:92:8 'setTargetResolution(Size): Preview.Builder' is deprecated. Deprecated in Java
+ w: file:///project/qr/lib/src/main/java/org/signal/qr/ScannerView21.kt:96:8 'setTargetResolution(Size): ImageAnalysis.Builder' is deprecated. Deprecated in Java
+ 
+-> Task :Signal-Android:bundlePlayProdReleaseResources
+-Note: Some input files use or override a deprecated API.
+-Note: Recompile with -Xlint:deprecation for details.
++> Task :billing:compileReleaseKotlin
++> Task :donations:compileReleaseJavaWithJavac
++> Task :donations:mergeReleaseGeneratedProguardFiles
++> Task :donations:exportReleaseConsumerProguardFiles
+ 
+ > Task :qr:compileReleaseJavaWithJavac
+ 
+ > Task :qr:mergeReleaseGeneratedProguardFiles
+ > Task :qr:exportReleaseConsumerProguardFiles
+-> Task :glide-config:compileReleaseJavaWithJavac NO-SOURCE
+-> Task :glide-config:mergeReleaseGeneratedProguardFiles
+-> Task :glide-config:exportReleaseConsumerProguardFiles
+-> Task :billing:compileReleaseKotlin
+-> Task :sticky-header-grid:compileReleaseJavaWithJavac
+ > Task :billing:compileReleaseJavaWithJavac NO-SOURCE
+ > Task :billing:mergeReleaseGeneratedProguardFiles
+ > Task :billing:exportReleaseConsumerProguardFiles
+-> Task :sticky-header-grid:mergeReleaseGeneratedProguardFiles
+-> Task :sticky-header-grid:exportReleaseConsumerProguardFiles
+-> Task :core-ui:checkKotlinGradlePluginConfigurationErrors
+-> Task :photoview:javaPreCompileRelease
+-> Task :photoview:compileReleaseJavaWithJavac
+-> Task :photoview:mergeReleaseGeneratedProguardFiles
+-> Task :photoview:exportReleaseConsumerProguardFiles
+ > Task :core-ui:javaPreCompileRelease
+ > Task :billing:bundleLibCompileToJarRelease
+ > Task :billing:bundleLibRuntimeToJarRelease
+@@ -2433,17 +2429,19 @@ Note: Recompile with -Xlint:deprecation for details.
+ > Task :contacts:bundleLibRuntimeToJarRelease
+ > Task :device-transfer:bundleLibCompileToJarRelease
+ > Task :device-transfer:bundleLibRuntimeToJarRelease
+-> Task :core-util:bundleLibRuntimeToJarRelease
+ > Task :donations:bundleLibCompileToJarRelease
+-> Task :donations:bundleLibRuntimeToJarRelease
+-> Task :glide-config:bundleLibCompileToJarRelease
++> Task :glide-config:bundleLibCompileToJarReleaseNote: Some input files use or override a deprecated API.
++Note: Recompile with -Xlint:deprecation for details.
++
+ > Task :glide-config:bundleLibRuntimeToJarRelease
++> Task :donations:bundleLibRuntimeToJarRelease
++> Task :core-util:bundleLibRuntimeToJarRelease
+ > Task :image-editor:bundleLibCompileToJarRelease
+-> Task :image-editor:bundleLibRuntimeToJarRelease
+ > Task :paging:bundleLibCompileToJarRelease
++> Task :image-editor:bundleLibRuntimeToJarRelease
+ > Task :paging:bundleLibRuntimeToJarRelease
+-> Task :photoview:bundleLibCompileToJarRelease
+ > Task :photoview:bundleLibRuntimeToJarRelease
++> Task :photoview:bundleLibCompileToJarRelease
+ > Task :qr:bundleLibCompileToJarRelease
+ > Task :qr:bundleLibRuntimeToJarRelease
+ > Task :Signal-Android:buildKotlinToolingMetadata
+@@ -2454,37 +2452,24 @@ Note: Recompile with -Xlint:deprecation for details.
+ > Task :Signal-Android:dataBindingGenBaseClassesPlayProdRelease
+ > Task :Signal-Android:generatePlayProdReleaseProtos
+ 
+-> Task :libsignal-service:compileKotlin
+-w: file:///project/libsignal-service/build/generated/source/wire/org/whispersystems/signalservice/internal/push/DataMessage.kt:4199:9 Duplicate label in when
+-w: file:///project/libsignal-service/build/generated/source/wire/org/whispersystems/signalservice/internal/push/ProvisioningVersion.kt:37:7 Duplicate label in when
+-
+-> Task :Signal-Android:generateSafeArgsPlayProdRelease
+-
+ > Task :core-ui:compileReleaseKotlin
+ w: file:///project/core-ui/src/main/java/org/signal/core/ui/Dividers.kt:25:5 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+ w: file:///project/core-ui/src/main/java/org/signal/core/ui/Scaffolds.kt:42:62 Name shadowed: title
+ w: file:///project/core-ui/src/main/java/org/signal/core/ui/Texts.kt:49:5 'ClickableText(AnnotatedString, Modifier = ..., TextStyle = ..., Boolean = ..., TextOverflow = ..., Int = ..., (TextLayoutResult) -> Unit = ..., (Int) -> Unit): Unit' is deprecated. Use Text or BasicText and pass an AnnotatedString that contains a LinkAnnotation
+ w: file:///project/core-ui/src/main/java/org/signal/core/ui/copied/androidx/compose/material3/Menu.kt:48:20 'updateTransition(MutableTransitionState<T>, String? = ...): Transition<T>' is deprecated. Use rememberTransition() instead
+-Note: Some input files use or override a deprecated API.
+-Note: Recompile with -Xlint:deprecation for details.
+-Note: Some input files use unchecked or unsafe operations.
+-Note: Recompile with -Xlint:unchecked for details.
+ 
+-> Task :libsignal-service:compileJava
+-
+-> Task :libsignal-service:classes
+-> Task :libsignal-service:jar
++> Task :Signal-Android:generateSafeArgsPlayProdRelease
+ > Task :core-ui:compileReleaseJavaWithJavac NO-SOURCE
+ > Task :core-ui:mergeReleaseGeneratedProguardFiles
+ > Task :core-ui:exportReleaseConsumerProguardFiles
+ > Task :sticky-header-grid:bundleLibCompileToJarRelease
+ > Task :Signal-Android:javaPreCompilePlayProdRelease
+-> Task :video:bundleLibCompileToJarRelease
+ > Task :sticky-header-grid:bundleLibRuntimeToJarRelease
+-> Task :video:bundleLibRuntimeToJarRelease
++> Task :video:bundleLibCompileToJarRelease
+ > Task :core-ui:bundleLibCompileToJarRelease
+ > Task :Signal-Android:extractProguardFiles
+ > Task :core-ui:bundleLibRuntimeToJarRelease
++> Task :video:bundleLibRuntimeToJarRelease
+ > Task :billing:processReleaseJavaRes
+ > Task :contacts:processReleaseJavaRes
+ > Task :core-ui:processReleaseJavaRes
+@@ -2557,8 +2542,8 @@ Note: Recompile with -Xlint:unchecked for details.
+ > Task :Signal-Android:mergePlayProdReleaseAssets
+ > Task :billing:mergeReleaseJniLibFolders
+ > Task :billing:mergeReleaseNativeLibs NO-SOURCE
+-> Task :contacts:mergeReleaseJniLibFolders
+ > Task :billing:copyReleaseJniLibsProjectOnly
++> Task :contacts:mergeReleaseJniLibFolders
+ > Task :contacts:mergeReleaseNativeLibs NO-SOURCE
+ > Task :contacts:copyReleaseJniLibsProjectOnly
+ > Task :core-ui:mergeReleaseJniLibFolders
+@@ -2599,6 +2584,19 @@ Note: Recompile with -Xlint:unchecked for details.
+ > Task :Signal-Android:collectPlayProdReleaseDependencies
+ > Task :Signal-Android:configurePlayProdReleaseDependencies
+ > Task :Signal-Android:parsePlayProdReleaseIntegrityConfig
++
++> Task :libsignal-service:compileKotlin
++w: file:///project/libsignal-service/build/generated/source/wire/org/whispersystems/signalservice/internal/push/DataMessage.kt:4199:9 Duplicate label in when
++w: file:///project/libsignal-service/build/generated/source/wire/org/whispersystems/signalservice/internal/push/ProvisioningVersion.kt:37:7 Duplicate label in when
++
++> Task :libsignal-service:compileJava
++Note: Some input files use or override a deprecated API.
++Note: Recompile with -Xlint:deprecation for details.
++Note: Some input files use unchecked or unsafe operations.
++Note: Recompile with -Xlint:unchecked for details.
++
++> Task :libsignal-service:classes
++> Task :libsignal-service:jar
+ > Task :Signal-Android:mergePlayProdReleaseNativeLibs
+ > Task :Signal-Android:stripPlayProdReleaseDebugSymbols
+ > Task :Signal-Android:extractPlayProdReleaseNativeSymbolTables
+@@ -3000,11 +2998,11 @@ w: file:///project/app/src/main/java/org/thoughtcrime/securesms/verify/VerifyDis
+ w: file:///project/app/src/main/java/org/thoughtcrime/securesms/verify/VerifyDisplayFragment.kt:387:70 Parameter 'v' is never used, could be renamed to _
+ w: file:///project/app/src/main/java/org/thoughtcrime/securesms/verify/VerifyIdentityFragment.kt:99:40 'vibrate(Long): Unit' is deprecated. Deprecated in Java
+ w: file:///project/app/src/main/java/org/thoughtcrime/securesms/verify/VerifyIdentityFragment.kt:128:9 Variable 'callback' is never used
++
++> Task :Signal-Android:compilePlayProdReleaseJavaWithJavac
+ /project/app/src/main/java/org/thoughtcrime/securesms/jobmanager/migrations/PushDecryptMessageJobEnvelopeMigration.java:14: warning: [dep-ann] deprecated item is not annotated with @Deprecated
+ public class PushDecryptMessageJobEnvelopeMigration extends JobMigration {
+        ^
+-
+-> Task :Signal-Android:compilePlayProdReleaseJavaWithJavac
+ Note: Some input files use or override a deprecated API.
+ Note: Recompile with -Xlint:deprecation for details.
+ Note: Some input files use unchecked or unsafe operations.
+@@ -3031,7 +3029,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
+ 
+ For more on this, please refer to https://docs.gradle.org/8.6/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+ 
+-BUILD SUCCESSFUL in 14m 
++BUILD SUCCESSFUL in 13m 
+ 370 actionable tasks: 370 executed
+ Copying bundle file...
+ Generating APKs for connected device...
