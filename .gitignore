@@ -6,3 +6,4 @@ reproducible-signal/
 __pycache__
 .idea
 apkdiff.py
+tools/
