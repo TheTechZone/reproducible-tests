@@ -6,3 +6,4 @@ reproducible-signal/
 *.aab
 # the uncompressed dex apks are too large
 *_2.apk
+.idea/
