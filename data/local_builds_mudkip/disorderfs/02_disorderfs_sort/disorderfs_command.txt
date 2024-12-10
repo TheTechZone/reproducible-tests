@@ -1,0 +1,3 @@
+disorderfs --multi-user=yes --sort-dirents=yes --reverse-dirents=yes Signal-Android  Signal-Android-disorderfs-sorted-reverse/
+
+=> sort-direns=no implies nondeterminism
