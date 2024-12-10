@@ -20,7 +20,7 @@ def run_apkdiff(path1, path2):
 DIRECTORY_OF_INTEREST = "local_builds_mudkip"
 
 INCLUDE_ALL_RUNS = ["no_disorderfs", "disorderfs_no_sort"]
-APKS_OF_INTEREST = ["base-master.apk"]
+APKS_OF_INTEREST = ["base-master.apk", "base-arm64_v8a.apk", "base-xxhdpi.apk"]
 
 unique_bundle_filepaths = []
 
