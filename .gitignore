@@ -4,3 +4,5 @@ Signal-Android/
 reproducible-signal/
 .clean_logs/
 *.aab
+# the uncompressed dex apks are too large
+*_2.apk
