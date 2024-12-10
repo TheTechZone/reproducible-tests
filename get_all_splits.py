@@ -1,4 +1,20 @@
 #!/usr/bin/env python3
+"""
+This script generates and analyzes APK splits from an Android App Bundle (AAB) file.
+
+The script will generate APK splits using bundletool and provide information about
+each generated APK including its size and SHA-256 hash.
+
+Usage:
+    python get_all_splits.py [-k] <aab_file> <output_dir>
+
+Arguments:
+    aab_file    Path to the AAB file
+    output_dir  Output directory for the APK splits
+
+Options:
+    -k, --keep  Keep output files (do not clean up)
+"""
 import os
 import subprocess
 import sys
@@ -105,16 +121,66 @@ class APKSplitGenerator:
                 sha256_hash.update(byte_block)
         return sha256_hash.hexdigest()
 
+    def get_apk_info(self, apk_path):
+        """Get detailed information about an APK using bundletool's get-manifest command"""
+        try:
+            result = self.run_command(
+                [
+                    str(self.bundletool_script),
+                    "dump",
+                    "manifest",
+                    "--apk",
+                    str(apk_path),
+                ]
+            )
+            return result.stdout
+        except Exception as e:
+            print(f"Failed to get manifest for {apk_path}: {e}")
+            return None
+
     def list_apks(self):
-        """List all APK files with their SHA-256 hashes in the extracted directory"""
-        print("\nListing all APK splits with their SHA-256 hashes:")
+        """List all APK files with their SHA-256 hashes and manifest information"""
+        print("\nAnalyzing APK splits:")
         for root, _, files in os.walk(self.output_dir):
             for file in files:
                 if file.endswith(".apk"):
                     file_path = os.path.join(root, file)
                     sha256 = self.calculate_sha256(file_path)
-                    print(f"{file}:")
+                    manifest_info = self.get_apk_info(file_path)
+
+                    print(f"\n{file}:")
+                    print(f"  Size: {os.path.getsize(file_path):,} bytes")
                     print(f"  SHA-256: {sha256}")
+                    if manifest_info:
+                        print("  Manifest Info:")
+                        print(f"{manifest_info}")
+
+    def get_device_spec_info(self, apks_file):
+        """Get information about which devices each APK targets"""
+        try:
+            print("\nAnalyzing device targeting information...")
+            result = self.run_command([str(self.bundletool_script), "get-device-spec"])
+            device_spec = "device-spec.json"
+
+            # Now use the device spec to get targeting information
+            result = self.run_command(
+                [
+                    str(self.bundletool_script),
+                    "get-size-total",
+                    "--apks",
+                    str(apks_file),
+                    "--device-spec",
+                    device_spec,
+                ]
+            )
+
+            if os.path.exists(device_spec):
+                os.remove(device_spec)
+
+            return result.stdout
+        except Exception as e:
+            print(f"Failed to get device targeting info: {e}")
+            return None
 
     def clean_up(self):
         """Clean up the temporary files"""
@@ -133,7 +199,15 @@ class APKSplitGenerator:
         output_apks = self.generate_apk_splits(aab_file, output_dir)
         self.extract_apks(output_apks)
         self.list_apks()
-        self.clean_up()
+
+        # Get device targeting information
+        device_info = self.get_device_spec_info(output_apks)
+        if device_info:
+            print("\nDevice Targeting Information:")
+            print(device_info)
+
+        if not self.keep_output:
+            self.clean_up()
 
 
 def main():
