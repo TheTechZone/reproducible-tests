@@ -5,13 +5,15 @@ from plumbum import local
 def apk_filepath(bundle_filepath, apk_name):
     partial = bundle_filepath.split("/")
     del(partial[-1])
-    return os.path.join(*partial, "apks", "splits", apk_name)
+    return os.path.join("/", *partial, "apks", "splits", apk_name)
 
 
 def run_apkdiff(path1, path2):
     # for this quick and dirty test we simply used the copied apkdiff instead of fetching it every time
     python = local["python"]
     (rc, stdout, stderr) = python["./apkdiff.py", path1, path2].run(retcode=(0,1))
+    #if path1 == path2:
+    #    print(f"For {path1}\n{rc}\n{stdout}\n{stderr}")
     return rc == 0
 
 
