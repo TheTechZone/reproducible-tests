@@ -17,7 +17,7 @@ class SignalBuilder:
         self.signal_repo_dir = self.script_dir / 'Signal-Android'
         self.dfs = args.dfs # None, "chaos", "sort", "sort_reversed"
 
-    def run_command(self, cmd, cwd=None, check=True):
+    def run_command(self, cmd, cwd=None, check=True, shell=False):
         """Run a command and stream output in real-time."""
         try:
             # Print the command being run
@@ -30,7 +30,8 @@ class SignalBuilder:
                 stderr=subprocess.STDOUT,  # Merge stderr into stdout
                 text=True,
                 bufsize=1,  # Line buffered
-                universal_newlines=True
+                universal_newlines=True,
+                shell=shell, # for the dutchies
             )
             
             # Stream output in real-time
@@ -66,6 +67,30 @@ class SignalBuilder:
         print("Setting up directories...")
         os.makedirs(self.device_apks_dir, exist_ok=True)
         os.makedirs(self.built_apks_dir, exist_ok=True)
+
+    def create_overlay_filesystem(self, dfs):
+        """Create the directory for the overlay and run disorderfs with the appropriate args"""
+        print("Creating overlay filesystem...")
+        dfs_root_dir = self.script_dir / dfs
+        os.makedirs(dfs_root_dir)
+        command = ["disorderfs", "--multi-user=yes"]
+        if dfs == "chaos":
+            command.append("--sort-dirents=no")
+        else:
+            command.append("--sort-dirents=yes")
+            command.append(f"--reverse-dirents={'yes' if dfs == 'sort_reversed' else 'no'}")
+        command.append(self.signal_repo_dir)
+        command.append(dfs_root_dir)
+        self.run_command(command, self.script_dir)
+        print("Increasing the number of filehandlers that the overlay process may open...")
+        # Find the disorderfs process ID
+        completedProcess = self.run_command(["ps", "-aux", "|", "grep", dfs_root_dir, "|", "awk", '"{print $2}"'], shell=True)
+        pid = completedProcess.stdout.strip()
+        command = ["sudo", "-S", "prlimit", "-n=16000", f"--pid={pid}"]
+        self.run_command(command, self.script_dir)
+        print("Redirecting the Signal repo dir to point to the overlay...")
+        self.signal_repo_dir = dfs_root_dir / "Signal-Android"
+
 
     def clone_signal(self, version):
         """Clone Signal repository at specific version."""
@@ -289,23 +314,26 @@ class SignalBuilder:
         try:
             self.setup_directories()
             self.clone_signal(version)
-            self.create_overlay_filesystem()
+            if self.dfs:
+                self.create_overlay_filesystem(self.dfs)
             self.build_docker_image()
             #print("Finished building docker image, quittin early!")
             #exit(0)
             self.build_signal()
             self.copy_bundle()
-            #self.check_adb_devices()
+            if version:
+                self.check_adb_devices()
             self.generate_apks()
             self.cleanup()
-            #self.pull_device_apks()
-            #self.print_apk_summary()
-            #self.compare_apks()
+            if version:
+                self.pull_device_apks()
+                self.print_apk_summary()
+                self.compare_apks()
             
-            #print("\nBuild completed successfully!")
-            #print(f"APKs are located in:")
-            #print(f"  Device APKs: {self.device_apks_dir}")
-            #print(f"  Built APKs:  {self.built_apks_dir}")
+            print("\nBuild completed successfully!")
+            print(f"APKs are located in:")
+            print(f"  Device APKs: {self.device_apks_dir}")
+            print(f"  Built APKs:  {self.built_apks_dir}")
             
         except Exception as e:
             print(f"Error during build process: {e}")
