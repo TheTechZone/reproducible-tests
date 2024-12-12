@@ -33,7 +33,7 @@ Run `./build_signal.py`. The script is designed to output all intermediary steps
 The scripts execution can be modified by named arguments. For example, if you want to run the build on a disorderfs overlay you can run:
 
 ```shell
-./build_signal.py --dfs=sort
+./build_signal.py --dfs sort
 ```
 
 Run help for a list of all options.
