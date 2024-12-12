@@ -10,3 +10,6 @@ reproducible-signal/
 disorderfs/
 *__pycache__*
 mismatches
+sort
+sort_reverse
+chaos
