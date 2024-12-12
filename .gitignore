@@ -8,3 +8,5 @@ reproducible-signal/
 *_2.apk
 .idea/
 disorderfs/
+*__pycache__*
+mismatches
