@@ -15,7 +15,8 @@ class SignalBuilder:
         self.built_apks_dir = self.reproducible_apks_dir / 'apks-i-built'
         # Will be overwritten if dfs is defined
         self.signal_repo_dir = self.script_dir / 'Signal-Android'
-        self.dfs = args.dfs # None, "chaos", "sort", "sort_reversed"
+        self.dfs = args.dfs # None, "chaos", "sort", ""sort_reversed"
+        self.clean = args.clean
 
     def run_command(self, cmd, cwd=None, check=True, shell=False):
         """Run a command and stream output in real-time."""
@@ -324,7 +325,8 @@ class SignalBuilder:
             if version:
                 self.check_adb_devices()
             self.generate_apks()
-            self.cleanup()
+            if self.clean:
+                self.cleanup()
             if version:
                 self.pull_device_apks()
                 self.print_apk_summary()
@@ -378,5 +380,6 @@ if __name__ == "__main__":
                                                                                                 "chaos: introduce nondeterminism\n"
                                                                                                 "sort: deterministically sort directory entries\n"
                                                                                                 "sort_reversed: deterministically sort directory entries in reverse\n")
+    parser.add_argument("--clean", action="store_true", default=False, help="Clean up after building APKs.")
     args = parser.parse_args()
     main(args)
