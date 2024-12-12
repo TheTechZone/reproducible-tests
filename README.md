@@ -10,7 +10,7 @@ The script attempts to automate Signal's reproducible-builds workflow. They only
 ./00_download_bundletool.py
 ```
 
-- check dependencies (git, adb, docker and python should be already available on your system):
+- check dependencies (git, adb, docker, gcc, make and python should be already available on your system):
 
 ```shell
 ./01_check_dependencies.py

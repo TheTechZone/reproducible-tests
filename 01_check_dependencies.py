@@ -76,6 +76,14 @@ class DependencyChecker:
         is_link, link_target = self.check_symlink('adb')
         self.print_result('ADB', installed, version, is_link, link_target)
 
+    def check_gcc(self):
+        installed = self.check_command('gcc')
+        self.print_result("gcc", installed)
+
+    def check_make(self):
+        installed, version = self.check_command('make')
+        self.print_result("make", installed)
+
     def check_bundletool(self):
         """Check if bundletool is available and properly linked."""
         # First check if the wrapper script exists in the current directory
@@ -121,6 +129,8 @@ class DependencyChecker:
         self.check_docker()
         self.check_adb()
         self.check_bundletool()
+        self.check_gcc()
+        self.check_make()
         
         print("-" * 50)
         if self.all_passed:

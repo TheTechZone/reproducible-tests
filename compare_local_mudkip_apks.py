@@ -47,7 +47,7 @@ for apk in APKS_OF_INTEREST:
         for j in range(0, i):
             if i != j:
                 result = run_apkdiff(apk_filepath(unique_bundle_filepaths[i], apk), apk_filepath(unique_bundle_filepaths[j], apk))
-                #print(i, j, f" :{result}")
+                # print(i, j, f" :{result}")
                 results.append(result)
                 if result:
                     ### Spit out any result that matched in a readable form

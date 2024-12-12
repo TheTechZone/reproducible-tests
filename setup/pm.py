@@ -34,9 +34,9 @@ class PackageManager(metaclass=ABCMeta):
         )
 
     @abstractmethod
-    def install_kea(self) -> None:
+    def install_libfuse(self) -> None:
         raise NotImplementedError(
-            f"Subclass {self.__class__.__name__} must provide an implementation for the `install_kea` method."
+            f"Subclass {self.__class__.__name__} must provide an implementation for the `install_libfuse` method."
         )
 
     @abstractmethod
@@ -99,8 +99,8 @@ class AptPackageManager(PackageManager):
         result = execute(self.cache["search", package_name], log=True, retcodes=(0, 1))
         return result.stdout  # TODO: do something useful with it
 
-    def install_kea(self) -> None:
-        self.install(["kea", "kea-doc"])
+    def install_libfuse(self) -> None:
+        self.install(["libfuse2", "libfuse-dev"])
 
 
 class DnfPackageManager(PackageManager):
@@ -133,9 +133,6 @@ class DnfPackageManager(PackageManager):
     def __repr__(self):
         return "DNF Package manager"
 
-    def install_kea(self) -> None:
-        self.install(["kea", "kea-doc"])
-
     def search(self, package_name) -> str:
         result = execute(self.package_manager["list", package_name], log=True)
         return result.stdout
@@ -153,6 +150,9 @@ class DnfPackageManager(PackageManager):
             and stdout is not None
             and package_name in stdout
         )
+
+    def install_libfuse(self) -> None:
+        self.install(["fuse-devel"])
 
 
 def get_os_release() -> dict[str, str]:
