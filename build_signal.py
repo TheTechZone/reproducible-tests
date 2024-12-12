@@ -380,6 +380,6 @@ if __name__ == "__main__":
                                                                                                 "chaos: introduce nondeterminism\n"
                                                                                                 "sort: deterministically sort directory entries\n"
                                                                                                 "sort_reversed: deterministically sort directory entries in reverse\n")
-    parser.add_argument("--clean", action="store_true", default=False, help="Clean up after building APKs.")
+    parser.add_argument("--clean", action="store_true", default=False, help="Clean up after building APKs. False by default.")
     args = parser.parse_args()
     main(args)
