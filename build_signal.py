@@ -3,15 +3,19 @@ import os
 import subprocess
 import sys
 import shutil
+import argparse
 from pathlib import Path
 
 class SignalBuilder:
-    def __init__(self):
+
+    def __init__(self, args):
         self.script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
-        self.signal_dir = self.script_dir / 'reproducible-signal'
-        self.device_apks_dir = self.signal_dir / 'apks-from-device'
-        self.built_apks_dir = self.signal_dir / 'apks-i-built'
-        self.repo_dir = self.script_dir / 'Signal-Android'
+        self.reproducible_apks_dir = self.script_dir / 'reproducible-signal'
+        self.device_apks_dir = self.reproducible_apks_dir / 'apks-from-device'
+        self.built_apks_dir = self.reproducible_apks_dir / 'apks-i-built'
+        # Will be overwritten if dfs is defined
+        self.signal_repo_dir = self.script_dir / 'Signal-Android'
+        self.dfs = args.dfs # None, "chaos", "sort", "sort_reversed"
 
     def run_command(self, cmd, cwd=None, check=True):
         """Run a command and stream output in real-time."""
@@ -69,8 +73,8 @@ class SignalBuilder:
             version = f'v{version}'
         
         print(f"Cloning Signal Android repository version {version}...")
-        if self.repo_dir.exists():
-            shutil.rmtree(self.repo_dir)
+        if self.signal_repo_dir.exists():
+            shutil.rmtree(self.signal_repo_dir)
         
         self.run_command([
             'git', 'clone', '--depth', '1',
@@ -83,7 +87,7 @@ class SignalBuilder:
         print("Building Docker image...")
         self.run_command(
             ['docker', 'build', '-t', 'signal-android', '.'],
-            cwd=self.repo_dir / 'reproducible-builds'
+            cwd=self.signal_repo_dir / 'reproducible-builds'
         )
 
     def build_signal(self):
@@ -94,7 +98,7 @@ class SignalBuilder:
         
         self.run_command([
             'docker', 'run', '--rm',
-            '-v', f"{self.repo_dir}:/project",
+            '-v', f"{self.signal_repo_dir}:/project",
             '-w', '/project',
             '--user', f"{uid}:{gid}",
             'signal-android',
@@ -103,7 +107,7 @@ class SignalBuilder:
 
     def copy_bundle(self):
         """Copy the built bundle to our directory."""
-        bundle_path = self.repo_dir / 'app/build/outputs/bundle/playProdRelease/Signal-Android-play-prod-release.aab'
+        bundle_path = self.signal_repo_dir / 'app/build/outputs/bundle/playProdRelease/Signal-Android-play-prod-release.aab'
         target_path = self.built_apks_dir / 'bundle.aab'
         
         print("Copying bundle file...")
@@ -221,8 +225,8 @@ class SignalBuilder:
     def setup_apkdiff(self):
         """Copy apkdiff.py from Signal repo and make it executable."""
         print("\nSetting up apkdiff.py...")
-        apkdiff_src = self.repo_dir / 'reproducible-builds/apkdiff/apkdiff.py'
-        apkdiff_dest = self.signal_dir / 'apkdiff.py'
+        apkdiff_src = self.signal_repo_dir / 'reproducible-builds/apkdiff/apkdiff.py'
+        apkdiff_dest = self.reproducible_apks_dir / 'apkdiff.py'
         
         if not apkdiff_src.exists():
             print("Error: apkdiff.py not found in Signal repository.")
@@ -285,6 +289,7 @@ class SignalBuilder:
         try:
             self.setup_directories()
             self.clone_signal(version)
+            self.create_overlay_filesystem()
             self.build_docker_image()
             #print("Finished building docker image, quittin early!")
             #exit(0)
@@ -316,17 +321,34 @@ def get_installed_version():
     except subprocess.CalledProcessError:
         return None
 
-def main():
-    version = sys.argv[1] if len(sys.argv) > 1 else get_installed_version()
+
+def main(args):
+    if args.version is None:
+        version = get_installed_version()
+    else:
+        version = args.version
     if not version:
         print("No version provided and couldn't detect installed version.")
         print("Example: ./build_signal.py 7.7.0")
         sys.exit(1)
-    if len(sys.argv) == 1:
-        print(f"Using installed Signal version: {version}")
+    else:
+        print(f"Building {'installed' if not args.version else ''} Signal version: {version}")
     
-    builder = SignalBuilder()
+    builder = SignalBuilder(args)
     builder.build(version)
 
+
+
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--version", action="store", default=None, help="Provide the version you want to "
+                                                                        "reproducably build. If this is not provided, the"
+                                                                        "program attempts to pull an APK from a phone"
+                                                                        "connected via. adb.")
+    parser.add_argument("--dfs", choices=["chaos", "sort", "sort_reversed"], default=None, help="Choose if and how to use"
+                                                                                  "disorderfs as the underlay filesystem for the build.\n"
+                                                                                                "chaos: introduce nondeterminism\n"
+                                                                                                "sort: deterministically sort directory entries\n"
+                                                                                                "sort_reversed: deterministically sort directory entries in reverse\n")
+    args = parser.parse_args()
+    main(args)

@@ -16,6 +16,8 @@ The script attempts to automate Signal's reproducible-builds workflow. They only
 ./01_check_dependencies.py
 ```
 
+- install disorderfs and associated libs to fix the overlay filesystem on which the build will be executed 
+
 ## Actual Reproducibility Test
 
 Run `./build_signal.py`. The script is designed to output all intermediary steps
