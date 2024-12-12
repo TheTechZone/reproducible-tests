@@ -7,3 +7,4 @@ reproducible-signal/
 # the uncompressed dex apks are too large
 *_2.apk
 .idea/
+disorderfs/
