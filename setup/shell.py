@@ -39,12 +39,12 @@ def execute(
 
             def formatstring_stdout(stdout_arg):
                 # Empty strings are 'falsy'
-                return f"\nOutput:\n {stdout_arg}" if stdout_arg.strip() else ""
+                return f"\n\tOutput:\n {stdout_arg}" if stdout_arg.strip() else ""
 
             # inspect.stack()[1][3] is the name of the calling function
             # https://docs.python.org/3/library/inspect.html#the-interpreter-stack
-            logging.info(
-                f"function:{inspect.currentframe().f_back.f_back.f_code.co_name}, line {inspect.currentframe().f_back.f_back.f_lineno} \n{cmd} {formatstring_stdout(stdout)}"
+            print(
+                f"-> function:{inspect.currentframe().f_back.f_back.f_code.co_name}, line {inspect.currentframe().f_back.f_back.f_lineno} \n\t{cmd} {formatstring_stdout(stdout)}"
             )
 
     logging.debug(f"Command nr: {run_command_counter} \n{cmd}\nRetcodes: {retcodes}")

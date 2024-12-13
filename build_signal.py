@@ -5,6 +5,8 @@ import sys
 import shutil
 import argparse
 import contextlib
+from setup.shell import execute
+from plumbum import local
 from pathlib import Path
 
 
@@ -76,9 +78,19 @@ class SignalBuilder:
         """Create the directory for the overlay and run disorderfs with the appropriate args"""
         print("Creating overlay filesystem...")
         dfs_root_dir = self.script_dir / dfs
-        with contextlib.suppress(FileNotFoundError):
-            os.rmdir(dfs_root_dir)
-        os.makedirs(dfs_root_dir, exist_ok=True)
+
+        # Idempotence
+        print("Checking for preexisting process...")
+        preexisting_disorderfs_pid = self.get_disorderfs_pid(dfs_root_dir)
+        if preexisting_disorderfs_pid:
+            # Plumbum again, sorry Aditz, I seem to have lead poisoning (ó﹏ò｡)
+            print("\nUnmounting old dir...")
+            execute(local["fusermount"]["-uz", dfs_root_dir], as_sudo=True, log=True)
+            #print("Killing process...")
+            #execute(local["kill"][preexisting_disorderfs_pid], as_sudo=True, log=True)
+        execute(local["rm"]["-r", dfs_root_dir], log=True, as_sudo=True, retcodes=(0,1,16))
+        print("\nRecreating dir...")
+        execute(local["mkdir"][dfs_root_dir], log=True, retcodes=(0,1))
         command = ["sudo", "-S", "disorderfs", "--multi-user=yes"]
         if dfs == "chaos":
             command.append("--sort-dirents=no")
@@ -89,18 +101,22 @@ class SignalBuilder:
         command.append(str(dfs_root_dir))
         self.run_command(command, self.script_dir)
         pid = self.get_disorderfs_pid(dfs_root_dir)
-        print("Increasing the number of filehandlers that the overlay process may open...")
+        print("\nIncreasing the number of filehandlers that the overlay process may open...")
         command = ["sudo", "-S", "prlimit", "-n=16000", f"--pid={pid}"]
         self.run_command(command, self.script_dir)
         print("Redirecting the Signal repo dir to point to the overlay...")
         self.dfs_root_dir = dfs_root_dir
-        self.signal_repo_dir = dfs_root_dir / "Signal-Android"
+        self.signal_repo_dir = dfs_root_dir
 
     def get_disorderfs_pid(self, dfs_root_dir):
-        # Find the disorderfs process ID
-        completedProcess = self.run_command(["ps", "-aux", "|", "grep", str(dfs_root_dir), "|", "awk", "'{print $2}'"],
-                                            shell=True)
-        return completedProcess.stdout.strip()
+        # This was just quicker and cleaner with plumbum. Might want to unify at some point
+        ps = local["ps"]
+        grep = local["grep"]
+        awk = local["awk"]
+        chain = ps["-aux"] | grep["disorderfs"] | grep[dfs_root_dir] | awk['{print $2}']
+        er = execute(chain, retcodes=(0,1), log=True)
+        return er.stdout.strip()
+
 
     def clone_signal(self, version):
         """Clone Signal repository at specific version."""
