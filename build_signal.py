@@ -348,6 +348,8 @@ class SignalBuilder:
             if self.dfs:
                 self.create_overlay_filesystem(self.dfs)
             self.build_docker_image()
+            # start docker
+            execute(local["systemctl"]["start", "docker"], as_sudo=True)
             # print("Finished building docker image, quittin early!")
             # exit(0)
             self.build_signal()
