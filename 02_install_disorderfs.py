@@ -9,7 +9,7 @@ make = local["make"]
 rm = local["rm"]
 
 # Idempotence
-execute(rm["-r", "disorderfs"], retcodes=(0,1))
+execute(rm["-r", "disorderfs"], retcodes=(0, 1))
 
 # Clone disorderfs
 execute(git["clone", "https://salsa.debian.org/reproducible-builds/disorderfs.git"])
