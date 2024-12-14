@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from setup.shell import execute
 from setup.pm import get_package_manager
 from plumbum import local
