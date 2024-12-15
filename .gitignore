@@ -2,6 +2,11 @@ bundletool
 bundletool*.jar
 Signal-Android/
 reproducible-signal/
+.ipynb_checkpoints/
+__pycache__
+.idea
+apkdiff.py
+tools/
 .clean_logs/
 *.aab
 # the uncompressed dex apks are too large
