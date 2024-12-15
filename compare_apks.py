@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 from plumbum import local
 
@@ -22,7 +23,7 @@ def run_apkdiff(path1, path2):
     return rc == 0
 
 
-DIRECTORY_OF_INTEREST = "local_builds_mudkip"
+DIRECTORIES_OF_INTEREST = ["local_builds_mudkip", "Aditz", "Andrea"]
 
 INCLUDE_ALL_RUNS = ["bare", "dfs_no_sort"]
 APKS_OF_INTEREST = ["base-master.apk", "base-arm64_v8a.apk", "base-xxhdpi.apk"]
@@ -30,7 +31,7 @@ APKS_OF_INTEREST = ["base-master.apk", "base-arm64_v8a.apk", "base-xxhdpi.apk"]
 unique_bundle_filepaths = []
 
 for path, _, files in os.walk(os.getcwd()):
-    if DIRECTORY_OF_INTEREST in path:
+    if any(d in path for d in DIRECTORIES_OF_INTEREST):
         for f in files:
             if "bundle_shasum_256" in f:
                 filepath = os.path.join(path, f)
