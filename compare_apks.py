@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
+# Chrissy's hacky script for initial analysis, reads from "data" folder
 import os
 from plumbum import local
-
 
 def apk_filepath(bundle_filepath, apk_name):
     partial = bundle_filepath.split("/")
     del partial[-1]
     return os.path.join("/", *partial, "apks", "splits", apk_name)
-
 
 def get_folder_run_from_apk_filepath(path):
     partial = path.split("/")
