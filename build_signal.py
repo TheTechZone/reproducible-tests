@@ -389,19 +389,20 @@ class SignalBuilder:
             # exit(0)
             self.build_signal()
             self.copy_bundle()
-            if version:
+            if not version:
                 self.check_adb_devices()
             self.generate_apks()
             if self.clean:
                 self.cleanup()
-            if version:
+            if not version:
                 self.pull_device_apks()
                 self.print_apk_summary()
                 self.compare_apks()
 
             print("\nBuild completed successfully!")
             print(f"APKs are located in:")
-            print(f"  Device APKs: {self.device_apks_dir}")
+            if not version:
+                print(f"  Device APKs: {self.device_apks_dir}")
             print(f"  Built APKs:  {self.built_apks_dir}")
 
         except Exception as e:
