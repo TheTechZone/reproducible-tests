@@ -376,34 +376,38 @@ class SignalBuilder:
     def build(self, version):
         """Run the complete build process."""
         try:
-            self.setup_directories()
-            self.clone_signal(version)
-            if self.dfs:
-                self.create_overlay_filesystem(self.dfs)
-            self.build_docker_image()
-            # start docker
-            execute(
-                local["systemctl"]["start", "docker"], as_sudo=True
-            )  # quoi? this shouldn't be in the build script either way...
-            # print("Finished building docker image, quittin early!")
-            # exit(0)
-            self.build_signal()
-            self.copy_bundle()
-            if not version:
-                self.check_adb_devices()
-            self.generate_apks()
-            if self.clean:
-                self.cleanup()
-            if not version:
-                self.pull_device_apks()
-                self.print_apk_summary()
-                self.compare_apks()
+            if not purge:
+                self.setup_directories()
+                self.clone_signal(version)
+                if self.dfs:
+                    self.create_overlay_filesystem(self.dfs)
+                self.build_docker_image()
+                # start docker
+                execute(
+                    local["systemctl"]["start", "docker"], as_sudo=True
+                )  # quoi? this shouldn't be in the build script either way...
+                # print("Finished building docker image, quittin early!")
+                # exit(0)
+                self.build_signal()
+                self.copy_bundle()
+                if not version:
+                    self.check_adb_devices()
+                self.generate_apks()
+                if self.clean:
+                    self.cleanup()
+                if not version:
+                    self.pull_device_apks()
+                    self.print_apk_summary()
+                    self.compare_apks()
 
-            print("\nBuild completed successfully!")
-            print(f"APKs are located in:")
-            if not version:
-                print(f"  Device APKs: {self.device_apks_dir}")
-            print(f"  Built APKs:  {self.built_apks_dir}")
+                print("\nBuild completed successfully!")
+                print(f"APKs are located in:")
+                if not version:
+                    print(f"  Device APKs: {self.device_apks_dir}")
+                print(f"  Built APKs:  {self.built_apks_dir}")
+            else:
+                self.cleanup()
+                print(f"Successfully ran clean without building anything.")
 
         except Exception as e:
             print(f"Error during build process: {e}")
@@ -469,6 +473,12 @@ if __name__ == "__main__":
         action="store_true",
         default=False,
         help="Clean up after building APKs. False by default.",
+    )
+    parser.add_argument(
+        "--purge",
+        action="store_true",
+        default=False,
+        help="Purge run clean without building any APKs. False by default. This option overrides any other parameters."
     )
     args = parser.parse_args()
     main(args)
