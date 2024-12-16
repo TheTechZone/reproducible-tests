@@ -1,0 +1,124 @@
+OLD: outputs/fedora41_dfs_sort-scripted/apks-i-built/base-master.apk (signature: none)
+NEW: outputs/ubuntu22-scripted-1/apks-from-device/base-master.apk (signature: V1, V2, V3)
+
+          │             compressed             │           uncompressed            
+          ├───────────┬───────────┬────────────┼───────────┬──────────┬────────────
+ APK      │ old       │ new       │ diff       │ old       │ new      │ diff       
+──────────┼───────────┼───────────┼────────────┼───────────┼──────────┼────────────
+      dex │  18.3 MiB │  49.1 MiB │  +30.8 MiB │  49.1 MiB │ 49.1 MiB │     -120 B 
+     arsc │  24.6 MiB │  24.6 MiB │       +2 B │  24.6 MiB │ 24.6 MiB │        0 B 
+ manifest │    15 KiB │  15.1 KiB │     +140 B │    92 KiB │ 92.6 KiB │     +612 B 
+      res │   3.2 MiB │   3.2 MiB │       -1 B │   6.5 MiB │  6.5 MiB │        0 B 
+    asset │   3.5 MiB │   3.5 MiB │      +23 B │   4.5 MiB │  4.5 MiB │      +25 B 
+    other │ 441.5 KiB │ 764.3 KiB │ +322.8 KiB │ 741.1 KiB │  1.6 MiB │ +913.2 KiB 
+──────────┼───────────┼───────────┼────────────┼───────────┼──────────┼────────────
+    total │    50 MiB │  81.1 MiB │  +31.1 MiB │  85.5 MiB │ 86.4 MiB │ +913.8 KiB 
+
+         │          raw           │           unique            
+         ├────────┬────────┬──────┼────────┬────────┬───────────
+ DEX     │ old    │ new    │ diff │ old    │ new    │ diff      
+─────────┼────────┼────────┼──────┼────────┼────────┼───────────
+   files │      7 │      7 │    0 │        │        │           
+ strings │ 351131 │ 351129 │   -2 │ 289052 │ 289052 │ 0 (+1 -1) 
+   types │  66373 │  66372 │   -1 │  54683 │  54683 │ 0 (+0 -0) 
+ classes │  50947 │  50947 │    0 │  50947 │  50947 │ 0 (+0 -0) 
+ methods │ 333874 │ 333873 │   -1 │ 305708 │ 305708 │ 0 (+1 -1) 
+  fields │ 145333 │ 145333 │    0 │ 134246 │ 134246 │ 0 (+0 -0) 
+
+ ARSC    │ old   │ new   │ diff 
+─────────┼───────┼───────┼──────
+ configs │   419 │   419 │  0   
+ entries │ 15900 │ 15900 │  0   
+
+=================
+====   APK   ====
+=================
+
+       compressed       │      uncompressed      │                                         
+───────────┬────────────┼───────────┬────────────┤                                         
+ size      │ diff       │ size      │ diff       │ path                                    
+───────────┼────────────┼───────────┼────────────┼─────────────────────────────────────────
+  10.3 MiB │  +10.3 MiB │  10.3 MiB │  +10.2 MiB │ ∆ classes2.dex                          
+  10.1 MiB │   +6.8 MiB │  10.1 MiB │ +894.5 KiB │ ∆ classes3.dex                          
+  10.4 MiB │   +6.3 MiB │  10.4 MiB │        0 B │ ∆ classes.dex                           
+   9.3 MiB │   +5.5 MiB │   9.3 MiB │   -1.1 MiB │ ∆ classes5.dex                          
+   8.2 MiB │   +4.9 MiB │   8.2 MiB │        0 B │ ∆ classes6.dex                          
+ 182.8 KiB │   -3.3 MiB │ 182.7 KiB │    -10 MiB │ ∆ classes4.dex                          
+   541 KiB │   +326 KiB │ 540.9 KiB │        0 B │ ∆ classes7.dex                          
+ 160.1 KiB │ +160.1 KiB │ 447.8 KiB │ +447.8 KiB │ + META-INF/BNDLTOOL.SF                  
+ 155.1 KiB │ +155.1 KiB │ 447.7 KiB │ +447.7 KiB │ + META-INF/MANIFEST.MF                  
+   6.7 KiB │   +6.7 KiB │  16.7 KiB │  +16.7 KiB │ + META-INF/code_transparency_signed.jwt 
+     793 B │     +793 B │     1 KiB │     +1 KiB │ + META-INF/BNDLTOOL.RSA                 
+     145 B │     +145 B │      32 B │      +32 B │ + stamp-cert-sha256                     
+  15.1 KiB │     +140 B │  92.6 KiB │     +612 B │ ∆ AndroidManifest.xml                   
+  60.7 KiB │      +22 B │  60.5 KiB │      +22 B │ ∆ assets/dexopt/baseline.prof           
+  87.1 KiB │       +2 B │    87 KiB │        0 B │ ∆ assets/emoji/Activity.webp            
+   3.3 KiB │       -2 B │   3.2 KiB │        0 B │ ∆ ezvcard/io/html/no-profile.png        
+  24.6 MiB │       +2 B │  24.6 MiB │        0 B │ ∆ resources.arsc                        
+   5.4 KiB │       -1 B │   5.2 KiB │       +3 B │ ∆ assets/dexopt/baseline.profm          
+   1.1 KiB │       -1 B │   8.7 KiB │        0 B │ ∆ res/xml/splits0.xml                   
+───────────┼────────────┼───────────┼────────────┼─────────────────────────────────────────
+  74.2 MiB │  +31.1 MiB │  74.8 MiB │ +913.8 KiB │ (total)                                 
+
+
+ SIGNATURES │ old │ new                                      
+────────────┼─────┼──────────────────────────────────────────
+         V1 │     │ 45989dc9ad8728c2aa9a82fa55503e34a8879374 
+         V2 │     │ 45989dc9ad8728c2aa9a82fa55503e34a8879374 
+         V3 │     │ 45989dc9ad8728c2aa9a82fa55503e34a8879374 
+
+
+======================
+====   MANIFEST   ====
+======================
+
+@@ -303,3 +303,3 @@
+       android:backupAgent="org.thoughtcrime.securesms.absbackup.SignalBackupAgent"
+-      android:extractNativeLibs="true"
++      android:extractNativeLibs="false"
+       android:fullBackupOnly="false"
+@@ -2212,2 +2212,10 @@
+     <meta-data
++        android:name="com.android.stamp.source"
++        android:value="https://play.google.com/store"
++        />
++    <meta-data
++        android:name="com.android.stamp.type"
++        android:value="STAMP_TYPE_DISTRIBUTION_APK"
++        />
++    <meta-data
+         android:name="com.android.vending.splits"
+@@ -2215,2 +2223,6 @@
+         />
++    <meta-data
++        android:name="com.android.vending.derived.apk.id"
++        android:value="4"
++        />
+   </application>
+
+
+
+=================
+====   DEX   ====
+=================
+
+STRINGS:
+
+   old    │ new    │ diff      
+  ────────┼────────┼───────────
+   289052 │ 289052 │ 0 (+1 -1) 
+  
+  + ~~R8{"backend":"dex","compilation-mode":"release","desugared-library-identifiers":["com.tools.android:desugar_jdk_libs:1.1.6"],"has-checksums":false,"min-api":21,"pg-map-id":"2d269d2","r8-mode":"full","version":"8.4.26"}
+  
+  - ~~R8{"backend":"dex","compilation-mode":"release","desugared-library-identifiers":["com.tools.android:desugar_jdk_libs:1.1.6"],"has-checksums":false,"min-api":21,"pg-map-id":"27f2813","r8-mode":"full","version":"8.4.26"}
+  
+
+METHODS:
+
+   old    │ new    │ diff      
+  ────────┼────────┼───────────
+   305708 │ 305708 │ 0 (+1 -1) 
+  
+  + org.thoughtcrime.securesms.registration.fragments.CountryPickerFragmentDirections actionRestartToWelcomeFragment() → NavDirections
+  
+  - org.thoughtcrime.securesms.registration.fragments.CountryPickerFragmentDirections actionPopAppSettingsChangeNumber() → NavDirections

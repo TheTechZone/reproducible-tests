@@ -1,0 +1,74 @@
+OLD: outputs/ubuntu22-scripted-1/apks-i-built/base-master.apk (signature: none)
+NEW: outputs/ubuntu22_dfs_sort-scripted/apks-i-built/base-master.apk (signature: none)
+
+          │            compressed             │           uncompressed           
+          ├───────────┬───────────┬───────────┼───────────┬───────────┬──────────
+ APK      │ old       │ new       │ diff      │ old       │ new       │ diff     
+──────────┼───────────┼───────────┼───────────┼───────────┼───────────┼──────────
+      dex │  49.1 MiB │  18.3 MiB │ -30.8 MiB │  49.1 MiB │  49.1 MiB │      0 B 
+     arsc │  24.6 MiB │  24.6 MiB │       0 B │  24.6 MiB │  24.6 MiB │      0 B 
+ manifest │    15 KiB │    15 KiB │       0 B │    92 KiB │    92 KiB │      0 B 
+      res │   3.2 MiB │   3.2 MiB │    +433 B │   6.5 MiB │   6.5 MiB │ +2.5 KiB 
+    asset │   3.5 MiB │   3.5 MiB │       0 B │   4.5 MiB │   4.5 MiB │      0 B 
+    other │ 441.5 KiB │ 441.5 KiB │     +54 B │ 741.1 KiB │ 741.3 KiB │   +148 B 
+──────────┼───────────┼───────────┼───────────┼───────────┼───────────┼──────────
+    total │  80.8 MiB │    50 MiB │ -30.8 MiB │  85.5 MiB │  85.5 MiB │ +2.7 KiB 
+
+         │          raw           │           unique            
+         ├────────┬────────┬──────┼────────┬────────┬───────────
+ DEX     │ old    │ new    │ diff │ old    │ new    │ diff      
+─────────┼────────┼────────┼──────┼────────┼────────┼───────────
+   files │      7 │      7 │    0 │        │        │           
+ strings │ 351129 │ 351129 │    0 │ 289052 │ 289052 │ 0 (+0 -0) 
+   types │  66372 │  66372 │    0 │  54683 │  54683 │ 0 (+0 -0) 
+ classes │  50947 │  50947 │    0 │  50947 │  50947 │ 0 (+0 -0) 
+ methods │ 333873 │ 333873 │    0 │ 305708 │ 305708 │ 0 (+0 -0) 
+  fields │ 145333 │ 145333 │    0 │ 134246 │ 134246 │ 0 (+0 -0) 
+
+ ARSC    │ old   │ new   │ diff 
+─────────┼───────┼───────┼──────
+ configs │   419 │   419 │  0   
+ entries │ 15900 │ 15900 │  0   
+
+=================
+====   APK   ====
+=================
+
+      compressed       │      uncompressed      │                                                       
+───────────┬───────────┼───────────┬────────────┤                                                       
+ size      │ diff      │ size      │ diff       │ path                                                  
+───────────┼───────────┼───────────┼────────────┼───────────────────────────────────────────────────────
+  81.1 KiB │  -9.2 MiB │ 182.7 KiB │   -9.1 MiB │ ∆ classes6.dex                                        
+   3.4 MiB │    -7 MiB │   8.2 MiB │   -2.1 MiB │ ∆ classes2.dex                                        
+   3.3 MiB │  -6.8 MiB │   9.3 MiB │ -894.6 KiB │ ∆ classes5.dex                                        
+   4.1 MiB │  -6.3 MiB │  10.4 MiB │        0 B │ ∆ classes.dex                                         
+   3.5 MiB │  -4.8 MiB │  10.1 MiB │   +1.9 MiB │ ∆ classes4.dex                                        
+   3.8 MiB │  +3.6 MiB │  10.3 MiB │  +10.2 MiB │ ∆ classes3.dex                                        
+ 214.9 KiB │  -326 KiB │ 540.9 KiB │        0 B │ ∆ classes7.dex                                        
+  43.8 KiB │    +435 B │ 163.6 KiB │   +2.4 KiB │ ∆ res/raw/third_party_licenses                        
+   5.1 KiB │     +19 B │  20.1 KiB │      +26 B │ ∆ SignalService.proto                                 
+     870 B │     +14 B │   2.1 KiB │      +49 B │ ∆ SVR2.proto                                          
+   1.7 KiB │      +6 B │   3.6 KiB │      +48 B │ ∆ CDSI.proto                                          
+  12.4 KiB │      -6 B │  12.2 KiB │        0 B │ ∆ res/raw/webrtc_completed.mp3                        
+     1 KiB │      +4 B │   3.3 KiB │       +6 B │ ∆ DecryptedGroups.proto                               
+   3.3 KiB │      +4 B │   3.2 KiB │        0 B │ ∆ ezvcard/io/html/no-profile.png                      
+     426 B │      +4 B │   2.6 KiB │     +160 B │ ∆ res/raw/map_style.json                              
+   1.6 KiB │      +3 B │   6.9 KiB │      +12 B │ ∆ Groups.proto                                        
+     615 B │      +3 B │   1.2 KiB │       +3 B │ ∆ Provisioning.proto                                  
+     524 B │      +3 B │     720 B │       +2 B │ ∆ RegistrationProvisioning.proto                      
+     184 B │      -2 B │       6 B │        0 B │ ∆ META-INF/androidx.activity_activity-compose.version 
+   1.8 KiB │      +2 B │     5 KiB │       +2 B │ ∆ StorageService.proto                                
+     199 B │      -2 B │      53 B │        0 B │ ∆ androidsupportmultidexversion.txt                   
+───────────┼───────────┼───────────┼────────────┼───────────────────────────────────────────────────────
+  18.4 MiB │ -30.8 MiB │  49.3 MiB │   +2.7 KiB │ (total)                                               
+
+
+======================
+====   MANIFEST   ====
+======================
+
+@@ -303,3 +303,3 @@
+       android:backupAgent="org.thoughtcrime.securesms.absbackup.SignalBackupAgent"
+-      android:extractNativeLibs="false"
++      android:extractNativeLibs="true"
+       android:fullBackupOnly="false"

@@ -1,0 +1,69 @@
+OLD: outputs/fedora41_dfs_sort-scripted/apks-i-built/base-xxhdpi.apk (signature: none)
+NEW: outputs/ubuntu22-scripted-1/apks-from-device/base-xxhdpi.apk (signature: V1, V2, V3)
+
+          │            compressed             │           uncompressed            
+          ├───────────┬───────────┬───────────┼───────────┬───────────┬───────────
+ APK      │ old       │ new       │ diff      │ old       │ new       │ diff      
+──────────┼───────────┼───────────┼───────────┼───────────┼───────────┼───────────
+      dex │       0 B │       0 B │       0 B │       0 B │       0 B │       0 B 
+     arsc │ 429.2 KiB │ 429.2 KiB │       0 B │ 429.1 KiB │ 429.1 KiB │       0 B 
+ manifest │     492 B │     581 B │     +89 B │     808 B │     1 KiB │    +244 B 
+      res │   1.1 MiB │   1.1 MiB │      +6 B │   1.1 MiB │   1.1 MiB │       0 B 
+    asset │       0 B │       0 B │       0 B │       0 B │       0 B │       0 B 
+    other │      22 B │  12.8 KiB │ +12.8 KiB │       0 B │  43.1 KiB │ +43.1 KiB 
+──────────┼───────────┼───────────┼───────────┼───────────┼───────────┼───────────
+    total │   1.6 MiB │   1.6 MiB │ +12.9 KiB │   1.5 MiB │   1.6 MiB │ +43.4 KiB 
+
+ DEX     │ old │ new │ diff      
+─────────┼─────┼─────┼───────────
+   files │   0 │   0 │ 0         
+ strings │   0 │   0 │ 0 (+0 -0) 
+   types │   0 │   0 │ 0 (+0 -0) 
+ classes │   0 │   0 │ 0 (+0 -0) 
+ methods │   0 │   0 │ 0 (+0 -0) 
+  fields │   0 │   0 │ 0 (+0 -0) 
+
+ ARSC    │ old │ new │ diff 
+─────────┼─────┼─────┼──────
+ configs │  69 │  69 │  0   
+ entries │ 119 │ 119 │  0   
+
+=================
+====   APK   ====
+=================
+
+      compressed      │     uncompressed     │                                                                            
+──────────┬───────────┼──────────┬───────────┤                                                                            
+ size     │ diff      │ size     │ diff      │ path                                                                       
+──────────┼───────────┼──────────┼───────────┼────────────────────────────────────────────────────────────────────────────
+    6 KiB │    +6 KiB │ 21.1 KiB │ +21.1 KiB │ + META-INF/BNDLTOOL.SF                                                     
+  5.9 KiB │  +5.9 KiB │   21 KiB │   +21 KiB │ + META-INF/MANIFEST.MF                                                     
+    787 B │    +787 B │  1,019 B │  +1,019 B │ + META-INF/BNDLTOOL.RSA                                                    
+    145 B │    +145 B │     32 B │     +32 B │ + stamp-cert-sha256                                                        
+    581 B │     +89 B │    1 KiB │    +244 B │ ∆ AndroidManifest.xml                                                      
+ 17.3 KiB │      +6 B │ 17.1 KiB │       0 B │ ∆ res/drawable-ar-night-xxhdpi-v8/donate_with_googlepay_button_content.png 
+──────────┼───────────┼──────────┼───────────┼────────────────────────────────────────────────────────────────────────────
+ 30.7 KiB │ +12.9 KiB │ 61.3 KiB │ +43.4 KiB │ (total)                                                                    
+
+
+ SIGNATURES │ old │ new                                      
+────────────┼─────┼──────────────────────────────────────────
+         V1 │     │ 45989dc9ad8728c2aa9a82fa55503e34a8879374 
+         V2 │     │ 45989dc9ad8728c2aa9a82fa55503e34a8879374 
+         V3 │     │ 45989dc9ad8728c2aa9a82fa55503e34a8879374 
+
+
+======================
+====   MANIFEST   ====
+======================
+
+@@ -10,3 +10,8 @@
+       android:hasCode="false"
+-      />
++      >
++    <meta-data
++        android:name="com.android.vending.derived.apk.id"
++        android:value="4"
++        />
++  </application>
+ </manifest>

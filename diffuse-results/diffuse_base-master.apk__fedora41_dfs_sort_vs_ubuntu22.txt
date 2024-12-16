@@ -1,0 +1,91 @@
+OLD: outputs/fedora41_dfs_sort-scripted/apks-i-built/base-master.apk (signature: none)
+NEW: outputs/ubuntu22-scripted-1/apks-i-built/base-master.apk (signature: none)
+
+          │            compressed             │          uncompressed          
+          ├───────────┬───────────┬───────────┼───────────┬───────────┬────────
+ APK      │ old       │ new       │ diff      │ old       │ new       │ diff   
+──────────┼───────────┼───────────┼───────────┼───────────┼───────────┼────────
+      dex │  18.3 MiB │  49.1 MiB │ +30.8 MiB │  49.1 MiB │  49.1 MiB │ -120 B 
+     arsc │  24.6 MiB │  24.6 MiB │       0 B │  24.6 MiB │  24.6 MiB │    0 B 
+ manifest │    15 KiB │    15 KiB │       0 B │    92 KiB │    92 KiB │    0 B 
+      res │   3.2 MiB │   3.2 MiB │       0 B │   6.5 MiB │   6.5 MiB │    0 B 
+    asset │   3.5 MiB │   3.5 MiB │     +23 B │   4.5 MiB │   4.5 MiB │  +25 B 
+    other │ 441.5 KiB │ 441.5 KiB │      -2 B │ 741.1 KiB │ 741.1 KiB │    0 B 
+──────────┼───────────┼───────────┼───────────┼───────────┼───────────┼────────
+    total │    50 MiB │  80.8 MiB │ +30.8 MiB │  85.5 MiB │  85.5 MiB │  -95 B 
+
+         │          raw           │           unique            
+         ├────────┬────────┬──────┼────────┬────────┬───────────
+ DEX     │ old    │ new    │ diff │ old    │ new    │ diff      
+─────────┼────────┼────────┼──────┼────────┼────────┼───────────
+   files │      7 │      7 │    0 │        │        │           
+ strings │ 351131 │ 351129 │   -2 │ 289052 │ 289052 │ 0 (+1 -1) 
+   types │  66373 │  66372 │   -1 │  54683 │  54683 │ 0 (+0 -0) 
+ classes │  50947 │  50947 │    0 │  50947 │  50947 │ 0 (+0 -0) 
+ methods │ 333874 │ 333873 │   -1 │ 305708 │ 305708 │ 0 (+1 -1) 
+  fields │ 145333 │ 145333 │    0 │ 134246 │ 134246 │ 0 (+0 -0) 
+
+ ARSC    │ old   │ new   │ diff 
+─────────┼───────┼───────┼──────
+ configs │   419 │   419 │  0   
+ entries │ 15900 │ 15900 │  0   
+
+=================
+====   APK   ====
+=================
+
+      compressed       │     uncompressed      │                                  
+───────────┬───────────┼───────────┬───────────┤                                  
+ size      │ diff      │ size      │ diff      │ path                             
+───────────┼───────────┼───────────┼───────────┼──────────────────────────────────
+  10.3 MiB │ +10.3 MiB │  10.3 MiB │ +10.2 MiB │ ∆ classes2.dex                   
+  10.1 MiB │  +6.4 MiB │  10.1 MiB │  -196 KiB │ ∆ classes5.dex                   
+  10.4 MiB │  +6.3 MiB │  10.4 MiB │       0 B │ ∆ classes.dex                    
+   9.3 MiB │  +5.9 MiB │   9.3 MiB │    +1 MiB │ ∆ classes6.dex                   
+   8.2 MiB │  +4.8 MiB │   8.2 MiB │  -1.9 MiB │ ∆ classes4.dex                   
+ 182.8 KiB │  -3.1 MiB │ 182.7 KiB │  -9.1 MiB │ ∆ classes3.dex                   
+   541 KiB │  +326 KiB │ 540.9 KiB │       0 B │ ∆ classes7.dex                   
+  60.7 KiB │     +22 B │  60.5 KiB │     +22 B │ ∆ assets/dexopt/baseline.prof    
+  87.1 KiB │      +2 B │    87 KiB │       0 B │ ∆ assets/emoji/Activity.webp     
+   3.3 KiB │      -2 B │   3.2 KiB │       0 B │ ∆ ezvcard/io/html/no-profile.png 
+   5.4 KiB │      -1 B │   5.2 KiB │      +3 B │ ∆ assets/dexopt/baseline.profm   
+───────────┼───────────┼───────────┼───────────┼──────────────────────────────────
+  49.3 MiB │ +30.8 MiB │  49.3 MiB │     -95 B │ (total)                          
+
+
+======================
+====   MANIFEST   ====
+======================
+
+@@ -303,3 +303,3 @@
+       android:backupAgent="org.thoughtcrime.securesms.absbackup.SignalBackupAgent"
+-      android:extractNativeLibs="true"
++      android:extractNativeLibs="false"
+       android:fullBackupOnly="false"
+
+
+
+=================
+====   DEX   ====
+=================
+
+STRINGS:
+
+   old    │ new    │ diff      
+  ────────┼────────┼───────────
+   289052 │ 289052 │ 0 (+1 -1) 
+  
+  + ~~R8{"backend":"dex","compilation-mode":"release","desugared-library-identifiers":["com.tools.android:desugar_jdk_libs:1.1.6"],"has-checksums":false,"min-api":21,"pg-map-id":"2d269d2","r8-mode":"full","version":"8.4.26"}
+  
+  - ~~R8{"backend":"dex","compilation-mode":"release","desugared-library-identifiers":["com.tools.android:desugar_jdk_libs:1.1.6"],"has-checksums":false,"min-api":21,"pg-map-id":"27f2813","r8-mode":"full","version":"8.4.26"}
+  
+
+METHODS:
+
+   old    │ new    │ diff      
+  ────────┼────────┼───────────
+   305708 │ 305708 │ 0 (+1 -1) 
+  
+  + org.thoughtcrime.securesms.registration.fragments.CountryPickerFragmentDirections actionRestartToWelcomeFragment() → NavDirections
+  
+  - org.thoughtcrime.securesms.registration.fragments.CountryPickerFragmentDirections actionPopAppSettingsChangeNumber() → NavDirections
