@@ -1,7 +1,6 @@
 from typing import Dict, List, Any
 from dexparser import DEXParser
 
-
 class DEXDeepComparator:
     def __init__(self, dex_file1: bytes, dex_file2: bytes):
         """
@@ -18,8 +17,21 @@ class DEXDeepComparator:
         self.dex_files1 = apk1
         self.dex_files2 = apk2
 
+        print(self._dex_to_version(self.dex_files1))
+        print(self.dex_files1.header['endian_tag'])
+        print(self._dex_to_version(self.dex_files2))
         # Comparison results
         self.comparison_results = {}
+
+    def _dex_to_version(self, dex: DEXParser) -> int:
+        """
+        Extract the version of a DEX file
+
+        :param dex: DEXParser instance
+        :return: Version string
+        """
+        magic = dex.header['magic']
+        return int(magic.removeprefix(b"dex\n")[:3])
 
     def _extract_class_details(self, dex: DEXParser) -> Dict[str, Dict[str, Any]]:
         """
@@ -198,38 +210,56 @@ class DEXDeepComparator:
             }
 
             # Find method differences
-            methods1_set = {(m["name"], m["signature"]) for m in methods1[class_name]}
-            methods2_set = {(m["name"], m["signature"]) for m in methods2[class_name]}
+            def method_key(m):
+                return m["name"], m["signature"], m["return_type"]
+
+            methods1_set = {method_key(m) for m in methods1[class_name]}
+            methods2_set = {method_key(m) for m in methods2[class_name]}
 
             class_method_comparison["unique_methods_to_dex1"] = [
-                m
-                for m in methods1[class_name]
-                if (m["name"], m["signature"]) not in methods2_set
+                m for m in methods1[class_name] if method_key(m) not in methods2_set
             ]
-
             class_method_comparison["unique_methods_to_dex2"] = [
-                m
-                for m in methods2[class_name]
-                if (m["name"], m["signature"]) not in methods1_set
+                m for m in methods2[class_name] if method_key(m) not in methods1_set
             ]
 
-            # Find method signature differences
-            for method1 in methods1[class_name]:
-                for method2 in methods2[class_name]:
-                    if method1["name"] == method2["name"]:
-                        if (
-                            method1["signature"] != method2["signature"]
-                            or method1["return_type"] != method2["return_type"]
-                        ):
-                            class_method_comparison[
-                                "method_signature_differences"
-                            ].append(
-                                {
-                                    "method_name": method1["name"],
-                                    "dex1_signature": method1,
-                                    "dex2_signature": method2,
-                                }
-                            )
+            # Find methods with the same name but different signature/return type
+            methods1_by_name = {}
+            methods2_by_name = {}
+            for m in methods1[class_name]:
+                methods1_by_name.setdefault(m["name"], []).append(m)
+            for m in methods2[class_name]:
+                methods2_by_name.setdefault(m["name"], []).append(m)
+
+            # Compare methods with the same name
+            for name in set(methods1_by_name.keys()) & set(methods2_by_name.keys()):
+                # Create sets of (signature, return_type) for each DEX
+                dex1_signatures = {
+                    (m["signature"], m["return_type"]) for m in methods1_by_name[name]
+                }
+                dex2_signatures = {
+                    (m["signature"], m["return_type"]) for m in methods2_by_name[name]
+                }
+
+                # Find truly unique signatures (ones that don't appear in either DEX)
+                unique_signatures = dex1_signatures ^ dex2_signatures
+
+                # Only report differences for unique signatures
+                for method1 in methods1_by_name[name]:
+                    sig1 = (method1["signature"], method1["return_type"])
+                    if sig1 in unique_signatures:
+                        for method2 in methods2_by_name[name]:
+                            sig2 = (method2["signature"], method2["return_type"])
+                            if sig2 in unique_signatures:
+                                class_method_comparison[
+                                    "method_signature_differences"
+                                ].append(
+                                    {
+                                        "method_name": name,
+                                        "dex1": method1,
+                                        "dex2": method2,
+                                    }
+                                )
 
             # Only add if there are differences
             if any(class_method_comparison.values()):
@@ -245,7 +275,7 @@ def main(file1: str, file2: str):
     Main function to compare two DEX/APK files
 
     :param file1: Path to first DEX/APK file
-    :param file2: Path to second DEX/APK file
+    :param file2: Path to the second DEX/APK file
     """
     import json
 
@@ -277,5 +307,5 @@ def main(file1: str, file2: str):
 if __name__ == "__main__":
     main(
         "apkdiff-results/base-master.apk_playstore_vs_fedora40/first/classes2.dex",
-        "apkdiff-results/base-master.apk_playstore_vs_fedora40/first/classes2.dex",
+        "apkdiff-results/base-master.apk_playstore_vs_fedora40/second/classes2.dex",
     )
