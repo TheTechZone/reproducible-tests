@@ -22,6 +22,7 @@ class SignalBuilder:
         self.dfs = args.dfs  # None, "chaos", "sort", ""sort_reversed"
         self.dfs_root_dir = None
         self.clean = args.clean
+        self.purge = args.purge
 
     def run_command(self, cmd, cwd=None, check=True, shell=False):
         """Run a command and stream output in real-time."""
@@ -376,7 +377,7 @@ class SignalBuilder:
     def build(self, version):
         """Run the complete build process."""
         try:
-            if not purge:
+            if not self.purge:
                 self.setup_directories()
                 self.clone_signal(version)
                 if self.dfs:
