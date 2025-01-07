@@ -30,10 +30,10 @@ Run `./build_signal.py`. The script is designed to output all intermediary steps
 ./build_signal.py
 ```
 
-The scripts execution can be modified by named arguments. For example, if you want to run the build on a disorderfs overlay you can run:
+The scripts execution can be modified by named arguments. For example, if you want to run the build on a disorderfs overlay and fix a specific version without connecting a phone:
 
 ```shell
-./build_signal.py --dfs sort
+./build_signal.py --version v7.28.4 --dfs sort
 ```
 
 Run help for a list of all options.
