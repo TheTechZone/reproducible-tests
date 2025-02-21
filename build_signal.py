@@ -10,6 +10,151 @@ from plumbum import local
 from pathlib import Path
 
 
+class PatchManager:
+    def __init__(self, working_directory: str = "."):
+        """
+        Initialize the PatchManager with a working directory.
+
+        Args:
+            working_directory: Path to the directory containing files to patch
+        """
+        self.working_directory = Path(working_directory).resolve()
+
+    def apply_patch(self, patch_file: str) -> bool:
+        """
+        Apply a git patch file to the working directory.
+
+        Args:
+            patch_file: Path to the patch file
+
+        Returns:
+            bool: True if patch was applied successfully, False otherwise
+        """
+        patch_file = Path(patch_file).resolve()
+        try:
+            # Change to working directory first
+            original_cwd = os.getcwd()
+            os.chdir(self.working_directory)
+
+            # todo: git apply --check --stat could be here too
+
+            # Apply the patch
+            result = subprocess.run(
+                ["git", "apply", "--whitespace=fix", str(patch_file)],
+                capture_output=True,
+                text=True,
+            )
+
+            # Check if application was successful
+            success = result.returncode == 0
+
+            # Print any output for debugging
+            if result.stdout:
+                print("Patch apply stdout:")
+                print(result.stdout)
+            if result.stderr:
+                print("Patch apply stderr:")
+                print(result.stderr)
+
+            # Restore original directory
+            os.chdir(original_cwd)
+
+            return success
+
+        except Exception as e:
+            print(f"Error applying patch: {str(e)}")
+            return False
+
+    def remove_patch(self, patch_file: str) -> bool:
+        """
+        Remove a previously applied git patch.
+
+        Args:
+            patch_file: Path to the patch file
+
+        Returns:
+            bool: True if patch was removed successfully, False otherwise
+        """
+        try:
+            # Change to working directory first
+            original_cwd = os.getcwd()
+            os.chdir(self.working_directory)
+
+            # Use git apply with -R flag to reverse the patch
+            result = subprocess.run(
+                [
+                    "git",
+                    "apply",
+                    "-R",
+                    "--stat",
+                    "--check",
+                    "--ignore-whitespace",
+                    str(patch_file),
+                ],
+                capture_output=True,
+                text=True,
+            )
+
+            # Check if removal was successful
+            success = result.returncode == 0
+
+            # Print any output for debugging
+            if result.stdout:
+                print("Patch remove stdout:")
+                print(result.stdout)
+            if result.stderr:
+                print("Patch remove stderr:")
+                print(result.stderr)
+
+            # Restore original directory
+            os.chdir(original_cwd)
+
+            return success
+
+        except Exception as e:
+            print(f"Error removing patch: {str(e)}")
+            return False
+
+    def check_patch(self, patch_file: str) -> tuple[bool, list[str]]:
+        """
+        Check if a patch can be applied without actually applying it.
+
+        Args:
+            patch_file: Path to the patch file
+
+        Returns:
+            Tuple[bool, List[str]]: (can_apply, list_of_conflicts)
+        """
+        try:
+            # Change to working directory first
+            original_cwd = os.getcwd()
+            os.chdir(self.working_directory)
+
+            # Run git apply with --check
+            result = subprocess.run(
+                ["git", "apply", "--check", "--ignore-whitespace", str(patch_file)],
+                capture_output=True,
+                text=True,
+            )
+
+            # Restore original directory
+            os.chdir(original_cwd)
+
+            # Parse conflicts from stderr
+            conflicts = []
+            if result.stderr:
+                for line in result.stderr.splitlines():
+                    if line.startswith("+" * 3):
+                        continue
+                    conflicts.append(line.strip())
+
+            return (result.returncode == 0, conflicts)
+
+        except Exception as e:
+            print(f"Error checking patch: {str(e)}")
+            return (False, [str(e)])
+
+
 class SignalBuilder:
 
     def __init__(self, args):
@@ -23,6 +168,7 @@ class SignalBuilder:
         self.dfs_root_dir = None
         self.clean = args.clean
         self.purge = args.purge
+        self.debug = args.debug
 
     def run_command(self, cmd, cwd=None, check=True, shell=False):
         """Run a command and stream output in real-time."""
@@ -157,22 +303,25 @@ class SignalBuilder:
         uid = os.getuid()
         gid = os.getgid()
 
-        self.run_command(
-            [
-                "docker",
-                "run",
-                "--rm",
-                "-v",
-                f"{self.signal_repo_dir}:/project",
-                "-w",
-                "/project",
-                "--user",
-                f"{uid}:{gid}",
-                "signal-android",
-                "./gradlew",
-                "bundlePlayProdRelease",
-            ]
-        )
+        cmd = [
+            "docker",
+            "run",
+            "--rm",
+            "-v",
+            f"{self.signal_repo_dir}:/project",
+            "-w",
+            "/project",
+            "--user",
+            f"{uid}:{gid}",
+            "signal-android",
+            "./gradlew",
+            "bundlePlayProdRelease",
+        ]
+
+        if self.debug:
+            cmd.append("dependencyGraph")
+
+        self.run_command(cmd)
 
     def copy_bundle(self):
         """Copy the built bundle to our directory."""
@@ -377,38 +526,46 @@ class SignalBuilder:
     def build(self, version):
         """Run the complete build process."""
         try:
-            if not self.purge:
-                self.setup_directories()
-                self.clone_signal(version)
-                if self.dfs:
-                    self.create_overlay_filesystem(self.dfs)
-                self.build_docker_image()
-                # start docker
-                execute(
-                    local["systemctl"]["start", "docker"], as_sudo=True
-                )  # quoi? this shouldn't be in the build script either way...
-                # print("Finished building docker image, quittin early!")
-                # exit(0)
-                self.build_signal()
-                self.copy_bundle()
-                if not version:
-                    self.check_adb_devices()
-                self.generate_apks()
-                if self.clean:
-                    self.cleanup()
-                if not version:
-                    self.pull_device_apks()
-                    self.print_apk_summary()
-                    self.compare_apks()
-
-                print("\nBuild completed successfully!")
-                print(f"APKs are located in:")
-                if not version:
-                    print(f"  Device APKs: {self.device_apks_dir}")
-                print(f"  Built APKs:  {self.built_apks_dir}")
-            else:
+            if self.purge:
                 self.cleanup()
                 print(f"Successfully ran clean without building anything.")
+                sys.exit(0)
+
+            self.setup_directories()
+            self.clone_signal(version)
+            if self.debug:
+                patcher = PatchManager("./Signal-Android")
+                patcher.apply_patch("./patches/gradle-deps.patch")
+                print("\nPatched Signal.")
+            if self.dfs:
+                self.create_overlay_filesystem(self.dfs)
+            self.build_docker_image()
+
+            # todo: junk from xy
+            # # start docker
+            # execute(
+            #     local["systemctl"]["start", "docker"], as_sudo=True
+            # )  # quoi? this shouldn't be in the build script either way...
+            # # print("Finished building docker image, quittin early!")
+            # # exit(0)
+
+            self.build_signal()
+            self.copy_bundle()
+            if not version:
+                self.check_adb_devices()
+            self.generate_apks()
+            if self.clean:
+                self.cleanup()
+            if not version:
+                self.pull_device_apks()
+                self.print_apk_summary()
+                self.compare_apks()
+
+            print("\nBuild completed successfully!")
+            print(f"APKs are located in:")
+            if not version:
+                print(f"  Device APKs: {self.device_apks_dir}")
+            print(f"  Built APKs:  {self.built_apks_dir}")
 
         except Exception as e:
             print(f"Error during build process: {e}")
@@ -479,7 +636,13 @@ if __name__ == "__main__":
         "--purge",
         action="store_true",
         default=False,
-        help="Purge run clean without building any APKs. False by default. This option overrides any other parameters."
+        help="Purge run clean without building any APKs. False by default. This option overrides any other parameters.",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        default=False,
+        help="Output extra build debug information.",
     )
     args = parser.parse_args()
     main(args)
