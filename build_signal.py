@@ -6,6 +6,151 @@ import shutil
 from pathlib import Path
 
 
+class PatchManager:
+    def __init__(self, working_directory: str = "."):
+        """
+        Initialize the PatchManager with a working directory.
+
+        Args:
+            working_directory: Path to the directory containing files to patch
+        """
+        self.working_directory = Path(working_directory).resolve()
+
+    def apply_patch(self, patch_file: str) -> bool:
+        """
+        Apply a git patch file to the working directory.
+
+        Args:
+            patch_file: Path to the patch file
+
+        Returns:
+            bool: True if patch was applied successfully, False otherwise
+        """
+        patch_file = Path(patch_file).resolve()
+        try:
+            # Change to working directory first
+            original_cwd = os.getcwd()
+            os.chdir(self.working_directory)
+
+            # todo: git apply --check --stat could be here too
+
+            # Apply the patch
+            result = subprocess.run(
+                ["git", "apply", "--whitespace=fix", str(patch_file)],
+                capture_output=True,
+                text=True,
+            )
+
+            # Check if application was successful
+            success = result.returncode == 0
+
+            # Print any output for debugging
+            if result.stdout:
+                print("Patch apply stdout:")
+                print(result.stdout)
+            if result.stderr:
+                print("Patch apply stderr:")
+                print(result.stderr)
+
+            # Restore original directory
+            os.chdir(original_cwd)
+
+            return success
+
+        except Exception as e:
+            print(f"Error applying patch: {str(e)}")
+            return False
+
+    def remove_patch(self, patch_file: str) -> bool:
+        """
+        Remove a previously applied git patch.
+
+        Args:
+            patch_file: Path to the patch file
+
+        Returns:
+            bool: True if patch was removed successfully, False otherwise
+        """
+        try:
+            # Change to working directory first
+            original_cwd = os.getcwd()
+            os.chdir(self.working_directory)
+
+            # Use git apply with -R flag to reverse the patch
+            result = subprocess.run(
+                [
+                    "git",
+                    "apply",
+                    "-R",
+                    "--stat",
+                    "--check",
+                    "--ignore-whitespace",
+                    str(patch_file),
+                ],
+                capture_output=True,
+                text=True,
+            )
+
+            # Check if removal was successful
+            success = result.returncode == 0
+
+            # Print any output for debugging
+            if result.stdout:
+                print("Patch remove stdout:")
+                print(result.stdout)
+            if result.stderr:
+                print("Patch remove stderr:")
+                print(result.stderr)
+
+            # Restore original directory
+            os.chdir(original_cwd)
+
+            return success
+
+        except Exception as e:
+            print(f"Error removing patch: {str(e)}")
+            return False
+
+    def check_patch(self, patch_file: str) -> tuple[bool, list[str]]:
+        """
+        Check if a patch can be applied without actually applying it.
+
+        Args:
+            patch_file: Path to the patch file
+
+        Returns:
+            Tuple[bool, List[str]]: (can_apply, list_of_conflicts)
+        """
+        try:
+            # Change to working directory first
+            original_cwd = os.getcwd()
+            os.chdir(self.working_directory)
+
+            # Run git apply with --check
+            result = subprocess.run(
+                ["git", "apply", "--check", "--ignore-whitespace", str(patch_file)],
+                capture_output=True,
+                text=True,
+            )
+
+            # Restore original directory
+            os.chdir(original_cwd)
+
+            # Parse conflicts from stderr
+            conflicts = []
+            if result.stderr:
+                for line in result.stderr.splitlines():
+                    if line.startswith("+" * 3):
+                        continue
+                    conflicts.append(line.strip())
+
+            return (result.returncode == 0, conflicts)
+
+        except Exception as e:
+            print(f"Error checking patch: {str(e)}")
+            return (False, [str(e)])
+
+
 class SignalBuilder:
     def __init__(self):
         self.script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
@@ -91,14 +236,13 @@ class SignalBuilder:
             cwd=self.repo_dir / "reproducible-builds",
         )
 
-    def build_signal(self):
+    def build_signal(self, debug=False):
         """Build Signal using Docker."""
         print("Building Signal...")
         uid = os.getuid()
         gid = os.getgid()
 
-        self.run_command(
-            [
+        cmd = [
                 "docker",
                 "run",
                 "--rm",
@@ -112,6 +256,12 @@ class SignalBuilder:
                 "./gradlew",
                 "bundlePlayProdRelease",
             ]
+
+        if debug:
+            cmd.append("dependencyGraph")
+        
+        self.run_command(
+            cmd
         )
 
     def copy_bundle(self):
@@ -314,9 +464,14 @@ class SignalBuilder:
 
     def build(self, version):
         """Run the complete build process."""
+        debug = False
         try:
             self.setup_directories()
             self.clone_signal(version)
+            if debug:
+                patcher = PatchManager("./Signal-Android")
+                patcher.apply_patch("./patches/gradle-deps.patch")
+                print("\nPatched Signal.")
             self.build_docker_image()
             self.build_signal()
             self.copy_bundle()

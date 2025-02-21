@@ -1,0 +1,77 @@
+Index: build.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/build.gradle.kts b/build.gradle.kts
+--- a/build.gradle.kts	(revision e1511a09a7b91c74b89796725bc7a45440c1b34e)
++++ b/build.gradle.kts	(date 1740134219611)
+@@ -1,3 +1,5 @@
++import groovy.json.JsonBuilder
++
+ plugins {
+   alias(libs.plugins.android.application) apply false
+   alias(libs.plugins.jetbrains.kotlin.android) apply false
+@@ -103,3 +105,61 @@
+     *subprojects.mapNotNull { tasks.findByPath(":${it.name}:ktlintFormat") }.toTypedArray()
+   )
+ }
++
++tasks.register("dependencyGraph") {
++  description = "Generate dependency graph json"
++  doLast {
++    val taskInfoList = mutableListOf<Map<String, Any>>()
++
++    gradle.taskGraph.allTasks.forEach { task ->
++      val taskInfo = mutableMapOf<String, Any>()
++
++      taskInfo["task"] = "${task.project.name}:${task.name}"
++
++      // Collecting task dependencies
++      taskInfo["dependsOn"] = task.dependsOn.map {
++        if (it is Task) "${it.project.name}:${it.name}" else it.toString()
++      }
++
++      // Collecting task inputs
++      val inputs = mutableMapOf<String, Any>()
++      if (!task.inputs.files.isEmpty) {
++        inputs["files"] = task.inputs.files.map { fileToRelativePath(it) }
++      }
++      if (task.inputs.properties.isNotEmpty()) {
++        inputs["properties"] = task.inputs.properties.map { it.toString() }
++      }
++      taskInfo["inputs"] = inputs
++
++      // Collecting task outputs
++      if (task.outputs.hasOutput) {
++        taskInfo["outputs"] = task.outputs.files.map { fileToRelativePath(it) }
++      } else {
++        taskInfo["outputs"] = task.outputs.files
++      }
++
++      taskInfoList.add(taskInfo)
++    }
++
++    // Create a JSON object from the task information
++    val jsonOutput = JsonBuilder(taskInfoList).toPrettyString()
++    val outputFile = File("${project.layout.buildDirectory.get()}/taskDependencies.json")
++    //  println(outputFile)
++    outputFile.parentFile.mkdirs()
++    outputFile.createNewFile()
++    outputFile.writeText(jsonOutput)
++
++    // Print the JSON formatted log`
++    println("Wrote task graph to ${outputFile.name}")
++  }
++}
++
++// Helper function to make file paths relative to .gradle or project directory
++fun fileToRelativePath(file: File): String {
++  val gradleDir = File(System.getProperty("user.home"), ".gradle")
++
++  return when {
++    file.absolutePath.contains(gradleDir.absolutePath) -> file.relativeTo(gradleDir.parentFile).toString()
++    else -> file.relativeTo(project.rootDir.parentFile).toString()
++  }
++}
+
