@@ -1,0 +1,89 @@
+OLD: outputs/fedora41_dfs_sort_reverse-scripted/apks-i-built/base-master.apk (signature: none)
+NEW: outputs/ubuntu22_dfs_sort_reverse-scripted/apks-i-built/base-master.apk (signature: none)
+
+          │           compressed           │           uncompressed           
+          ├───────────┬───────────┬────────┼───────────┬───────────┬──────────
+ APK      │ old       │ new       │ diff   │ old       │ new       │ diff     
+──────────┼───────────┼───────────┼────────┼───────────┼───────────┼──────────
+      dex │  18.3 MiB │  18.3 MiB │ +253 B │  49.1 MiB │  49.1 MiB │   +120 B 
+     arsc │  24.6 MiB │  24.6 MiB │    0 B │  24.6 MiB │  24.6 MiB │      0 B 
+ manifest │    15 KiB │    15 KiB │    0 B │    92 KiB │    92 KiB │      0 B 
+      res │   3.2 MiB │   3.2 MiB │ +433 B │   6.5 MiB │   6.5 MiB │ +2.5 KiB 
+    asset │   3.5 MiB │   3.5 MiB │  -23 B │   4.5 MiB │   4.5 MiB │    -25 B 
+    other │ 441.5 KiB │ 441.5 KiB │  +48 B │ 741.1 KiB │ 741.3 KiB │   +148 B 
+──────────┼───────────┼───────────┼────────┼───────────┼───────────┼──────────
+    total │    50 MiB │    50 MiB │ +711 B │  85.5 MiB │  85.5 MiB │ +2.8 KiB 
+
+         │          raw           │           unique            
+         ├────────┬────────┬──────┼────────┬────────┬───────────
+ DEX     │ old    │ new    │ diff │ old    │ new    │ diff      
+─────────┼────────┼────────┼──────┼────────┼────────┼───────────
+   files │      7 │      7 │    0 │        │        │           
+ strings │ 351129 │ 351131 │   +2 │ 289052 │ 289052 │ 0 (+1 -1) 
+   types │  66372 │  66373 │   +1 │  54683 │  54683 │ 0 (+0 -0) 
+ classes │  50947 │  50947 │    0 │  50947 │  50947 │ 0 (+0 -0) 
+ methods │ 333873 │ 333874 │   +1 │ 305708 │ 305708 │ 0 (+1 -1) 
+  fields │ 145333 │ 145333 │    0 │ 134246 │ 134246 │ 0 (+0 -0) 
+
+ ARSC    │ old   │ new   │ diff 
+─────────┼───────┼───────┼──────
+ configs │   419 │   419 │  0   
+ entries │ 15900 │ 15900 │  0   
+
+=================
+====   APK   ====
+=================
+
+      compressed       │     uncompressed     │                                                       
+──────────┬────────────┼───────────┬──────────┤                                                       
+ size     │ diff       │ size      │ diff     │ path                                                  
+──────────┼────────────┼───────────┼──────────┼───────────────────────────────────────────────────────
+  3.4 MiB │   +3.3 MiB │   8.2 MiB │ +8.1 MiB │ ∆ classes6.dex                                        
+ 81.1 KiB │   -3.3 MiB │ 182.7 KiB │ -8.1 MiB │ ∆ classes2.dex                                        
+  3.8 MiB │ +448.1 KiB │  10.3 MiB │ +1.1 MiB │ ∆ classes5.dex                                        
+  3.3 MiB │ -447.9 KiB │   9.3 MiB │ -1.1 MiB │ ∆ classes3.dex                                        
+ 43.8 KiB │     +435 B │ 163.6 KiB │ +2.4 KiB │ ∆ res/raw/third_party_licenses                        
+ 60.6 KiB │      -22 B │  60.5 KiB │    -22 B │ ∆ assets/dexopt/baseline.prof                         
+  5.1 KiB │      +19 B │  20.1 KiB │    +26 B │ ∆ SignalService.proto                                 
+    870 B │      +14 B │   2.1 KiB │    +49 B │ ∆ SVR2.proto                                          
+  1.7 KiB │       +6 B │   3.6 KiB │    +48 B │ ∆ CDSI.proto                                          
+ 12.4 KiB │       -6 B │  12.2 KiB │      0 B │ ∆ res/raw/webrtc_completed.mp3                        
+    1 KiB │       +4 B │   3.3 KiB │     +6 B │ ∆ DecryptedGroups.proto                               
+    426 B │       +4 B │   2.6 KiB │   +160 B │ ∆ res/raw/map_style.json                              
+  1.6 KiB │       +3 B │   6.9 KiB │    +12 B │ ∆ Groups.proto                                        
+    615 B │       +3 B │   1.2 KiB │     +3 B │ ∆ Provisioning.proto                                  
+    524 B │       +3 B │     720 B │     +2 B │ ∆ RegistrationProvisioning.proto                      
+    184 B │       -2 B │       6 B │      0 B │ ∆ META-INF/androidx.activity_activity-compose.version 
+  1.8 KiB │       +2 B │     5 KiB │     +2 B │ ∆ StorageService.proto                                
+    199 B │       -2 B │      53 B │      0 B │ ∆ androidsupportmultidexversion.txt                   
+ 87.1 KiB │       -2 B │    87 KiB │      0 B │ ∆ assets/emoji/Activity.webp                          
+  3.3 KiB │       -2 B │   3.2 KiB │      0 B │ ∆ ezvcard/io/html/no-profile.png                      
+  5.4 KiB │       +1 B │   5.2 KiB │     -3 B │ ∆ assets/dexopt/baseline.profm                        
+──────────┼────────────┼───────────┼──────────┼───────────────────────────────────────────────────────
+ 10.7 MiB │     +711 B │  28.4 MiB │ +2.8 KiB │ (total)                                               
+
+
+=================
+====   DEX   ====
+=================
+
+STRINGS:
+
+   old    │ new    │ diff      
+  ────────┼────────┼───────────
+   289052 │ 289052 │ 0 (+1 -1) 
+  
+  + ~~R8{"backend":"dex","compilation-mode":"release","desugared-library-identifiers":["com.tools.android:desugar_jdk_libs:1.1.6"],"has-checksums":false,"min-api":21,"pg-map-id":"27f2813","r8-mode":"full","version":"8.4.26"}
+  
+  - ~~R8{"backend":"dex","compilation-mode":"release","desugared-library-identifiers":["com.tools.android:desugar_jdk_libs:1.1.6"],"has-checksums":false,"min-api":21,"pg-map-id":"2d269d2","r8-mode":"full","version":"8.4.26"}
+  
+
+METHODS:
+
+   old    │ new    │ diff      
+  ────────┼────────┼───────────
+   305708 │ 305708 │ 0 (+1 -1) 
+  
+  + org.thoughtcrime.securesms.registration.fragments.CountryPickerFragmentDirections actionPopAppSettingsChangeNumber() → NavDirections
+  
+  - org.thoughtcrime.securesms.registration.fragments.CountryPickerFragmentDirections actionRestartToWelcomeFragment() → NavDirections

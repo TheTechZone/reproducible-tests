@@ -1,0 +1,86 @@
+OLD: outputs/ubuntu22-scripted-1/apks-from-device/base-master.apk (signature: V1, V2, V3)
+NEW: outputs/fedora40-scripted-1/apks-i-built/base-master.apk (signature: V1, V2, V3)
+
+          │            compressed            │          uncompressed           
+          ├───────────┬───────────┬──────────┼──────────┬──────────┬───────────
+ APK      │ old       │ new       │ diff     │ old      │ new      │ diff      
+──────────┼───────────┼───────────┼──────────┼──────────┼──────────┼───────────
+      dex │  49.1 MiB │  49.1 MiB │      0 B │ 49.1 MiB │ 49.1 MiB │       0 B 
+     arsc │  24.6 MiB │  24.6 MiB │     -2 B │ 24.6 MiB │ 24.6 MiB │       0 B 
+ manifest │  15.1 KiB │    15 KiB │   -140 B │ 92.6 KiB │   92 KiB │    -612 B 
+      res │   3.2 MiB │   3.2 MiB │     +1 B │  6.5 MiB │  6.5 MiB │       0 B 
+    asset │   3.5 MiB │   3.5 MiB │      0 B │  4.5 MiB │  4.5 MiB │       0 B 
+    other │ 764.3 KiB │ 757.6 KiB │ -6.7 KiB │  1.6 MiB │  1.6 MiB │   -17 KiB 
+──────────┼───────────┼───────────┼──────────┼──────────┼──────────┼───────────
+    total │  81.1 MiB │  81.1 MiB │ -6.9 KiB │ 86.4 MiB │ 86.4 MiB │ -17.6 KiB 
+
+         │          raw           │           unique            
+         ├────────┬────────┬──────┼────────┬────────┬───────────
+ DEX     │ old    │ new    │ diff │ old    │ new    │ diff      
+─────────┼────────┼────────┼──────┼────────┼────────┼───────────
+   files │      7 │      7 │    0 │        │        │           
+ strings │ 351129 │ 351129 │    0 │ 289052 │ 289052 │ 0 (+0 -0) 
+   types │  66372 │  66372 │    0 │  54683 │  54683 │ 0 (+0 -0) 
+ classes │  50947 │  50947 │    0 │  50947 │  50947 │ 0 (+0 -0) 
+ methods │ 333873 │ 333873 │    0 │ 305708 │ 305708 │ 0 (+0 -0) 
+  fields │ 145333 │ 145333 │    0 │ 134246 │ 134246 │ 0 (+0 -0) 
+
+ ARSC    │ old   │ new   │ diff 
+─────────┼───────┼───────┼──────
+ configs │   419 │   419 │  0   
+ entries │ 15900 │ 15900 │  0   
+
+=================
+====   APK   ====
+=================
+
+       compressed       │      uncompressed      │                                         
+───────────┬────────────┼───────────┬────────────┤                                         
+ size      │ diff       │ size      │ diff       │ path                                    
+───────────┼────────────┼───────────┼────────────┼─────────────────────────────────────────
+ 182.8 KiB │  -10.2 MiB │ 182.7 KiB │  -10.2 MiB │ ∆ classes2.dex                          
+   9.3 MiB │   +9.1 MiB │   9.3 MiB │   +9.1 MiB │ ∆ classes4.dex                          
+  10.3 MiB │   +2.1 MiB │  10.3 MiB │   +2.1 MiB │ ∆ classes6.dex                          
+   8.2 MiB │   -1.9 MiB │   8.2 MiB │   -1.9 MiB │ ∆ classes3.dex                          
+  10.1 MiB │ +894.6 KiB │  10.1 MiB │ +894.6 KiB │ ∆ classes5.dex                          
+           │   -6.7 KiB │           │  -16.7 KiB │ - META-INF/code_transparency_signed.jwt 
+   1.1 KiB │     +339 B │   1.1 KiB │     +140 B │ ∆ META-INF/BNDLTOOL.RSA                 
+           │     -145 B │           │      -32 B │ - stamp-cert-sha256                     
+    15 KiB │     -140 B │    92 KiB │     -612 B │ ∆ AndroidManifest.xml                   
+   160 KiB │     -111 B │ 447.6 KiB │     -198 B │ ∆ META-INF/BNDLTOOL.SF                  
+   155 KiB │     -107 B │ 447.5 KiB │     -198 B │ ∆ META-INF/MANIFEST.MF                  
+  24.6 MiB │       -2 B │  24.6 MiB │        0 B │ ∆ resources.arsc                        
+   1.1 KiB │       +1 B │   8.7 KiB │        0 B │ ∆ res/xml/splits0.xml                   
+───────────┼────────────┼───────────┼────────────┼─────────────────────────────────────────
+    63 MiB │   -6.9 KiB │  63.7 MiB │  -17.6 KiB │ (total)                                 
+
+
+ SIGNATURES │ old                                      │ new                                      
+────────────┼──────────────────────────────────────────┼──────────────────────────────────────────
+         V1 │ 45989dc9ad8728c2aa9a82fa55503e34a8879374 │ 436ad02adeafb7dc19619f2079fe39b2a7c59814 
+         V2 │ 45989dc9ad8728c2aa9a82fa55503e34a8879374 │ 436ad02adeafb7dc19619f2079fe39b2a7c59814 
+         V3 │ 45989dc9ad8728c2aa9a82fa55503e34a8879374 │ 436ad02adeafb7dc19619f2079fe39b2a7c59814 
+
+
+======================
+====   MANIFEST   ====
+======================
+
+@@ -2212,10 +2212,2 @@
+     <meta-data
+-        android:name="com.android.stamp.source"
+-        android:value="https://play.google.com/store"
+-        />
+-    <meta-data
+-        android:name="com.android.stamp.type"
+-        android:value="STAMP_TYPE_DISTRIBUTION_APK"
+-        />
+-    <meta-data
+         android:name="com.android.vending.splits"
+@@ -2223,6 +2215,2 @@
+         />
+-    <meta-data
+-        android:name="com.android.vending.derived.apk.id"
+-        android:value="4"
+-        />
+   </application>

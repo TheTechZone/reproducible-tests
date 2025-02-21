@@ -1,0 +1,84 @@
+OLD: outputs/fedora40-scripted-1/apks-i-built/base-master.apk (signature: V1, V2, V3)
+NEW: outputs/ubuntu22_dfs_sort-scripted/apks-i-built/base-master.apk (signature: none)
+
+          │             compressed             │           uncompressed            
+          ├───────────┬───────────┬────────────┼──────────┬───────────┬────────────
+ APK      │ old       │ new       │ diff       │ old      │ new       │ diff       
+──────────┼───────────┼───────────┼────────────┼──────────┼───────────┼────────────
+      dex │  49.1 MiB │  18.3 MiB │  -30.8 MiB │ 49.1 MiB │  49.1 MiB │        0 B 
+     arsc │  24.6 MiB │  24.6 MiB │        0 B │ 24.6 MiB │  24.6 MiB │        0 B 
+ manifest │    15 KiB │    15 KiB │        0 B │   92 KiB │    92 KiB │        0 B 
+      res │   3.2 MiB │   3.2 MiB │     +433 B │  6.5 MiB │   6.5 MiB │   +2.5 KiB 
+    asset │   3.5 MiB │   3.5 MiB │        0 B │  4.5 MiB │   4.5 MiB │        0 B 
+    other │ 757.6 KiB │ 441.5 KiB │ -316.1 KiB │  1.6 MiB │ 741.3 KiB │ -896.1 KiB 
+──────────┼───────────┼───────────┼────────────┼──────────┼───────────┼────────────
+    total │  81.1 MiB │    50 MiB │  -31.1 MiB │ 86.4 MiB │  85.5 MiB │ -893.6 KiB 
+
+         │          raw           │           unique            
+         ├────────┬────────┬──────┼────────┬────────┬───────────
+ DEX     │ old    │ new    │ diff │ old    │ new    │ diff      
+─────────┼────────┼────────┼──────┼────────┼────────┼───────────
+   files │      7 │      7 │    0 │        │        │           
+ strings │ 351129 │ 351129 │    0 │ 289052 │ 289052 │ 0 (+0 -0) 
+   types │  66372 │  66372 │    0 │  54683 │  54683 │ 0 (+0 -0) 
+ classes │  50947 │  50947 │    0 │  50947 │  50947 │ 0 (+0 -0) 
+ methods │ 333873 │ 333873 │    0 │ 305708 │ 305708 │ 0 (+0 -0) 
+  fields │ 145333 │ 145333 │    0 │ 134246 │ 134246 │ 0 (+0 -0) 
+
+ ARSC    │ old   │ new   │ diff 
+─────────┼───────┼───────┼──────
+ configs │   419 │   419 │  0   
+ entries │ 15900 │ 15900 │  0   
+
+=================
+====   APK   ====
+=================
+
+      compressed       │      uncompressed      │                                                       
+───────────┬───────────┼───────────┬────────────┤                                                       
+ size      │ diff      │ size      │ diff       │ path                                                  
+───────────┼───────────┼───────────┼────────────┼───────────────────────────────────────────────────────
+  81.1 KiB │ -10.3 MiB │ 182.7 KiB │  -10.2 MiB │ ∆ classes6.dex                                        
+   3.3 MiB │  -6.8 MiB │   9.3 MiB │ -894.6 KiB │ ∆ classes5.dex                                        
+   4.1 MiB │  -6.3 MiB │  10.4 MiB │        0 B │ ∆ classes.dex                                         
+   3.5 MiB │  -5.8 MiB │  10.1 MiB │ +894.6 KiB │ ∆ classes4.dex                                        
+   3.8 MiB │  -4.5 MiB │  10.3 MiB │   +2.1 MiB │ ∆ classes3.dex                                        
+   3.4 MiB │  +3.2 MiB │   8.2 MiB │   +8.1 MiB │ ∆ classes2.dex                                        
+ 214.9 KiB │  -326 KiB │ 540.9 KiB │        0 B │ ∆ classes7.dex                                        
+           │  -160 KiB │           │ -447.6 KiB │ - META-INF/BNDLTOOL.SF                                
+           │  -155 KiB │           │ -447.5 KiB │ - META-INF/MANIFEST.MF                                
+           │  -1.1 KiB │           │   -1.1 KiB │ - META-INF/BNDLTOOL.RSA                               
+  43.8 KiB │    +435 B │ 163.6 KiB │   +2.4 KiB │ ∆ res/raw/third_party_licenses                        
+   5.1 KiB │     +19 B │  20.1 KiB │      +26 B │ ∆ SignalService.proto                                 
+     870 B │     +14 B │   2.1 KiB │      +49 B │ ∆ SVR2.proto                                          
+   1.7 KiB │      +6 B │   3.6 KiB │      +48 B │ ∆ CDSI.proto                                          
+  12.4 KiB │      -6 B │  12.2 KiB │        0 B │ ∆ res/raw/webrtc_completed.mp3                        
+     1 KiB │      +4 B │   3.3 KiB │       +6 B │ ∆ DecryptedGroups.proto                               
+   3.3 KiB │      +4 B │   3.2 KiB │        0 B │ ∆ ezvcard/io/html/no-profile.png                      
+     426 B │      +4 B │   2.6 KiB │     +160 B │ ∆ res/raw/map_style.json                              
+   1.6 KiB │      +3 B │   6.9 KiB │      +12 B │ ∆ Groups.proto                                        
+     615 B │      +3 B │   1.2 KiB │       +3 B │ ∆ Provisioning.proto                                  
+     524 B │      +3 B │     720 B │       +2 B │ ∆ RegistrationProvisioning.proto                      
+     184 B │      -2 B │       6 B │        0 B │ ∆ META-INF/androidx.activity_activity-compose.version 
+   1.8 KiB │      +2 B │     5 KiB │       +2 B │ ∆ StorageService.proto                                
+     199 B │      -2 B │      53 B │        0 B │ ∆ androidsupportmultidexversion.txt                   
+───────────┼───────────┼───────────┼────────────┼───────────────────────────────────────────────────────
+  18.4 MiB │ -31.1 MiB │  49.3 MiB │ -893.6 KiB │ (total)                                               
+
+
+ SIGNATURES │ old                                      │ new 
+────────────┼──────────────────────────────────────────┼─────
+         V1 │ 436ad02adeafb7dc19619f2079fe39b2a7c59814 │     
+         V2 │ 436ad02adeafb7dc19619f2079fe39b2a7c59814 │     
+         V3 │ 436ad02adeafb7dc19619f2079fe39b2a7c59814 │     
+
+
+======================
+====   MANIFEST   ====
+======================
+
+@@ -303,3 +303,3 @@
+       android:backupAgent="org.thoughtcrime.securesms.absbackup.SignalBackupAgent"
+-      android:extractNativeLibs="false"
++      android:extractNativeLibs="true"
+       android:fullBackupOnly="false"

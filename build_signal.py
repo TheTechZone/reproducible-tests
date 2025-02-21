@@ -3,6 +3,10 @@ import os
 import subprocess
 import sys
 import shutil
+import argparse
+import contextlib
+from setup.shell import execute
+from plumbum import local
 from pathlib import Path
 
 
@@ -152,14 +156,21 @@ class PatchManager:
 
 
 class SignalBuilder:
-    def __init__(self):
-        self.script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
-        self.signal_dir = self.script_dir / "reproducible-signal"
-        self.device_apks_dir = self.signal_dir / "apks-from-device"
-        self.built_apks_dir = self.signal_dir / "apks-i-built"
-        self.repo_dir = self.script_dir / "Signal-Android"
 
-    def run_command(self, cmd, cwd=None, check=True):
+    def __init__(self, args):
+        self.script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
+        self.reproducible_apks_dir = self.script_dir / "reproducible-signal"
+        self.device_apks_dir = self.reproducible_apks_dir / "apks-from-device"
+        self.built_apks_dir = self.reproducible_apks_dir / "apks-i-built"
+        # Will be overwritten if dfs is defined
+        self.signal_repo_dir = self.script_dir / "Signal-Android"
+        self.dfs = args.dfs  # None, "chaos", "sort", ""sort_reversed"
+        self.dfs_root_dir = None
+        self.clean = args.clean
+        self.purge = args.purge
+        self.debug = args.debug
+
+    def run_command(self, cmd, cwd=None, check=True, shell=False):
         """Run a command and stream output in real-time."""
         try:
             # Print the command being run
@@ -173,6 +184,7 @@ class SignalBuilder:
                 text=True,
                 bufsize=1,  # Line buffered
                 universal_newlines=True,
+                shell=shell,  # for the dutchies
             )
 
             # Stream output in real-time
@@ -207,14 +219,63 @@ class SignalBuilder:
         os.makedirs(self.device_apks_dir, exist_ok=True)
         os.makedirs(self.built_apks_dir, exist_ok=True)
 
+    def create_overlay_filesystem(self, dfs):
+        """Create the directory for the overlay and run disorderfs with the appropriate args"""
+        print("Creating overlay filesystem...")
+        dfs_root_dir = self.script_dir / dfs
+
+        # Idempotence
+        print("Checking for preexisting process...")
+        preexisting_disorderfs_pid = self.get_disorderfs_pid(dfs_root_dir)
+        if preexisting_disorderfs_pid:
+            # Plumbum again, sorry Aditz, I seem to have lead poisoning (ó﹏ò｡)
+            print("\nUnmounting old dir...")
+            execute(local["fusermount"]["-uz", dfs_root_dir], as_sudo=True, log=True)
+            # print("Killing process...")
+            # execute(local["kill"][preexisting_disorderfs_pid], as_sudo=True, log=True)
+        execute(
+            local["rm"]["-r", dfs_root_dir], log=True, as_sudo=True, retcodes=(0, 1, 16)
+        )
+        print("\nRecreating dir...")
+        execute(local["mkdir"][dfs_root_dir], log=True, retcodes=(0, 1))
+        command = ["sudo", "-S", "disorderfs", "--multi-user=yes"]
+        if dfs == "chaos":
+            command.append("--sort-dirents=no")
+        else:
+            command.append("--sort-dirents=yes")
+            command.append(
+                f"--reverse-dirents={'yes' if dfs == 'sort_reversed' else 'no'}"
+            )
+        command.append(str(self.signal_repo_dir))
+        command.append(str(dfs_root_dir))
+        self.run_command(command, self.script_dir)
+        pid = self.get_disorderfs_pid(dfs_root_dir)
+        print(
+            "\nIncreasing the number of filehandlers that the overlay process may open..."
+        )
+        command = ["sudo", "-S", "prlimit", "-n=16000", f"--pid={pid}"]
+        self.run_command(command, self.script_dir)
+        print("Redirecting the Signal repo dir to point to the overlay...")
+        self.dfs_root_dir = dfs_root_dir
+        self.signal_repo_dir = dfs_root_dir
+
+    def get_disorderfs_pid(self, dfs_root_dir):
+        # This was just quicker and cleaner with plumbum. Might want to unify at some point
+        ps = local["ps"]
+        grep = local["grep"]
+        awk = local["awk"]
+        chain = ps["-aux"] | grep["disorderfs"] | grep[dfs_root_dir] | awk["{print $2}"]
+        er = execute(chain, retcodes=(0, 1), log=True)
+        return er.stdout.strip()
+
     def clone_signal(self, version):
         """Clone Signal repository at specific version."""
         if not version.startswith("v"):
             version = f"v{version}"
 
         print(f"Cloning Signal Android repository version {version}...")
-        if self.repo_dir.exists():
-            shutil.rmtree(self.repo_dir)
+        if self.signal_repo_dir.exists():
+            shutil.rmtree(self.signal_repo_dir)
 
         self.run_command(
             [
@@ -233,41 +294,39 @@ class SignalBuilder:
         print("Building Docker image...")
         self.run_command(
             ["docker", "build", "-t", "signal-android", "."],
-            cwd=self.repo_dir / "reproducible-builds",
+            cwd=self.signal_repo_dir / "reproducible-builds",
         )
 
-    def build_signal(self, debug=False):
+    def build_signal(self):
         """Build Signal using Docker."""
         print("Building Signal...")
         uid = os.getuid()
         gid = os.getgid()
 
         cmd = [
-                "docker",
-                "run",
-                "--rm",
-                "-v",
-                f"{self.repo_dir}:/project",
-                "-w",
-                "/project",
-                "--user",
-                f"{uid}:{gid}",
-                "signal-android",
-                "./gradlew",
-                "bundlePlayProdRelease",
-            ]
+            "docker",
+            "run",
+            "--rm",
+            "-v",
+            f"{self.signal_repo_dir}:/project",
+            "-w",
+            "/project",
+            "--user",
+            f"{uid}:{gid}",
+            "signal-android",
+            "./gradlew",
+            "bundlePlayProdRelease",
+        ]
 
-        if debug:
+        if self.debug:
             cmd.append("dependencyGraph")
-        
-        self.run_command(
-            cmd
-        )
+
+        self.run_command(cmd)
 
     def copy_bundle(self):
         """Copy the built bundle to our directory."""
         bundle_path = (
-            self.repo_dir
+            self.signal_repo_dir
             / "app/build/outputs/bundle/playProdRelease/Signal-Android-play-prod-release.aab"
         )
         target_path = self.built_apks_dir / "bundle.aab"
@@ -336,6 +395,11 @@ class SignalBuilder:
         if bundle_file.exists():
             os.remove(bundle_file)
 
+        # Kill disorderfs
+        if self.dfs_root_dir:
+            pid = self.get_disorderfs_pid(self.dfs_root_dir)
+            self.run_command(["sudo", "-S", "kill", pid], check=False)
+
     def pull_device_apks(self):
         """Pull Signal APKs from the connected device."""
         print("\nPulling APKs from device...")
@@ -393,11 +457,8 @@ class SignalBuilder:
     def setup_apkdiff(self, dest=None):
         """Copy apkdiff.py from Signal repo and make it executable."""
         print("\nSetting up apkdiff.py...")
-        apkdiff_src = self.repo_dir / "reproducible-builds/apkdiff/apkdiff.py"
-        if dest == None:
-            apkdiff_dest = self.signal_dir / "apkdiff.py"
-        else:
-            apkdiff_dest = dest
+        apkdiff_src = self.signal_repo_dir / "reproducible-builds/apkdiff/apkdiff.py"
+        apkdiff_dest = self.reproducible_apks_dir / "apkdiff.py"
 
         if not apkdiff_src.exists():
             print("Error: apkdiff.py not found in Signal repository.")
@@ -464,27 +525,46 @@ class SignalBuilder:
 
     def build(self, version):
         """Run the complete build process."""
-        debug = False
         try:
+            if self.purge:
+                self.cleanup()
+                print(f"Successfully ran clean without building anything.")
+                sys.exit(0)
+
             self.setup_directories()
             self.clone_signal(version)
-            if debug:
+            if self.debug:
                 patcher = PatchManager("./Signal-Android")
                 patcher.apply_patch("./patches/gradle-deps.patch")
                 print("\nPatched Signal.")
+            if self.dfs:
+                self.create_overlay_filesystem(self.dfs)
             self.build_docker_image()
+
+            # todo: junk from xy
+            # # start docker
+            # execute(
+            #     local["systemctl"]["start", "docker"], as_sudo=True
+            # )  # quoi? this shouldn't be in the build script either way...
+            # # print("Finished building docker image, quittin early!")
+            # # exit(0)
+
             self.build_signal()
             self.copy_bundle()
-            self.check_adb_devices()
+            if not version:
+                self.check_adb_devices()
             self.generate_apks()
-            self.cleanup()
-            self.pull_device_apks()
-            self.print_apk_summary()
-            self.compare_apks()
+            if self.clean:
+                self.cleanup()
+            if not version:
+                self.pull_device_apks()
+                self.print_apk_summary()
+                self.compare_apks()
 
             print("\nBuild completed successfully!")
             print(f"APKs are located in:")
-            print(f"  Device APKs: {self.device_apks_dir}")
+            if not version:
+                print(f"  Device APKs: {self.device_apks_dir}")
             print(f"  Built APKs:  {self.built_apks_dir}")
 
         except Exception as e:
@@ -507,18 +587,62 @@ def get_installed_version():
         return None
 
 
-def main():
-    version = sys.argv[1] if len(sys.argv) > 1 else get_installed_version()
+def main(args):
+    if args.version is None:
+        version = get_installed_version()
+    else:
+        version = args.version
     if not version:
         print("No version provided and couldn't detect installed version.")
         print("Example: ./build_signal.py 7.7.0")
         sys.exit(1)
-    if len(sys.argv) == 1:
-        print(f"Using installed Signal version: {version}")
+    else:
+        print(
+            f"Building {'installed' if not args.version else ''} Signal version: {version}"
+        )
 
-    builder = SignalBuilder()
+    builder = SignalBuilder(args)
     builder.build(version)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--version",
+        action="store",
+        default=None,
+        help="Provide the version you want to "
+        "reproducably build. If this is not provided, the"
+        "program attempts to pull an APK from a phone"
+        "connected via. adb.",
+    )
+    parser.add_argument(
+        "--dfs",
+        choices=["chaos", "sort", "sort_reversed"],
+        default=None,
+        help="Choose if and how to use"
+        "disorderfs as the underlay filesystem for the build.\n"
+        "chaos: introduce nondeterminism\n"
+        "sort: deterministically sort directory entries\n"
+        "sort_reversed: deterministically sort directory entries in reverse\n",
+    )
+    parser.add_argument(
+        "--clean",
+        action="store_true",
+        default=False,
+        help="Clean up after building APKs. False by default.",
+    )
+    parser.add_argument(
+        "--purge",
+        action="store_true",
+        default=False,
+        help="Purge run clean without building any APKs. False by default. This option overrides any other parameters.",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        default=False,
+        help="Output extra build debug information.",
+    )
+    args = parser.parse_args()
+    main(args)
