@@ -323,6 +323,9 @@ class SignalBuilder:
             gid = os.getgid()
             cmd.insert(7, "--user")
             cmd.insert(8, f"{uid}:{gid}")
+        else:
+            cmd.insert(8, "bash")
+            cmd.insert(9, "-c")
 
         if self.debug:
             cmd.append("dependencyGraph")
