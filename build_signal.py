@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import platform
 import subprocess
 import sys
 import shutil
@@ -300,9 +301,8 @@ class SignalBuilder:
     def build_signal(self):
         """Build Signal using Docker."""
         print("Building Signal...")
-        uid = os.getuid()
-        gid = os.getgid()
 
+        # Base command for both platforms
         cmd = [
             "docker",
             "run",
@@ -311,12 +311,18 @@ class SignalBuilder:
             f"{self.signal_repo_dir}:/project",
             "-w",
             "/project",
-            "--user",
-            f"{uid}:{gid}",
             "signal-android",
             "./gradlew",
             "bundlePlayProdRelease",
         ]
+
+        # Add user mapping only on Linux/Unix platforms
+        if platform.system() != "Windows":
+            # Linux/Unix systems - add user mapping
+            uid = os.getuid()
+            gid = os.getgid()
+            cmd.insert(7, "--user")
+            cmd.insert(8, f"{uid}:{gid}")
 
         if self.debug:
             cmd.append("dependencyGraph")
