@@ -245,7 +245,10 @@ class SignalBuilder:
         else:
             command.append("--sort-dirents=yes")
             command.append(
-                f"--reverse-dirents={'yes' if dfs == 'sort_reversed' else 'no'}"
+                f"--reverse-dirents={'yes' if 'reversed' in dfs else 'no'}"
+            )
+            command.append(
+            f"--sort-by-ctime={'yes' if 'ctime' in dfs else 'no'}"
             )
         command.append(str(self.signal_repo_dir))
         command.append(str(dfs_root_dir))
@@ -627,13 +630,15 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--dfs",
-        choices=["chaos", "sort", "sort_reversed"],
+        choices=["chaos", "sort", "sort_reversed", "ctime_sort", "ctime_sort_reversed"],
         default=None,
         help="Choose if and how to use"
         "disorderfs as the underlay filesystem for the build.\n"
         "chaos: introduce nondeterminism\n"
-        "sort: deterministically sort directory entries\n"
-        "sort_reversed: deterministically sort directory entries in reverse\n",
+        "sort: lexicographically sort directory entries\n"
+        "sort_reversed: reverses lexicographically sorted directory entries\n",
+        "ctime_sort: sort directory entries by ctime (as returned by lstat)\n",
+        "ctime_sort_reversed: reverses ctime sorted directory entries\n",
     )
     parser.add_argument(
         "--clean",
