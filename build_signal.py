@@ -243,12 +243,14 @@ class SignalBuilder:
         if dfs == "chaos":
             command.append("--sort-dirents=no")
         else:
-            command.append("--sort-dirents=yes")
+            if 'ctime' not in dfs:
+                command.append("--sort-dirents=yes")
+            else:
+                command.append(
+                f"--sort-by-ctime={'yes' if 'ctime' in dfs else 'no'}"
+                )
             command.append(
                 f"--reverse-dirents={'yes' if 'reversed' in dfs else 'no'}"
-            )
-            command.append(
-            f"--sort-by-ctime={'yes' if 'ctime' in dfs else 'no'}"
             )
         command.append(str(self.signal_repo_dir))
         command.append(str(dfs_root_dir))
