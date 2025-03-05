@@ -638,7 +638,7 @@ if __name__ == "__main__":
         "sort: lexicographically sort directory entries\n"
         "sort_reversed: reverses lexicographically sorted directory entries\n",
         "ctime_sort: sort directory entries by ctime (as returned by lstat)\n",
-        "ctime_sort_reversed: reverses ctime sorted directory entries\n",
+        "ctime_sort_reversed: reverses ctime sorted directory entries\n"
     )
     parser.add_argument(
         "--clean",
