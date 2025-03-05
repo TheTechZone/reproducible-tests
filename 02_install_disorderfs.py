@@ -12,7 +12,7 @@ rm = local["rm"]
 execute(rm["-r", "disorderfs"], retcodes=(0, 1))
 
 # Clone disorderfs
-execute(git["clone", "git@github.com:Cerenia/disorderfs.git"])
+execute(git["clone", "https://github.com/Cerenia/disorderfs.git"])
 
 # Install libraries of fuse needed by disorderfs
 pm = get_package_manager()
