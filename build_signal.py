@@ -157,7 +157,6 @@ class PatchManager:
 
 
 class SignalBuilder:
-
     def __init__(self, args):
         self.script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
         self.reproducible_apks_dir = self.script_dir / "reproducible-signal"
@@ -170,6 +169,7 @@ class SignalBuilder:
         self.clean = args.clean
         self.purge = args.purge
         self.debug = args.debug
+        self.aab_only = args.aab_only
 
     def run_command(self, cmd, cwd=None, check=True, shell=False):
         """Run a command and stream output in real-time."""
@@ -557,6 +557,12 @@ class SignalBuilder:
 
             self.build_signal()
             self.copy_bundle()
+            if self.aab_only:
+                print(
+                    "--aab-only is enabled: Not extracking app bundle or performing comparison."
+                )
+                sys.exit(0)
+
             if not version:
                 self.check_adb_devices()
             self.generate_apks()
@@ -649,6 +655,12 @@ if __name__ == "__main__":
         action="store_true",
         default=False,
         help="Output extra build debug information.",
+    )  # fixme: not getting parsed properly
+    parser.add_argument(
+        "--aab-only",
+        action="store_true",
+        default=False,
+        help="Stop execution after the aab has been created.",
     )
     args = parser.parse_args()
     main(args)
