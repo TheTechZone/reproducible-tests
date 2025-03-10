@@ -243,8 +243,7 @@ class SignalBuilder:
         if dfs == "chaos":
             command.append("--sort-dirents=no")
         else:
-            if 'ctime' not in dfs:
-                command.append("--sort-dirents=yes")
+            command.append("--sort-dirents=yes")
             else:
                 command.append(
                 f"--sort-by-ctime={'yes' if 'ctime' in dfs else 'no'}"
