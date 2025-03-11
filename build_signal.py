@@ -244,10 +244,9 @@ class SignalBuilder:
             command.append("--sort-dirents=no")
         else:
             command.append("--sort-dirents=yes")
-            else:
-                command.append(
+            command.append(
                 f"--sort-by-ctime={'yes' if 'ctime' in dfs else 'no'}"
-                )
+            )
             command.append(
                 f"--reverse-dirents={'yes' if 'reversed' in dfs else 'no'}"
             )
