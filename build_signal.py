@@ -220,6 +220,7 @@ class SignalBuilder:
         print("Setting up directories...")
         os.makedirs(self.device_apks_dir, exist_ok=True)
         os.makedirs(self.built_apks_dir, exist_ok=True)
+        os.makedirs(self.disorderfs_root_dir, exist_ok=True)
 
     def create_overlay_filesystem(self, dfs):
         """Create the directory for the overlay and run disorderfs with the appropriate args"""
