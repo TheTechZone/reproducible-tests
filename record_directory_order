@@ -5,7 +5,7 @@ witness="witness-"`date -u "+%Y%m%d-%H%M%S"`
 mark=".mark"
 cmd="ls -lcfU --full-time"
 
-[ $# == 1 && dir="$1" || dir="." ]
+[ $# == 1 ] && dir="$1" || dir="." 
 w="${dir}/${witness}"
 
 # Don't overwrite an existing witness mark.
