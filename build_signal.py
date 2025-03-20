@@ -164,7 +164,7 @@ class SignalBuilder:
         self.built_apks_dir = self.reproducible_apks_dir / "apks-i-built"
         # Will be overwritten if dfs is defined
         self.disorderfs_root_dir = self.script_dir / "disorderfs_root"
-        self.signal_repo_dir = self.disorderfs_root / "Signal-Android"
+        self.signal_repo_dir = self.disorderfs_root_dir / "Signal-Android"
         self.dfs = args.dfs  # None, "chaos", "sort", ""sort_reversed"
         self.dfs_mount_dir = None
         self.clean = args.clean
@@ -251,7 +251,7 @@ class SignalBuilder:
             command.append(
                 f"--reverse-dirents={'yes' if 'reversed' in dfs else 'no'}"
             )
-        command.append(str(self.disorderfs_root))
+        command.append(str(self.disorderfs_root_dir))
         command.append(str(dfs_mount_dir))
         self.run_command(command, self.script_dir)
         pid = self.get_disorderfs_pid(dfs_mount_dir)
