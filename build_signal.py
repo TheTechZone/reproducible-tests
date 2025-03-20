@@ -163,9 +163,10 @@ class SignalBuilder:
         self.device_apks_dir = self.reproducible_apks_dir / "apks-from-device"
         self.built_apks_dir = self.reproducible_apks_dir / "apks-i-built"
         # Will be overwritten if dfs is defined
-        self.signal_repo_dir = self.script_dir / "Signal-Android"
+        self.disorderfs_root_dir = self.script_dir / "disorderfs_root"
+        self.signal_repo_dir = self.disorderfs_root / "Signal-Android"
         self.dfs = args.dfs  # None, "chaos", "sort", ""sort_reversed"
-        self.dfs_root_dir = None
+        self.dfs_mount_dir = None
         self.clean = args.clean
         self.purge = args.purge
         self.debug = args.debug
@@ -223,22 +224,22 @@ class SignalBuilder:
     def create_overlay_filesystem(self, dfs):
         """Create the directory for the overlay and run disorderfs with the appropriate args"""
         print("Creating overlay filesystem...")
-        dfs_root_dir = self.script_dir / dfs
+        dfs_mount_dir = self.script_dir / dfs
 
         # Idempotence
         print("Checking for preexisting process...")
-        preexisting_disorderfs_pid = self.get_disorderfs_pid(dfs_root_dir)
+        preexisting_disorderfs_pid = self.get_disorderfs_pid(dfs_mount_dir)
         if preexisting_disorderfs_pid:
             # Plumbum again, sorry Aditz, I seem to have lead poisoning (ó﹏ò｡)
             print("\nUnmounting old dir...")
-            execute(local["fusermount"]["-uz", dfs_root_dir], as_sudo=True, log=True)
+            execute(local["fusermount"]["-uz", dfs_mount_dir], as_sudo=True, log=True)
             # print("Killing process...")
             # execute(local["kill"][preexisting_disorderfs_pid], as_sudo=True, log=True)
         execute(
-            local["rm"]["-r", dfs_root_dir], log=True, as_sudo=True, retcodes=(0, 1, 16)
+            local["rm"]["-r", dfs_mount_dir], log=True, as_sudo=True, retcodes=(0, 1, 16)
         )
         print("\nRecreating dir...")
-        execute(local["mkdir"][dfs_root_dir], log=True, retcodes=(0, 1))
+        execute(local["mkdir"][dfs_mount_dir], log=True, retcodes=(0, 1))
         command = ["sudo", "-S", "disorderfs", "--multi-user=yes"]
         if dfs == "chaos":
             command.append("--sort-dirents=no")
@@ -250,25 +251,30 @@ class SignalBuilder:
             command.append(
                 f"--reverse-dirents={'yes' if 'reversed' in dfs else 'no'}"
             )
-        command.append(str(self.signal_repo_dir))
-        command.append(str(dfs_root_dir))
+        command.append(str(self.disorderfs_root))
+        command.append(str(dfs_mount_dir))
         self.run_command(command, self.script_dir)
-        pid = self.get_disorderfs_pid(dfs_root_dir)
+        pid = self.get_disorderfs_pid(dfs_mount_dir)
         print(
             "\nIncreasing the number of filehandlers that the overlay process may open..."
         )
         command = ["sudo", "-S", "prlimit", "-n=16000", f"--pid={pid}"]
         self.run_command(command, self.script_dir)
+        print("Leave functional record of disorderfs state in the overlay...")
+        command = local["./record_directory_order"][dfs_mount_dir / "test"]
+        self.run_command(command)
+        print("exiting for testing...")
+        exit(0)
         print("Redirecting the Signal repo dir to point to the overlay...")
-        self.dfs_root_dir = dfs_root_dir
-        self.signal_repo_dir = dfs_root_dir
+        self.dfs_mount_dir = dfs_mount_dir
+        self.signal_repo_dir = dfs_mount_dir / "Signal-Android"
 
-    def get_disorderfs_pid(self, dfs_root_dir):
+    def get_disorderfs_pid(self, dfs_mount_dir):
         # This was just quicker and cleaner with plumbum. Might want to unify at some point
         ps = local["ps"]
         grep = local["grep"]
         awk = local["awk"]
-        chain = ps["-aux"] | grep["disorderfs"] | grep[dfs_root_dir] | awk["{print $2}"]
+        chain = ps["-aux"] | grep["disorderfs"] | grep[dfs_mount_dir] | awk["{print $2}"]
         er = execute(chain, retcodes=(0, 1), log=True)
         return er.stdout.strip()
 
@@ -408,8 +414,8 @@ class SignalBuilder:
             os.remove(bundle_file)
 
         # Kill disorderfs
-        if self.dfs_root_dir:
-            pid = self.get_disorderfs_pid(self.dfs_root_dir)
+        if self.dfs_mount_dir:
+            pid = self.get_disorderfs_pid(self.dfs_mount_dir)
             self.run_command(["sudo", "-S", "kill", pid], check=False)
 
     def pull_device_apks(self):
