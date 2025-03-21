@@ -264,8 +264,6 @@ class SignalBuilder:
         print("Leave functional record of disorderfs state in the overlay...")
         command = ["./record_directory_order", str(dfs_mount_dir / "test")]
         self.run_command(command)
-        print("exiting for testing...")
-        exit(0)
         print("Redirecting the Signal repo dir to point to the overlay...")
         self.dfs_mount_dir = dfs_mount_dir
         self.signal_repo_dir = dfs_mount_dir / "Signal-Android"
