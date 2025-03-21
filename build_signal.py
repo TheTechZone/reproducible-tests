@@ -297,7 +297,7 @@ class SignalBuilder:
                 "--branch",
                 version,
                 "https://github.com/signalapp/Signal-Android.git",
-            ]
+            ], cwd=self.disorderfs_root_dir
         )
 
     def build_docker_image(self):
