@@ -262,7 +262,7 @@ class SignalBuilder:
         command = ["sudo", "-S", "prlimit", "-n=16000", f"--pid={pid}"]
         self.run_command(command, self.script_dir)
         print("Leave functional record of disorderfs state in the overlay...")
-        command = local["./record_directory_order"][dfs_mount_dir / "test"]
+        command = ["./record_directory_order", dfs_mount_dir / "test"]
         self.run_command(command)
         print("exiting for testing...")
         exit(0)
