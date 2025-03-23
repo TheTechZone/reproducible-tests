@@ -1,0 +1,4 @@
+[lfs]
+    fetchinclude = data/playstore-mirror/**/*.apk
+    fetchexclude = data/playstore-mirror/*
+
