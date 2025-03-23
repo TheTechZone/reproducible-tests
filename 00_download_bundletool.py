@@ -4,6 +4,7 @@ import os
 import sys
 import argparse
 
+
 def create_wrapper_script(jar_path):
     wrapper_content = f"""#!/bin/sh
 exec java -jar "{jar_path}" "$@"
@@ -13,6 +14,7 @@ exec java -jar "{jar_path}" "$@"
         f.write(wrapper_content)
     os.chmod(wrapper_path, 0o755)
     return wrapper_path
+
 
 def download_bundletool(version=None):
     """Download bundletool for specified version or latest if none provided."""
@@ -66,11 +68,17 @@ def download_bundletool(version=None):
         print(f"Unexpected error: {e}", file=sys.stderr)
         sys.exit(1)
 
+
 def main():
-    parser = argparse.ArgumentParser(description='Download bundletool from GitHub releases')
-    parser.add_argument('--version', help='GitHub release tag to download (default: latest)')
+    parser = argparse.ArgumentParser(
+        description="Download bundletool from GitHub releases"
+    )
+    parser.add_argument(
+        "--version", help="GitHub release tag to download (default: latest)"
+    )
     args = parser.parse_args()
     download_bundletool(args.version)
+
 
 if __name__ == "__main__":
     main()
