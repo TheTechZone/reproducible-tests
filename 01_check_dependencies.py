@@ -68,6 +68,17 @@ class DependencyChecker:
         installed, version = self.check_command("git")
         self.print_result("Git", installed, version)
 
+    def check_git_lfs(self):
+        installed, version = self.check_command("git-lfs")
+        self.print_result("Git-lfs", installed, version)
+        if not installed:
+            print("After installation you may need to run\ngit lfs install\nSee: https://git-lfs.com/")
+
+    def check_java(self):
+        installed, version = self.check_command("java")
+        self.print_result("Java", installed, version)
+
+
     def check_docker(self):
         installed, version = self.check_command("docker")
         self.print_result("Docker", installed, version)
@@ -128,7 +139,9 @@ class DependencyChecker:
 
         self.check_python()
         self.check_git()
+        self.check_git_lfs()
         self.check_docker()
+        self.check_java()
         self.check_adb()
         self.check_bundletool()
         self.check_gcc()
