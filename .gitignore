@@ -19,3 +19,4 @@ chaos
 example_arm_device_splits/**/*.apks
 example_arm_device_splits/**/*.apk
 data/build
+data/playstore-universal-unzipped
