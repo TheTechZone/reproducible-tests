@@ -1,0 +1,24 @@
+#!/bin/sh
+# Author: Tsutomu Shimomura
+
+witness="witness-"`date -u "+%Y%m%d-%H%M%S"`
+mark=".mark"
+cmd="ls -lcfU --full-time"
+
+[ $# = 1 ] && dir="$1" || dir="." 
+w="${dir}/${witness}"
+
+# Don't overwrite an existing witness mark.
+mkdir -p "$w" || exit 1
+
+for i in a c e g f d b; do
+        touch "$w/$i"; sleep 0.1
+done
+
+m="${w}${mark}"
+
+date | tee -a "$m"
+echo "$cmd" "$w" | tee -a "$m"
+$cmd "$w" | tee -a "$m"
+
+exit
