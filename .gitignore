@@ -16,3 +16,5 @@ mismatches
 sort
 sort_reverse
 chaos
+example_arm_device_splits/**/*.apks
+example_arm_device_splits/**/*.apk
