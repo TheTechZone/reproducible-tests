@@ -19,3 +19,5 @@ sort
 sort_reverse
 chaos
 data
+example_arm_device_splits/**/*.apks
+example_arm_device_splits/**/*.apk
