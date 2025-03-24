@@ -237,7 +237,10 @@ class SignalBuilder:
             # print("Killing process...")
             # execute(local["kill"][preexisting_disorderfs_pid], as_sudo=True, log=True)
         execute(
-            local["rm"]["-r", dfs_mount_dir], log=True, as_sudo=True, retcodes=(0, 1, 16)
+            local["rm"]["-r", dfs_mount_dir],
+            log=True,
+            as_sudo=True,
+            retcodes=(0, 1, 16),
         )
         print("\nRecreating dir...")
         execute(local["mkdir"][dfs_mount_dir], log=True, retcodes=(0, 1))
@@ -246,12 +249,8 @@ class SignalBuilder:
             command.append("--sort-dirents=no")
         else:
             command.append("--sort-dirents=yes")
-            command.append(
-                f"--sort-by-ctime={'yes' if 'ctime' in dfs else 'no'}"
-            )
-            command.append(
-                f"--reverse-dirents={'yes' if 'reversed' in dfs else 'no'}"
-            )
+            command.append(f"--sort-by-ctime={'yes' if 'ctime' in dfs else 'no'}")
+            command.append(f"--reverse-dirents={'yes' if 'reversed' in dfs else 'no'}")
         command.append(str(self.disorderfs_root_dir))
         command.append(str(dfs_mount_dir))
         self.run_command(command, self.script_dir)
@@ -273,7 +272,9 @@ class SignalBuilder:
         ps = local["ps"]
         grep = local["grep"]
         awk = local["awk"]
-        chain = ps["-aux"] | grep["disorderfs"] | grep[dfs_mount_dir] | awk["{print $2}"]
+        chain = (
+            ps["-aux"] | grep["disorderfs"] | grep[dfs_mount_dir] | awk["{print $2}"]
+        )
         er = execute(chain, retcodes=(0, 1), log=True)
         return er.stdout.strip()
 
@@ -295,7 +296,8 @@ class SignalBuilder:
                 "--branch",
                 version,
                 "https://github.com/signalapp/Signal-Android.git",
-            ], cwd=self.disorderfs_root_dir
+            ],
+            cwd=self.disorderfs_root_dir,
         )
 
     def build_docker_image(self):
