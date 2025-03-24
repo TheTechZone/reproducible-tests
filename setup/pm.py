@@ -74,7 +74,9 @@ class AptPackageManager(PackageManager):
         try:
             with local.env(DEBIAN_FRONTEND="noninteractive"):
                 execute(
-                    self.package_manager["install", "-y", "--show-progress", package_names],
+                    self.package_manager[
+                        "install", "-y", "--show-progress", package_names
+                    ],
                     as_sudo=True,
                     log=True,
                     retcodes=(0, 1),
@@ -166,7 +168,7 @@ def get_os_release() -> dict[str, str]:
     with open("/etc/os-release") as f:
         for line in f:
             line = line.strip()
-            if not line or line.startswith('#') or '=' not in line:
+            if not line or line.startswith("#") or "=" not in line:
                 continue
             key, value = line.rstrip().split("=", 1)
             os_release_info[key] = value.strip('"')
