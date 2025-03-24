@@ -4,6 +4,7 @@ Signal-Android/
 reproducible-signal/
 .ipynb_checkpoints/
 __pycache__
+.swp
 .idea
 apkdiff.py
 tools/
