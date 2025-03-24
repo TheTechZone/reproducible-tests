@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 # Author: Tsutomu Shimomura
 
 witness="witness-"`date -u "+%Y%m%d-%H%M%S"`
