@@ -319,7 +319,8 @@ def analyse_all_runs():
     local["git"]["lfs", "checkout"]()
     for tarfile in os.listdir(TARS_ROOT):# meep hard 
         print(f"Analysing {tarfile}...")
-        # TODO: Pull tarfile with git lfs
+        tarpath = os.path.join(TARS_ROOT, tarfile)
+        local["git"]["lfs", "--include", create_relpath(tarpath)]()
         # Extract run parameters from tarfile
         (version, run , dfstest, dfs, ctime, reverse) = extract_structure(tarfile)
         # Extract the build to local folder
