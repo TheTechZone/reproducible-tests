@@ -168,7 +168,7 @@ def create_diffuse_record():
     print("Running diffuse on the master APK...")
     # TODO: clean up duplicate code
     cvc = current_cvc()
-    playstore_apk_path = os.path.join(PLAYSTORE_APKS_ROOT, current_cvc(), f"{APK_COMPARE_MAP["base-master.apk"]}{cvc}.apk")
+    playstore_apk_path = os.path.join(PLAYSTORE_APKS_ROOT, current_cvc(), f"{APK_COMPARE_MAP['base-master.apk']}{cvc}.apk")
     # Pull the APK you want to compare with git-lfs
     local["git"]["lfs", "pull", "--include", playstore_apk_path]()
     # Diffuse
