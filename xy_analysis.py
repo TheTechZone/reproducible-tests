@@ -69,7 +69,8 @@ def create_relpath(abspath):
     # git rev-parse --show-toplevel
         stdout = local["git"]["rev-parse", "--show-toplevel"]()
         # Assuming posix
-        return abspath.removeprefix(stdout.strip())
+        relpath = abspath.removeprefix(stdout.strip())
+        return relpath[1:]
 
 
 # Only look at universal
