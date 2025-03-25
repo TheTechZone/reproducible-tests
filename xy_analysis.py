@@ -315,6 +315,8 @@ def _update_result_summary(file, key, value, log=True):
 
 # Iterates through the data/tars folder and aggregates the results one run at a time
 def analyse_all_runs():
+    # Update lfs refs
+    local["git"]["lfs", "checkout"]()
     for tarfile in os.listdir(TARS_ROOT):# meep hard 
         print(f"Analysing {tarfile}...")
         # TODO: Pull tarfile with git lfs
