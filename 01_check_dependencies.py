@@ -78,6 +78,9 @@ class DependencyChecker:
         installed, version = self.check_command("java")
         self.print_result("Java", installed, version)
 
+    def check_unzip(self):
+        installed, version = self.check_command("unzip")
+        self.print_result("Unzip", installed, version)
 
     def check_docker(self):
         installed, version = self.check_command("docker")
@@ -146,6 +149,7 @@ class DependencyChecker:
         self.check_bundletool()
         self.check_gcc()
         self.check_make()
+        self.check_unzip()
 
         print("-" * 50)
         if self.all_passed:
