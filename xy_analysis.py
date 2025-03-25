@@ -60,9 +60,9 @@ def _universal_apk_path(cvc, relative=False):
     path = os.path.join(_playstore_apk_path(cvc), f"org.thoughtcrime.securesms-{cvc}.apk")
     if relative:
         # Assuming posix
-        relpath = create_relpath(path)
-        print(f"relative path: {relpath}")
-    return 
+        path = create_relpath(path)
+        path = path[1:]
+    return path
 
 
 def create_relpath(abspath):
@@ -83,12 +83,10 @@ def _unzip_playstore_apk(cvc):
     local["mkdir"][PLAYSTORE_UNIVERSAL_UNZIP_PATH]()
     #TODO: Dedublicate code
     # Pull apk with git lfs
-    with local.env(GIT_TRACE=1):
-        print("lfs pull..")
-        lfs = local["git-lfs"]["pull", f"--include={_universal_apk_path(cvc, True)}"]
-        rt, stdout, stderr = lfs.run()
-        print(rt, stdout, stderr)
-        local["unzip"]["-d", PLAYSTORE_UNIVERSAL_UNZIP_PATH, _universal_apk_path(cvc)]()
+    lfs = local["git-lfs"]["pull", f"--include={_universal_apk_path(cvc, True)}"]
+    rt, stdout, stderr = lfs.run()
+    print(rt, stdout, stderr)
+    local["unzip"]["-d", PLAYSTORE_UNIVERSAL_UNZIP_PATH, _universal_apk_path(cvc)]()
     print(f"Successfully unzipped universal-{cvc}!")
 
 
@@ -191,7 +189,6 @@ def create_apkdiff_record(local_apk_filename):
     # APKdiff
     # clear out "mismatches" folder
     if os.path.isdir("mismatches"):
-        print("Recreating mismatches folder...")
         # Idempotence
         local["rm"]["-r", "mismatches"]()
     else:
@@ -301,11 +298,13 @@ def record_all_apkdiff_comparisons(tar_filename, version, run, dfs, ctime, rever
     for apk in APK_COMPARE_MAP.keys():
         rec = create_apkdiff_record(apk)
         data = create_nested_dict_structure_from_run_parameters(dfs, ctime, reverse, apk, run, rec)
-        _update_result_summary("apkdiff.json", version, data)
+        _update_result_summary("apkdiff.json", version, data, log=False)
+    print("Updated apkdiff.json!")
 
 
-def _update_result_summary(file, key, value):
-    print(f"Updating {file}...")
+def _update_result_summary(file, key, value, log=True):
+    if log:
+        print(f"Updating {file}...")
     filepath = os.path.join(DATA_ROOT, "res", file)
     with open(filepath, "r") as f:
         summary = json.loads(f.read())
