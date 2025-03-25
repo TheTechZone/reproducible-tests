@@ -1,4 +1,4 @@
-#!python3
+#!/usr/bin/env python3
 import os
 import json
 import re
@@ -56,13 +56,25 @@ def get_cvc(version):
     return v_c[version]
 
 
-def _universal_apk_path(cvc):
-    return os.path.join(_playstore_apk_path(cvc), f"org.thoughtcrime.securesms-{cvc}.apk")
+def _universal_apk_path(cvc, relative=False):
+    path = os.path.join(_playstore_apk_path(cvc), f"org.thoughtcrime.securesms-{cvc}.apk")
+    if relative:
+        # Assuming posix
+        relpath = create_relpath(path)
+        print(f"relative path: {relpath}")
+    return 
+
+
+def create_relpath(abspath):
+    # git rev-parse --show-toplevel
+        stdout = local["git"]["rev-parse", "--show-toplevel"]()
+        # Assuming posix
+        return abspath.removeprefix(stdout.strip())
 
 
 # Only look at universal
 def _unzip_playstore_apk(cvc):
-    print(f"Unzipping {cvc}...")
+    print(f"Going to unzip {cvc}...")
     # Create the directory if necessary
     if os.path.exists(PLAYSTORE_UNIVERSAL_UNZIP_PATH):
         # Idempotence
@@ -71,8 +83,12 @@ def _unzip_playstore_apk(cvc):
     local["mkdir"][PLAYSTORE_UNIVERSAL_UNZIP_PATH]()
     #TODO: Dedublicate code
     # Pull apk with git lfs
-    local["git"]["lfs", "pull", "--include", _universal_apk_path(cvc)]()
-    local["unzip"]["-d", PLAYSTORE_UNIVERSAL_UNZIP_PATH, _universal_apk_path(cvc)]()
+    with local.env(GIT_TRACE=1):
+        print("lfs pull..")
+        lfs = local["git-lfs"]["pull", f"--include={_universal_apk_path(cvc, True)}"]
+        rt, stdout, stderr = lfs.run()
+        print(rt, stdout, stderr)
+        local["unzip"]["-d", PLAYSTORE_UNIVERSAL_UNZIP_PATH, _universal_apk_path(cvc)]()
     print(f"Successfully unzipped universal-{cvc}!")
 
 
@@ -171,7 +187,7 @@ def create_apkdiff_record(local_apk_filename):
     local_apk_path = os.path.join(CB_SPLITS_PATH, local_apk_filename)
     playstore_apk_path = os.path.join(PLAYSTORE_APKS_ROOT, cvc, f"{APK_COMPARE_MAP[local_apk_filename]}{cvc}.apk")
     # Pull the APK you want to compare with git-lfs
-    local["git"]["lfs", "pull", "--include", playstore_apk_path]()
+    local["git"]["lfs", "pull", "--include", create_relpath(playstore_apk_path)]()
     # APKdiff
     # clear out "mismatches" folder
     if os.path.isdir("mismatches"):
@@ -300,9 +316,9 @@ def _update_result_summary(file, key, value):
 
 # Iterates through the data/tars folder and aggregates the results one run at a time
 def analyse_all_runs():
-    for tarfile in os.listdir(TARS_ROOT):
+    for tarfile in os.listdir(TARS_ROOT)[1:]:# meep hard 
         print(f"Analysing {tarfile}...")
-        # TODO: Pull with git lfs
+        # TODO: Pull tarfile with git lfs
         # Extract run parameters from tarfile
         (version, run , dfstest, dfs, ctime, reverse) = extract_structure(tarfile)
         # Extract the build to local folder
