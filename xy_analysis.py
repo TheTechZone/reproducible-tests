@@ -61,7 +61,6 @@ def _universal_apk_path(cvc, relative=False):
     if relative:
         # Assuming posix
         path = create_relpath(path)
-        path = path[1:]
     return path
 
 
