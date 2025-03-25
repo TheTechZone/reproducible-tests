@@ -173,7 +173,8 @@ def create_diffuse_record():
     # Pull the APK you want to compare with git-lfs
     local["git"]["lfs", "pull", "--include", playstore_apk_path]()
     # Diffuse
-    diffuse_res = local["tools/diffuse/bin/diffuse"]["diff", os.path.join(CB_SPLITS_PATH, "base-master.apk"), playstore_apk_path]()
+    sudo = local["sudo"]
+    diffuse_res = sudo[local["tools/diffuse/bin/diffuse"]["diff", os.path.join(CB_SPLITS_PATH, "base-master.apk"), playstore_apk_path]]()
     return diffuse_res
 
 # param: apk_compare -> which apk to compare according to key-value in APK_COMPARE_MAP
