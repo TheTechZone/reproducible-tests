@@ -84,9 +84,10 @@ def _unzip_playstore_apk(cvc):
     local["mkdir"][PLAYSTORE_UNIVERSAL_UNZIP_PATH]()
     #TODO: Dedublicate code
     # Pull apk with git lfs
-    lfs = local["git-lfs"]["pull", f"--include={_universal_apk_path(cvc, True)}"]
+    print(f"Pulling {_universal_apk_path(cvc, True)} with git lfs...")
+    lfs = local["git"]["lfs", "pull", f"--include={_universal_apk_path(cvc, True)}"]
     rt, stdout, stderr = lfs.run()
-    print(rt, stdout, stderr)
+    #print(rt, stdout, stderr)
     local["unzip"]["-d", PLAYSTORE_UNIVERSAL_UNZIP_PATH, _universal_apk_path(cvc)]()
     print(f"Successfully unzipped universal-{cvc}!")
 
@@ -321,11 +322,8 @@ def analyse_all_runs():
     for tarfile in os.listdir(TARS_ROOT):# meep hard 
         print(f"Analysing {tarfile}...")
         tarpath = os.path.join(TARS_ROOT, tarfile)
-        print(f"Pulling {tarfile} with git lfs...")
-        relpath = create_relpath(tarpath)
-        print(relpath)
-        with local.env(GIT_TRACE=1):
-            local["git"]["lfs", "pull","--include", create_relpath(tarpath)]()
+        print(f"Pulling {create_relpath(tarpath)} with git lfs...")
+        local["git"]["lfs", "pull","--include", create_relpath(tarpath)]()
         # Extract run parameters from tarfile
         (version, run , dfstest, dfs, ctime, reverse) = extract_structure(tarfile)
         # Extract the build to local folder
