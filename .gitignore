@@ -21,6 +21,6 @@ chaos
 example_arm_device_splits/**/*.apks
 example_arm_device_splits/**/*.apk
 
-data/build
+data/build/**
 !data/build/tars/**
 data/playstore-universal-unzipped
