@@ -1,0 +1,197 @@
+[
+  {
+    "name": "username_link_settings",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "story_privacy_settings",
+    "navigationXmlIds": [
+      "my_story_settings",
+      "private_story_settings"
+    ],
+    "deepLinks": []
+  },
+  {
+    "name": "restore",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "registration_v3",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "registration",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "progress_card",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "private_story_settings",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "privacy_settings",
+    "navigationXmlIds": [
+      "app_settings_expire_timer"
+    ],
+    "deepLinks": []
+  },
+  {
+    "name": "pin_restore",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "payments_transfer",
+    "navigationXmlIds": [
+      "payments_create"
+    ],
+    "deepLinks": []
+  },
+  {
+    "name": "payments_preferences",
+    "navigationXmlIds": [
+      "payments_create",
+      "payments_transfer",
+      "payments_backup",
+      "privacy_settings"
+    ],
+    "deepLinks": []
+  },
+  {
+    "name": "payments_create",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "payments_backup",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "old_device_transfer",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "new_story",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "my_story_settings",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "media",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "manage_badges",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "main_activity_list",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "kbs_migration",
+    "navigationXmlIds": [
+      "create_kbs_pin"
+    ],
+    "deepLinks": []
+  },
+  {
+    "name": "edit_profile",
+    "navigationXmlIds": [
+      "manage_badges",
+      "avatar_picker",
+      "username_link_settings"
+    ],
+    "deepLinks": []
+  },
+  {
+    "name": "create_profile",
+    "navigationXmlIds": [
+      "avatar_picker"
+    ],
+    "deepLinks": []
+  },
+  {
+    "name": "create_kbs_pin",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "create_group",
+    "navigationXmlIds": [
+      "avatar_picker"
+    ],
+    "deepLinks": []
+  },
+  {
+    "name": "conversation_settings",
+    "navigationXmlIds": [
+      "app_settings_expire_timer"
+    ],
+    "deepLinks": []
+  },
+  {
+    "name": "checkout_backups",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "checkout",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "chat_wallpaper",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "call_link_details",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "avatar_picker",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "app_settings_with_change_number",
+    "navigationXmlIds": [
+      "app_settings_change_number",
+      "privacy_settings",
+      "manage_badges",
+      "username_link_settings",
+      "story_privacy_settings"
+    ],
+    "deepLinks": []
+  },
+  {
+    "name": "app_settings_expire_timer",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  },
+  {
+    "name": "app_settings_change_number",
+    "navigationXmlIds": [],
+    "deepLinks": []
+  }
+]
