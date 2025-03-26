@@ -93,7 +93,7 @@ def _unzip_playstore_apk(cvc):
 
 def create_dex_sets(cvc):
     print("Creating dex comparison sets...")
-    # format {cvc:{differences:{}, playstore_univ:{md5:classesX.dex}, local_build:{md5:classesX.dex}},...}
+    # format {cvc:{differences:{}, playstore:{md5:classesX.dex}, local_build:{md5:classesX.dex}},...}
     cvc_d = {}
     # Playstore
     _unzip_playstore_apk(cvc)
@@ -105,7 +105,7 @@ def create_dex_sets(cvc):
         if ".dex" in file:
             sha = shasum[file]().split(" ")[0].strip()
             playstore_univ[sha] = file
-    cvc_d["playstore_univ"] = playstore_univ
+    cvc_d["playstore"] = playstore_univ
     # Current Build
     root_rel_dexpath = os.path.join(CURRENT_BUILD_PATH, "app", "build", "intermediates", "dex", "playProdRelease", "minifyPlayProdReleaseWithR8")
     os.chdir(current_dir)
@@ -124,7 +124,7 @@ def create_dex_sets(cvc):
             sym_difference_map[sha] = f"playstore->{playstore_univ[sha]}"
         elif sha in local_build.keys():
             sym_difference_map[sha] = f"local->{local_build[sha]}"
-    cvc_d["differences"] = sym_difference_map
+    cvc_d["extra_dexes"] = sym_difference_map
     os.chdir(current_dir)
     return cvc_d
 
@@ -304,13 +304,53 @@ def record_all_apkdiff_comparisons(tar_filename, version, run, dfs, ctime, rever
     print("Updated apkdiff.json!")
 
 
+def copy_navigation_jsons(version, run, dfs, dfs_test, ctime, reverse):
+    # create recursive folder structure
+    root = os.path.join(DATA_ROOT, "res", "navigation")
+    mkdir = local["mkdir"]
+    cp = local["cp"]
+    if not os.path.exists(root):
+        mkdir[root]()
+    # Folder hierarchy
+    copy_dir = os.path.join(root, version)
+    if dfs:
+        copy_dir = os.path.join(copy_dir, "ctime" if ctime else "alph", "reversed" if reverse else "sort")
+        if dfs_test:
+            copy_dir = os.path.join(copy_dir, "dfs_test")
+    copy_dir = os.path.join(copy_dir, run)
+    # idempotence
+    if os.path.exists(copy_dir):
+        print(f"Clearing {copy_dir}...")
+        local["rm"]["-r", copy_dir]()
+    mkdir["-p", copy_dir]()
+    file_mappings_path = os.path.join(CURRENT_BUILD_PATH, "app/build/intermediates/incremental/generateSafeArgsPlayProdRelease/file_mappings.json")
+    navigation_path = os.path.join(CURRENT_BUILD_PATH, "app/build/intermediates/navigation_json/playProdRelease/extractDeepLinksPlayProdRelease/navigation.json")
+    cp[file_mappings_path, copy_dir]()
+    cp[navigation_path, copy_dir]()
+    print("Successfully saved file_mappings.json and navigation.json")
+    
+
+def _update_result_helper(key, value, item):
+    if not isinstance(item, dict):
+        value[key] = item
+        return value
+    # 1 dimesional nested dictionary
+    assert(len(item.keys()) == 1), item.keys()
+    swap_key = list(item.keys())[0]
+    new_value = _update_result_helper(swap_key, value[key], item[swap_key])
+    value[key] = new_value
+    #print(f"{value}, {key}, {item}")
+    return value
+    
+
 def _update_result_summary(file, key, value, log=True):
     if log:
         print(f"Updating {file}...")
     filepath = os.path.join(DATA_ROOT, "res", file)
     with open(filepath, "r") as f:
         summary = json.loads(f.read())
-    summary[key] = value
+    # Iterate through levels of nesting to not overwrite previous data
+    summary = _update_result_helper(key, summary, value)
     with open(filepath, "w") as f:
         f.write(json.dumps(summary))
 
@@ -320,7 +360,7 @@ def analyse_all_runs():
     # Update lfs refs
     local["git"]["lfs", "checkout"]()
     for tarfile in os.listdir(TARS_ROOT):# meep hard 
-        print(f"Analysing {tarfile}...")
+        print(f"\nAnalysing {tarfile}...")
         tarpath = os.path.join(TARS_ROOT, tarfile)
         print(f"Pulling {create_relpath(tarpath)} with git lfs...")
         local["git"]["lfs", "pull","--include", create_relpath(tarpath)]()
@@ -339,6 +379,7 @@ def analyse_all_runs():
         _update_result_summary("diffuse.json", version, diffuse_data)
         # apkdiff
         record_all_apkdiff_comparisons(tarfile, version, run, dfs, ctime, reverse)
+        copy_navigation_jsons(version, run, dfs, True if "dfstest" in tarfile else False, ctime, reverse)
 
 
 # Test
@@ -356,20 +397,17 @@ try:
     #print(d["local"])
     #print(json.dumps(create_difftool_records("base-master.apk"), indent=4))
     #extract(os.path.join(TARS_ROOT, "dfstest-signal-android-ctime-reversed_v7.28.4_01.tar.gz"), True)
+    #with open(os.path.join(DATA_ROOT, "res", "apkdiff.json"), "r") as f:
+    #dex_set = json.loads(f.read())
+    #print(json.dumps(dex_set, indent=4))
+    #d1 = {"a":{"b":{"c1":"d1"}}}
+    #d2 = {"a":{"b":{"c1":"d1"}, "b2":{"c11":"d11"}}}
+    #d3 = {"a":{"b":{"c0":"d0", "c1":"d1"}, "b2":{"c11":"d11"}}}
+    #print(d)
+    #print(_update_result_helper("a", d3, {"b":{"c2":"d2"}}))
     analyse_all_runs()
     pass
 except Exception as e:
     print(e)
     os.chdir(cwd)
 os.chdir(cwd)
-
-
-# In[ ]:
-
-
-
-
-
-# ## Meep
-
-# 
