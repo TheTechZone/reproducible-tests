@@ -274,7 +274,7 @@ def extract_structure(tar_filename):
     
 
 # meow work on those names :)
-def create_nested_dict_structure_from_run_parameters(dfs, ctime, reverse, apk, run, rec):
+def create_nested_dict_structure_from_run_parameters(dfs, dfs_test, ctime, reverse, apk, run, rec):
     if not dfs:
         data = {"vanilla":
                     {run: rec if apk is None else {apk:rec}}
@@ -283,7 +283,9 @@ def create_nested_dict_structure_from_run_parameters(dfs, ctime, reverse, apk, r
         data = {"dfs": 
                     {"ctime" if ctime else "alph": 
                         {"reversed" if reverse else "sort":
-                            {run: rec if apk is None else {apk:rec}}
+                            {"dfstest" if dfs_test else "no_dfstest":
+                                {run: rec if apk is None else {apk:rec}}
+                            }
                         }
                     }
         }
@@ -295,11 +297,11 @@ def create_nested_dict_structure_from_run_parameters(dfs, ctime, reverse, apk, r
 # and diffoscope results
 # for each pairwise apks in APK_COMPARE_MAP
 # PRE: local apks must already be extracted
-def record_all_apkdiff_comparisons(tar_filename, version, run, dfs, ctime, reverse):
+def record_all_apkdiff_comparisons(tar_filename, version, run, dfs, dfs_test, ctime, reverse):
     print("Running apkdiff on all pairs in APK_COMPARE_MAP...") 
     for apk in APK_COMPARE_MAP.keys():
         rec = create_apkdiff_record(apk)
-        data = create_nested_dict_structure_from_run_parameters(dfs, ctime, reverse, apk, run, rec)
+        data = create_nested_dict_structure_from_run_parameters(dfs, dfs_test, ctime, reverse, apk, run, rec)
         _update_result_summary("apkdiff.json", version, data, log=False)
     print("Updated apkdiff.json!")
 
@@ -335,7 +337,7 @@ def _update_result_helper(key, value, item):
         value[key] = item
         return value
     # 1 dimesional nested dictionary
-    assert(len(item.keys()) == 1), item.keys()
+    assert(len(item.keys()) == 1), f"{item.keys()} did not have lenght 1 for: {item}!!"
     swap_key = list(item.keys())[0]
     new_value = _update_result_helper(swap_key, value[key], item[swap_key])
     value[key] = new_value
@@ -371,15 +373,15 @@ def analyse_all_runs():
         extract(os.path.join(TARS_ROOT, tarfile), dfstest)
         # Dex sort test
         dex_set = create_dex_sets(current_cvc())
-        dex_data = create_nested_dict_structure_from_run_parameters(dfs, ctime, reverse, None, run, dex_set)
+        dex_data = create_nested_dict_structure_from_run_parameters(dfs, dfstest, ctime, reverse, None, run, dex_set)
         _update_result_summary("dex_sort.json", version, dex_data)
         # diffuse
         diffuse_record = create_diffuse_record()
-        diffuse_data = create_nested_dict_structure_from_run_parameters(dfs, ctime, reverse, None, run, diffuse_record)
+        diffuse_data = create_nested_dict_structure_from_run_parameters(dfs, dfstest, ctime, reverse, None, run, diffuse_record)
         _update_result_summary("diffuse.json", version, diffuse_data)
         # apkdiff
-        record_all_apkdiff_comparisons(tarfile, version, run, dfs, ctime, reverse)
-        copy_navigation_jsons(version, run, dfs, True if "dfstest" in tarfile else False, ctime, reverse)
+        record_all_apkdiff_comparisons(tarfile, version, run, dfs, dfstest, ctime, reverse)
+        copy_navigation_jsons(version, run, dfs, dfstest, ctime, reverse)
 
 
 # Test
