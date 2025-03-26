@@ -297,7 +297,7 @@ def create_nested_dict_structure_from_run_parameters(dfs, dfs_test, ctime, rever
 # and diffoscope results
 # for each pairwise apks in APK_COMPARE_MAP
 # PRE: local apks must already be extracted
-def record_all_apkdiff_comparisons(tar_filename, version, run, dfs, dfs_test, ctime, reverse):
+def record_all_apkdiff_comparisons(version, run, dfs, dfs_test, ctime, reverse):
     print("Running apkdiff on all pairs in APK_COMPARE_MAP...") 
     for apk in APK_COMPARE_MAP.keys():
         rec = create_apkdiff_record(apk)
@@ -330,21 +330,27 @@ def copy_navigation_jsons(version, run, dfs, dfs_test, ctime, reverse):
     cp[file_mappings_path, copy_dir]()
     cp[navigation_path, copy_dir]()
     print("Successfully saved file_mappings.json and navigation.json")
-    
+
 
 def _update_result_helper(key, value, item):
     # Edgecase, empty starting director
     if not value:
-        return item
-    if not isinstance(item, dict):
-        value[key] = item
-        return value
+        #print(f"voldemort is: {item}")
+        return {key: item}
     # 1 dimesional nested dictionary
     assert len(item.keys()) == 1, f"{item.keys()} did not have lenght 1 for: {item}!!"
-    swap_key = list(item.keys())[0]
-    new_value = _update_result_helper(swap_key, value[key], item[swap_key])
+    # Find any of the next keys in value that are present in item (at any recursion depth), while trying not to match substrings
+    next_key = any(k for k in value.keys() if f"{k}:" in str(item)) or None
+    if next_key is not None and key != next_key:
+        #print("swappy wappy")
+        #print(key, swap_key)
+        #print(value, item)
+        new_value = _update_result_helper(next_key, value[key], item)
+    else: # we arrived at the desired recursion depth of values to insert the item
+        new_value = item
+    #print("brand new bitch!")
+    #print(f"{value}, {key}, {new_value}")
     value[key] = new_value
-    #print(f"{value}, {key}, {item}")
     return value
     
 
@@ -354,7 +360,7 @@ def _update_result_summary(file, key, value, log=True):
     filepath = os.path.join(DATA_ROOT, "res", file)
     with open(filepath, "r") as f:
         summary = json.loads(f.read())
-    print(f"summary retrieved: {summary}")
+    #print(f"summary retrieved: {summary}")
     # Iterate through levels of nesting to not overwrite previous data
     summary = _update_result_helper(key, summary, value)
     with open(filepath, "w") as f:
@@ -384,7 +390,7 @@ def analyse_all_runs():
         diffuse_data = create_nested_dict_structure_from_run_parameters(dfs, dfstest, ctime, reverse, None, run, diffuse_record)
         _update_result_summary("diffuse.json", version, diffuse_data)
         # apkdiff
-        record_all_apkdiff_comparisons(tarfile, version, run, dfs, dfstest, ctime, reverse)
+        record_all_apkdiff_comparisons(version, run, dfs, dfstest, ctime, reverse)
         copy_navigation_jsons(version, run, dfs, dfstest, ctime, reverse)
 
 
@@ -395,7 +401,6 @@ try:
     #extract(os.path.join(TARS_ROOT, "signal-android_v7.30.2.tar.gz"))
     #_extract_apks()
     #unzip_playstore_apk("151400")
-    
     #_turn_cvc_code_mapping_to_json()
     #print("Done!")
     #d = create_dex_sets("151400")
@@ -410,10 +415,12 @@ try:
     #d2 = {"a":{"b":{"c1":"d1"}, "b2":{"c11":"d11"}}}
     #d3 = {"a":{"b":{"c0":"d0", "c1":"d1"}, "b2":{"c11":"d11"}}}
     #print(d)
-    #print(_update_result_helper("a", d3, {"b":{"c2":"d2"}}))
+    #print(_update_result_helper("a", d1, {"b2":{"c2":"d2"}}))
     analyse_all_runs()
     pass
 except Exception as e:
+    print("OOPSIE, exception occured...")
     print(e)
+    print(type(e))
     os.chdir(cwd)
 os.chdir(cwd)
