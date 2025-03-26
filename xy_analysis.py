@@ -333,11 +333,14 @@ def copy_navigation_jsons(version, run, dfs, dfs_test, ctime, reverse):
     
 
 def _update_result_helper(key, value, item):
+    # Edgecase, empty starting director
+    if not value:
+        return item
     if not isinstance(item, dict):
         value[key] = item
         return value
     # 1 dimesional nested dictionary
-    assert(len(item.keys()) == 1), f"{item.keys()} did not have lenght 1 for: {item}!!"
+    assert len(item.keys()) == 1, f"{item.keys()} did not have lenght 1 for: {item}!!"
     swap_key = list(item.keys())[0]
     new_value = _update_result_helper(swap_key, value[key], item[swap_key])
     value[key] = new_value
@@ -351,6 +354,7 @@ def _update_result_summary(file, key, value, log=True):
     filepath = os.path.join(DATA_ROOT, "res", file)
     with open(filepath, "r") as f:
         summary = json.loads(f.read())
+    print(f"summary retrieved: {summary}")
     # Iterate through levels of nesting to not overwrite previous data
     summary = _update_result_helper(key, summary, value)
     with open(filepath, "w") as f:
