@@ -2,6 +2,7 @@
 import os
 import json
 import re
+from hashlib import sha256
 from plumbum import local
 
 # Constants
@@ -271,25 +272,6 @@ def extract_structure(tar_filename):
     assert(version is not None)
     run = run if run is not None else "01"
     return (version, run , dfstest, dfs, ctime, reverse)
-    
-
-# meow work on those names :)
-def create_nested_dict_structure_from_run_parameters(dfs, dfs_test, ctime, reverse, apk, run, rec):
-    if not dfs:
-        data = {"vanilla":
-                    {run: rec if apk is None else {apk:rec}}
-        }
-    else:
-        data = {"dfs": 
-                    {"ctime" if ctime else "alph": 
-                        {"reversed" if reverse else "sort":
-                            {"dfstest" if dfs_test else "no_dfstest":
-                                {run: rec if apk is None else {apk:rec}}
-                            }
-                        }
-                    }
-        }
-    return data
 
 
 # Runs comparisons and updates diftools summary with
@@ -297,29 +279,23 @@ def create_nested_dict_structure_from_run_parameters(dfs, dfs_test, ctime, rever
 # and diffoscope results
 # for each pairwise apks in APK_COMPARE_MAP
 # PRE: local apks must already be extracted
-def record_all_apkdiff_comparisons(version, run, dfs, dfs_test, ctime, reverse):
+def record_all_apkdiff_comparisons(tarfile_name):
     print("Running apkdiff on all pairs in APK_COMPARE_MAP...") 
     for apk in APK_COMPARE_MAP.keys():
         rec = create_apkdiff_record(apk)
-        data = create_nested_dict_structure_from_run_parameters(dfs, dfs_test, ctime, reverse, apk, run, rec)
-        _update_result_summary("apkdiff.json", version, data, log=False)
+        id = sha256(tarfile_name)
+        _update_result_summary("apkdiff.json", id, rec, log=False)
     print("Updated apkdiff.json!")
 
 
-def copy_navigation_jsons(version, run, dfs, dfs_test, ctime, reverse):
+def copy_navigation_jsons(tarfile_name):
     # create recursive folder structure
-    root = os.path.join(DATA_ROOT, "res", "navigation")
+    root = os.path.join(DATA_ROOT, "res", "files")
+    copy_dir = os.path.join(root, tarfile_name)
     mkdir = local["mkdir"]
     cp = local["cp"]
     if not os.path.exists(root):
         mkdir[root]()
-    # Folder hierarchy
-    copy_dir = os.path.join(root, version)
-    if dfs:
-        copy_dir = os.path.join(copy_dir, "ctime" if ctime else "alph", "reversed" if reverse else "sort")
-        if dfs_test:
-            copy_dir = os.path.join(copy_dir, "dfs_test")
-    copy_dir = os.path.join(copy_dir, run)
     # idempotence
     if os.path.exists(copy_dir):
         print(f"Clearing {copy_dir}...")
@@ -332,37 +308,13 @@ def copy_navigation_jsons(version, run, dfs, dfs_test, ctime, reverse):
     print("Successfully saved file_mappings.json and navigation.json")
 
 
-def _update_result_helper(key, value, item):
-    # Edgecase, empty starting director
-    if not value:
-        #print(f"voldemort is: {item}")
-        return {key: item}
-    # 1 dimesional nested dictionary
-    assert len(item.keys()) == 1, f"{item.keys()} did not have lenght 1 for: {item}!!"
-    # Find any of the next keys in value that are present in item (at any recursion depth), while trying not to match substrings
-    next_key = any(k for k in value.keys() if f"{k}:" in str(item)) or None
-    if next_key is not None and key != next_key:
-        #print("swappy wappy")
-        #print(key, swap_key)
-        #print(value, item)
-        new_value = _update_result_helper(next_key, value[key], item)
-    else: # we arrived at the desired recursion depth of values to insert the item
-        new_value = item
-    #print("brand new bitch!")
-    #print(f"{value}, {key}, {new_value}")
-    value[key] = new_value
-    return value
-    
-
 def _update_result_summary(file, key, value, log=True):
     if log:
         print(f"Updating {file}...")
     filepath = os.path.join(DATA_ROOT, "res", file)
     with open(filepath, "r") as f:
         summary = json.loads(f.read())
-    #print(f"summary retrieved: {summary}")
-    # Iterate through levels of nesting to not overwrite previous data
-    summary = _update_result_helper(key, summary, value)
+    summary[key] = value
     with open(filepath, "w") as f:
         f.write(json.dumps(summary))
 
@@ -377,21 +329,22 @@ def analyse_all_runs():
         print(f"Pulling {create_relpath(tarpath)} with git lfs...")
         local["git"]["lfs", "pull","--include", create_relpath(tarpath)]()
         # Extract run parameters from tarfile
-        (version, run , dfstest, dfs, ctime, reverse) = extract_structure(tarfile)
+        (_, _ , dfstest, _, _, _) = extract_structure(tarfile)
         # Extract the build to local folder
         print(f"Extracting {tarfile}...")
         extract(os.path.join(TARS_ROOT, tarfile), dfstest)
+        id = sha256(tarfile)
         # Dex sort test
         dex_set = create_dex_sets(current_cvc())
-        dex_data = create_nested_dict_structure_from_run_parameters(dfs, dfstest, ctime, reverse, None, run, dex_set)
-        _update_result_summary("dex_sort.json", version, dex_data)
+        _update_result_summary("dex_sort.json", id, dex_set)
         # diffuse
         diffuse_record = create_diffuse_record()
-        diffuse_data = create_nested_dict_structure_from_run_parameters(dfs, dfstest, ctime, reverse, None, run, diffuse_record)
-        _update_result_summary("diffuse.json", version, diffuse_data)
+        _update_result_summary("diffuse.json", id, diffuse_record)
         # apkdiff
-        record_all_apkdiff_comparisons(version, run, dfs, dfstest, ctime, reverse)
-        copy_navigation_jsons(version, run, dfs, dfstest, ctime, reverse)
+        record_all_apkdiff_comparisons(tarfile)
+        copy_navigation_jsons(tarfile)
+
+
 
 
 # Test
@@ -408,14 +361,10 @@ try:
     #print(d["local"])
     #print(json.dumps(create_difftool_records("base-master.apk"), indent=4))
     #extract(os.path.join(TARS_ROOT, "dfstest-signal-android-ctime-reversed_v7.28.4_01.tar.gz"), True)
-    #with open(os.path.join(DATA_ROOT, "res", "apkdiff.json"), "r") as f:
-    #dex_set = json.loads(f.read())
+    #with open(os.path.join(DATA_ROOT, "res", "dex_sort.json"), "r") as f:
+    #    dex_set = json.loads(f.read())
     #print(json.dumps(dex_set, indent=4))
-    #d1 = {"a":{"b":{"c1":"d1"}}}
-    #d2 = {"a":{"b":{"c1":"d1"}, "b2":{"c11":"d11"}}}
-    #d3 = {"a":{"b":{"c0":"d0", "c1":"d1"}, "b2":{"c11":"d11"}}}
-    #print(d)
-    #print(_update_result_helper("a", d1, {"b2":{"c2":"d2"}}))
+
     analyse_all_runs()
     pass
 except Exception as e:
