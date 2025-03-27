@@ -2,7 +2,6 @@
 import os
 import json
 import re
-from hashlib import sha256
 from plumbum import local
 
 # Constants
@@ -125,7 +124,7 @@ def create_dex_sets(cvc):
             sym_difference_map[sha] = f"playstore->{playstore_univ[sha]}"
         elif sha in local_build.keys():
             sym_difference_map[sha] = f"local->{local_build[sha]}"
-    cvc_d["extra_dexes"] = sym_difference_map
+    cvc_d["differing_dexes"] = sym_difference_map
     os.chdir(current_dir)
     return cvc_d
 
@@ -283,7 +282,7 @@ def record_all_apkdiff_comparisons(tarfile_name):
     print("Running apkdiff on all pairs in APK_COMPARE_MAP...") 
     for apk in APK_COMPARE_MAP.keys():
         rec = create_apkdiff_record(apk)
-        id = sha256(tarfile_name)
+        id = tarfile_name
         _update_result_summary("apkdiff.json", id, rec, log=False)
     print("Updated apkdiff.json!")
 
@@ -333,7 +332,7 @@ def analyse_all_runs():
         # Extract the build to local folder
         print(f"Extracting {tarfile}...")
         extract(os.path.join(TARS_ROOT, tarfile), dfstest)
-        id = sha256(tarfile)
+        id = tarfile
         # Dex sort test
         dex_set = create_dex_sets(current_cvc())
         _update_result_summary("dex_sort.json", id, dex_set)
@@ -361,11 +360,11 @@ try:
     #print(d["local"])
     #print(json.dumps(create_difftool_records("base-master.apk"), indent=4))
     #extract(os.path.join(TARS_ROOT, "dfstest-signal-android-ctime-reversed_v7.28.4_01.tar.gz"), True)
-    #with open(os.path.join(DATA_ROOT, "res", "dex_sort.json"), "r") as f:
-    #    dex_set = json.loads(f.read())
-    #print(json.dumps(dex_set, indent=4))
-
-    analyse_all_runs()
+    with open(os.path.join(DATA_ROOT, "res", "diffuse.json"), "r") as f:
+        data = json.loads(f.read())
+    print(json.dumps(data, indent=4))
+    print(f"Found the data of {len(data.keys())} distinct runs")
+    # analyse_all_runs()
     pass
 except Exception as e:
     print("OOPSIE, exception occured...")
