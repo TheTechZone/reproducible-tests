@@ -365,11 +365,14 @@ def print_with_params(version, file, sorting_criteria=None, direction=None):
 # ls -ltr --full-time
 def extract_output_metadata(tarfile):
     print(f"Extracting contents of output-metadata.json and corresponding mtimes for {tarfile}...")
-    directory_path = os.path.join(CURRENT_BUILD_PATH, "app/build/intermediates/processed_res/playProdRelease/processPlayProdReleaseResources/out")
+    if "v7.28" in tarfile:
+        directory_path = os.path.join(CURRENT_BUILD_PATH, "app/build/intermediates/processed_res/playProdRelease/processPlayProdReleaseResources/out")
+    else:
+        directory_path = os.path.join(CURRENT_BUILD_PATH, "app/build/intermediates/linked_resources_binary_format/playProdRelease/processPlayProdReleaseResources")
     timeinfo = local["ls"]["-ltr", "--full-time", directory_path]()
     filecontents = local["cat"][os.path.join(directory_path, "output-metadata.json")]()
     data = {"mtimes":timeinfo, "output-metadata.json":filecontents}
-    _update_result_summary("output_metadata_mtimes", tarfile, data)
+    _update_result_summary("output_metadata_mtimes.json", tarfile, data)
 
 
 # Test
