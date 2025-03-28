@@ -365,7 +365,7 @@ def print_with_params(version, file, sorting_criteria=None, direction=None):
 # ls -ltr --full-time
 def extract_output_metadata(tarfile):
     print(f"Extracting contents of output-metadata.json and corresponding mtimes for {tarfile}...")
-    directory_path = "app/build/intermediates/processed_res/playProdRelease/processPlayProdReleaseResources/out"
+    directory_path = os.path.join(CURRENT_BUILD_PATH, "app/build/intermediates/processed_res/playProdRelease/processPlayProdReleaseResources/out")
     timeinfo = local["ls"]["-ltr", "--full-time", directory_path]()
     filecontents = local["cat"][os.path.join(directory_path, "output-metadata.json")]()
     data = {"mtimes":timeinfo, "output-metadata.json":filecontents}
