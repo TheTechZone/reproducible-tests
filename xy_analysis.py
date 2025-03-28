@@ -319,7 +319,7 @@ def _update_result_summary(file, key, value, log=True):
 
 
 # Iterates through the data/tars folder and aggregates the results one run at a time
-def analyse_all_runs():
+def analyse_all_runs(dexsort=True, diffuse=True, apkdiff=True, nav=True, output_meta=True):
     # Update lfs refs
     local["git"]["lfs", "checkout"]()
     for tarfile in os.listdir(TARS_ROOT):# meep hard 
@@ -333,17 +333,43 @@ def analyse_all_runs():
         print(f"Extracting {tarfile}...")
         extract(os.path.join(TARS_ROOT, tarfile), dfstest)
         id = tarfile
-        # Dex sort test
-        dex_set = create_dex_sets(current_cvc())
-        _update_result_summary("dex_sort.json", id, dex_set)
-        # diffuse
-        diffuse_record = create_diffuse_record()
-        _update_result_summary("diffuse.json", id, diffuse_record)
-        # apkdiff
-        record_all_apkdiff_comparisons(tarfile)
-        copy_navigation_jsons(tarfile)
+        if dexsort:             # Dex sort test
+            dex_set = create_dex_sets(current_cvc())
+            _update_result_summary("dex_sort.json", id, dex_set)
+        if diffuse:            # diffuse
+            diffuse_record = create_diffuse_record()
+            _update_result_summary("diffuse.json", id, diffuse_record)
+        if apkdiff:         # apkdiff
+            record_all_apkdiff_comparisons(tarfile)
+        if nav:
+            copy_navigation_jsons(tarfile)
+        if output_meta:
+            extract_output_metadata(tarfile)
 
 
+def print_with_params(version, file, sorting_criteria=None, direction=None):
+    with open(os.path.join(DATA_ROOT, "res", file), "r") as f:
+        data = json.loads(f.read())
+    
+    for key in data.keys():
+        if version in key and sorting_criteria in key and direction in key:
+            print(f"{key}:{json.dumps(data[key], indent=4, sort_keys=True)}")
+
+
+# Compare the hashes of the dexes for the same version
+# TODO
+
+
+# grab output-metadata.json and the corresponding mtimes of the directory
+# app/build/intermediates/processed_res/playProdRelease/processPlayProdReleaseResources/out
+# ls -ltr --full-time
+def extract_output_metadata(tarfile):
+    print(f"Extracting contents of output-metadata.json and corresponding mtimes for {tarfile}...")
+    directory_path = "app/build/intermediates/processed_res/playProdRelease/processPlayProdReleaseResources/out"
+    timeinfo = local["ls"]["-ltr", "--full-time", directory_path]()
+    filecontents = local["cat"][os.path.join(directory_path, "output-metadata.json")]()
+    data = {"mtimes":timeinfo, "output-metadata.json":filecontents}
+    _update_result_summary("output_metadata_mtimes", tarfile, data)
 
 
 # Test
@@ -360,12 +386,14 @@ try:
     #print(d["local"])
     #print(json.dumps(create_difftool_records("base-master.apk"), indent=4))
     #extract(os.path.join(TARS_ROOT, "dfstest-signal-android-ctime-reversed_v7.28.4_01.tar.gz"), True)
-    with open(os.path.join(DATA_ROOT, "res", "diffuse.json"), "r") as f:
-        data = json.loads(f.read())
-    print(json.dumps(data, indent=4))
-    print(f"Found the data of {len(data.keys())} distinct runs")
-    # analyse_all_runs()
-    pass
+    #with open(os.path.join(DATA_ROOT, "res", "dex_sort.json"), "r") as f:
+    #    data = json.loads(f.read())
+    #print(json.dumps(data, indent=4, sort_keys=True))
+    #print(f"Found the data of {len(data.keys())} distinct runs")
+    # only print v7.28.4
+    #print_with_params("v7.28.4", "dex_sort.json", "ctime", "revers")
+    analyse_all_runs(dexsort=False, diffuse=False, apkdiff=False, nav=False)
+
 except Exception as e:
     print("OOPSIE, exception occured...")
     print(e)
