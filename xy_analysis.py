@@ -378,6 +378,7 @@ def compare_dex_hashes(version):
 
 
 
+
 # Test
 cwd = os.getcwd()
 try:
@@ -398,8 +399,21 @@ try:
     #print(f"Found the data of {len(data.keys())} distinct runs")
     # only print v7.28.4
     #print_with_params("v7.28.4", "dex_sort.json", "ctime", "revers")
-    analyse_all_runs(dexsort=False, diffuse=False, apkdiff=False, nav=False)
-
+    #analyse_all_runs(dexsort=False, diffuse=False, apkdiff=False, nav=False)
+    with open(os.path.join(DATA_ROOT, "res", "output_metadata_mtimes.json"), "r") as f:
+        obj = json.loads(f.read())
+    #print(obj.keys())
+    for key in obj.keys():
+        metadata = json.loads(obj[key]["output-metadata.json"])
+        mtime_sort = obj[key]["mtimes"]
+        i = 0
+        print("")
+        for line in mtime_sort.split("\n"):
+            if "+0000" in line:
+                print(line.split("+0000")[-1].strip())
+        print("")
+        for element in metadata["elements"]:
+            print(element["outputFile"])
 except Exception as e:
     print("OOPSIE, exception occured...")
     print(e)
