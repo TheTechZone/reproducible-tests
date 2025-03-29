@@ -356,10 +356,6 @@ def print_with_params(version, file, sorting_criteria=None, direction=None):
             print(f"{key}:{json.dumps(data[key], indent=4, sort_keys=True)}")
 
 
-# Compare the hashes of the dexes for the same version
-# TODO
-
-
 # grab output-metadata.json and the corresponding mtimes of the directory
 # app/build/intermediates/processed_res/playProdRelease/processPlayProdReleaseResources/out
 # ls -ltr --full-time
@@ -373,6 +369,13 @@ def extract_output_metadata(tarfile):
     filecontents = local["cat"][os.path.join(directory_path, "output-metadata.json")]()
     data = {"mtimes":timeinfo, "output-metadata.json":filecontents}
     _update_result_summary("output_metadata_mtimes.json", tarfile, data)
+
+
+# Compare the hashes of the dexes for the same version
+# TODO
+def compare_dex_hashes(version):
+    pass
+
 
 
 # Test
