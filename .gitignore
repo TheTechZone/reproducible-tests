@@ -8,7 +8,6 @@ __pycache__
 apkdiff.py
 tools/
 .clean_logs/
-*.aab
 .idea/
 disorderfs/
 *__pycache__*
