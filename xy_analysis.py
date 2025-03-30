@@ -388,11 +388,13 @@ def compare_metadata_to_dirorder(tarfile):
             if "+0000" in line:
                 # ignore the file we are comparing to
                 if "output-metadata.json" not in line:
-                    mtime_list.append(line.split("+0000").strip())
+                    mtime_list.append(line.split("+0000")[-1].strip())
     for element in metadata["elements"]:
         metadata_list.append(element["outputFile"])
-    print(f"{tarfile}")
-    print(_differences(mtime_list, metadata_list))
+    diff = _differences(mtime_list, metadata_list)
+    if len(diff) > 0:
+        print(f"{tarfile}")
+        print(diff)
 
 
 def _differences(list1, list2):
