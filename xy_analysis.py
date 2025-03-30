@@ -377,6 +377,31 @@ def compare_dex_hashes(version):
     pass
 
 
+def compare_metadata_to_dirorder(tarfile):
+    with open(os.path.join(DATA_ROOT, "res", "output_metadata_mtimes.json"), "r") as f:
+        obj = json.loads(f.read())
+    metadata = json.loads(obj[tarfile]["output-metadata.json"])
+    mtime_sort = obj[tarfile]["mtimes"]
+    mtime_list = []
+    metadata_list = []
+    for line in mtime_sort.split("\n"):
+            if "+0000" in line:
+                # ignore the file we are comparing to
+                if "output-metadata.json" not in line:
+                    mtime_list.append(line.split("+0000").strip())
+    for element in metadata["elements"]:
+        metadata_list.append(element["outputFile"])
+    print(f"{tarfile}")
+    print(_differences(mtime_list, metadata_list))
+
+
+def _differences(list1, list2):
+    assert(len(list1)==len(list2)), f"The two lists to compare had differing lengths!"
+    differences = []
+    for i, value in enumerate(list1):
+        if value != list2[i]:
+            differences.append(f"{value} -> {list2[i]}\n")
+    return differences
 
 
 # Test
@@ -400,20 +425,8 @@ try:
     # only print v7.28.4
     #print_with_params("v7.28.4", "dex_sort.json", "ctime", "revers")
     #analyse_all_runs(dexsort=False, diffuse=False, apkdiff=False, nav=False)
-    with open(os.path.join(DATA_ROOT, "res", "output_metadata_mtimes.json"), "r") as f:
-        obj = json.loads(f.read())
-    #print(obj.keys())
-    for key in obj.keys():
-        metadata = json.loads(obj[key]["output-metadata.json"])
-        mtime_sort = obj[key]["mtimes"]
-        i = 0
-        print("")
-        for line in mtime_sort.split("\n"):
-            if "+0000" in line:
-                print(line.split("+0000")[-1].strip())
-        print("")
-        for element in metadata["elements"]:
-            print(element["outputFile"])
+    for tarfile in os.listdir(TARS_ROOT):
+        compare_metadata_to_dirorder(tarfile)
 except Exception as e:
     print("OOPSIE, exception occured...")
     print(e)
