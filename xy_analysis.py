@@ -429,11 +429,45 @@ def compare_metadata_list(tarfile1, tarfile2) -> tuple[bool, list]:
     list2 = get_metadata_list(tarfile2)
     diff = _differences(list1, list2)
     return len(diff) > 0, diff
+    
 
+def _compare_amongst_runs(classified_runs, key, compare: Callable[[str, str], tuple[bool, list]]):
+    print_run_number = False
+    if key is None:
+        to_compare = []
+        # compare the firs run of each set marked consistent with each other
+        for key in classified_runs.keys():
+            if classified_runs[key]["consistent"]:
+                if len(classified_runs[key]["runs"]) > 0:
+                    to_compare.append(classified_runs[key]["runs"][0])
+    else:
+        to_compare = classified_runs[key]["runs"]
+        print_run_number = True
+    middle = int(len(to_compare)/2)
+    for tarfile in to_compare[0:middle]:
+        for other in [file for file in to_compare if file not in tarfile]:
+            (has_diff, diff) = compare(tarfile, other)
+            if has_diff:
+                _, run_01 = _extract_version_and_run(tarfile) 
+                _, run_02 = _extract_version_and_run(other)
+                if print_run_number:
+                    if "dfstest" in tarfile:
+                        run_01 = f"dfstest_{run_01}"
+                    if "dfstest" in other:
+                        run_02 = f"dfstest_{run_02}"
+                    #print(f"diff:\n{"".join(diff)}")
+                    classified_runs[key]["consistent"] = False
+                else:
+                    # we want to indicate which parameters were compared against each other in this case
+                    # we can cut off the prefix for that
+                    run_01 = tarfile.split("signal-android-")[-1].replace(".tar.gz", "")
+                    run_02 = other.split("signal-android-")[-1].replace(".tar.gz", "")
+                print(f"run {run_01} was inconsistent with run {run_02}!")
 
+    
 def compare_for_same_version(version, tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
     versioned_tarfiles = [file for file in tarfiles if version in file]
-    print(versioned_tarfiles)
+    #print(versioned_tarfiles)
     alphabetical = []
     ctime = []
     alphabetical = [file for file in versioned_tarfiles if "alph" in file]
@@ -456,25 +490,9 @@ def compare_for_same_version(version, tarfiles, compare: Callable[[str, str], tu
         else:
             print(f"There were {runs} {key} runs")
             # check internal consistency
-            for tarfile in classified_runs[key]["runs"][0:int(runs/2)]:
-                for other in [file for file in classified_runs[key]["runs"] if file not in tarfile]:
-                    (has_diff, diff) = compare(tarfile, other)
-                    if has_diff:
-                        _, run_01 = _extract_version_and_run(tarfile) 
-                        if "dfstest" in tarfile:
-                            run_01 = f"dfstest_{run_01}"
-                        _, run_02 = _extract_version_and_run(other) 
-                        if "dfstest" in other:
-                            run_02 = f"dfstest_{run_02}"
-                        print(f"run_{run_01} was inconsistent with run_{run_02}!")
-                        #print(f"diff:\n{"".join(diff)}")
-                        classified_runs[key]["consistent"] = False
-    
-
-
-
-
-
+            _compare_amongst_runs(classified_runs, key, compare)
+    # Now compare any runs that were consistent amongst each other
+    _compare_amongst_runs(classified_runs, None, compare)
 
 
 # Compare the hashes of the dexes for the same version
