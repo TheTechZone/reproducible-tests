@@ -3,6 +3,7 @@ import os
 import json
 import re
 from plumbum import local
+from collections.abc import Callable
 
 # Constants
 # Assumes that "." resolves to the directory of the notebook
@@ -371,30 +372,37 @@ def extract_output_metadata(tarfile):
     _update_result_summary("output_metadata_mtimes.json", tarfile, data)
 
 
-# Compare the hashes of the dexes for the same version
-# TODO
-def compare_dex_hashes(version):
-    pass
+def is_metadata_to_dirorder_consistent(tarfile):
+    # True if the files are consistent amongst each other
+    diff = _differences(get_mtimes_list(tarfile), get_metadata_list(tarfile))
+    if len(diff) > 0:
+        print(f"{tarfile}")
+        print(diff)
+        return False
+    return True
 
 
-def compare_metadata_to_dirorder(tarfile):
+def get_metadata_list(tarfile):
     with open(os.path.join(DATA_ROOT, "res", "output_metadata_mtimes.json"), "r") as f:
         obj = json.loads(f.read())
     metadata = json.loads(obj[tarfile]["output-metadata.json"])
+    metadata_list = []
+    for element in metadata["elements"]:
+        metadata_list.append(element["outputFile"])
+    return metadata_list
+
+
+def get_mtimes_list(tarfile):
+    with open(os.path.join(DATA_ROOT, "res", "output_metadata_mtimes.json"), "r") as f:
+        obj = json.loads(f.read())
     mtime_sort = obj[tarfile]["mtimes"]
     mtime_list = []
-    metadata_list = []
     for line in mtime_sort.split("\n"):
             if "+0000" in line:
                 # ignore the file we are comparing to
                 if "output-metadata.json" not in line:
                     mtime_list.append(line.split("+0000")[-1].strip())
-    for element in metadata["elements"]:
-        metadata_list.append(element["outputFile"])
-    diff = _differences(mtime_list, metadata_list)
-    if len(diff) > 0:
-        print(f"{tarfile}")
-        print(diff)
+    return mtime_list
 
 
 def _differences(list1, list2):
@@ -406,32 +414,75 @@ def _differences(list1, list2):
     return differences
 
 
-# Test
-cwd = os.getcwd()
-try:
-    #clear()
-    #extract(os.path.join(TARS_ROOT, "signal-android_v7.30.2.tar.gz"))
-    #_extract_apks()
-    #unzip_playstore_apk("151400")
-    #_turn_cvc_code_mapping_to_json()
-    #print("Done!")
-    #d = create_dex_sets("151400")
-    #print(d)
-    #print(d["local"])
-    #print(json.dumps(create_difftool_records("base-master.apk"), indent=4))
-    #extract(os.path.join(TARS_ROOT, "dfstest-signal-android-ctime-reversed_v7.28.4_01.tar.gz"), True)
-    #with open(os.path.join(DATA_ROOT, "res", "dex_sort.json"), "r") as f:
-    #    data = json.loads(f.read())
-    #print(json.dumps(data, indent=4, sort_keys=True))
-    #print(f"Found the data of {len(data.keys())} distinct runs")
-    # only print v7.28.4
-    #print_with_params("v7.28.4", "dex_sort.json", "ctime", "revers")
-    #analyse_all_runs(dexsort=False, diffuse=False, apkdiff=False, nav=False)
+def assemble_consistent_tarfile_list():
+    """metadata to dirorder"""
+    consistent_runs = []
     for tarfile in os.listdir(TARS_ROOT):
-        compare_metadata_to_dirorder(tarfile)
-except Exception as e:
-    print("OOPSIE, exception occured...")
-    print(e)
-    print(type(e))
-    os.chdir(cwd)
-os.chdir(cwd)
+        if is_metadata_to_dirorder_consistent(tarfile):
+            consistent_runs.append(tarfile)
+    return consistent_runs
+
+
+
+def compare_metadata_list(tarfile1, tarfile2) -> tuple[bool, list]:
+    list1 = get_metadata_list(tarfile1)
+    list2 = get_metadata_list(tarfile2)
+    diff = _differences(list1, list2)
+    return len(diff) > 0, diff
+
+
+def compare_for_same_version(version, tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
+    versioned_tarfiles = [file for file in tarfiles if version in file]
+    print(versioned_tarfiles)
+    alphabetical = []
+    ctime = []
+    alphabetical = [file for file in versioned_tarfiles if "alph" in file]
+    ctime = [file for file in versioned_tarfiles if "ctime" in file]
+    vanilla = [file for file in versioned_tarfiles if "ctime" not in file and "alph" not in file]
+    # create dictionary for internal consistency check between repeats of different runs:
+    classified_runs = {
+        "alphabetically sorted":{"consistent":True, "runs":[file for file in alphabetical if "sort" in file]},
+        "alphabetically reverse sorted":{"consistent":True, "runs":[file for file in alphabetical if "reverse" in file]},
+        "ctime sorted":{"consistent":True, "runs":[file for file in ctime if "sort" in file]},
+        "ctime reverse sorted":{"consistent":True, "runs":[file for file in ctime if "reverse" in file]},
+        "without disorderfs":{"consistent":True, "runs":vanilla}
+    }
+    print(f"checking version {version}...")
+    for key in classified_runs.keys():
+        runs = len(classified_runs[key]["runs"])
+        if runs < 2:
+            print(f"Only one run was {key}")
+            classified_runs[key]["consistent"] = True
+        else:
+            print(f"There were {runs} {key} runs")
+            # check internal consistency
+            for tarfile in classified_runs[key]["runs"][0:int(runs/2)]:
+                for other in [file for file in classified_runs[key]["runs"] if file not in tarfile]:
+                    (has_diff, diff) = compare(tarfile, other)
+                    if has_diff:
+                        _, run_01 = _extract_version_and_run(tarfile) 
+                        if "dfstest" in tarfile:
+                            run_01 = f"dfstest_{run_01}"
+                        _, run_02 = _extract_version_and_run(other) 
+                        if "dfstest" in other:
+                            run_02 = f"dfstest_{run_02}"
+                        print(f"run_{run_01} was inconsistent with run_{run_02}!")
+                        #print(f"diff:\n{"".join(diff)}")
+                        classified_runs[key]["consistent"] = False
+    
+
+
+
+
+
+
+
+# Compare the hashes of the dexes for the same version
+# TODO
+def compare_dex_hashes(version):
+    pass
+
+# Test
+tarfiles = assemble_consistent_tarfile_list()
+print(tarfiles)
+compare_for_same_version("v7.28.4", tarfiles, compare_metadata_list)
