@@ -5,6 +5,7 @@ from collections.abc import Callable
 from setup.structure import(
     DATA_ROOT,
     TARS_ROOT,
+    SUMMARY_ROOT,
     extract_version_and_run
 )
 
@@ -26,16 +27,6 @@ def is_metadata_to_dirorder_consistent(tarfile):
         print(diff)
         return False
     return True
-
-
-def get_metadata_list(tarfile):
-    with open(os.path.join(DATA_ROOT, "res", "output_metadata_mtimes.json"), "r") as f:
-        obj = json.loads(f.read())
-    metadata = json.loads(obj[tarfile]["output-metadata.json"])
-    metadata_list = []
-    for element in metadata["elements"]:
-        metadata_list.append(element["outputFile"])
-    return metadata_list
 
 
 def get_mtimes_list(tarfile):
@@ -67,17 +58,14 @@ def assemble_consistent_tarfile_list(consistency_check: Callable[[str], bool]):
         if consistency_check(tarfile):
             consistent_runs.append(tarfile)
     return consistent_runs
-
-
-
-def compare_metadata_list(tarfile1, tarfile2) -> tuple[bool, list]:
-    list1 = get_metadata_list(tarfile1)
-    list2 = get_metadata_list(tarfile2)
-    diff = _differences(list1, list2)
-    return len(diff) > 0, diff
     
 
 def _compare_amongst_runs(classified_runs, key, compare: Callable[[str, str], tuple[bool, list]]):
+    """
+        if key is given, method checks for internal consistency between the multiple runs
+        contained in this object,
+        Otherwise we check pairwise for each run that was classified as internally consistent
+    """
     print_run_number = False
     if key is None:
         to_compare = []
@@ -126,6 +114,7 @@ def check_consistency_of_classified_runs(classified_runs: Mapping[str, Mapping[s
             # check internal consistency
             _compare_amongst_runs(classified_runs, key, compare)
     # Now compare any runs that were consistent amongst each other
+    print("Checking consistency of equal and internally consistent runs...")
     _compare_amongst_runs(classified_runs, None, compare)
 
 
@@ -219,10 +208,45 @@ def check_for_same_params(tarfiles, compare: Callable[[str, str], tuple[bool, li
     check_consistency_of_classified_runs(classified_runs, compare)
     
 
+def get_metadata_list(tarfile):
+    with open(os.path.join(DATA_ROOT, "res", "output_metadata_mtimes.json"), "r") as f:
+        obj = json.loads(f.read())
+    metadata = json.loads(obj[tarfile]["output-metadata.json"])
+    metadata_list = []
+    for element in metadata["elements"]:
+        metadata_list.append(element["outputFile"])
+    return metadata_list
 
+
+def compare_metadata_list(tarfile1, tarfile2) -> tuple[bool, list]:
+    list1 = get_metadata_list(tarfile1)
+    list2 = get_metadata_list(tarfile2)
+    diff = _differences(list1, list2)
+    return len(diff) > 0, diff
+
+
+def get_dex_list(tarfile):
+    with open(os.path.join(DATA_ROOT, "res", "dex_sort.json"), 'r') as f:
+        obj = json.loads(f.read())
+    return obj[tarfile]["local"]
+
+
+def dict_pairs_to_string(dictionary):
+    res = []
+    for k in dictionary.keys():
+        res.append(f"{k}:{dictionary[k]}")
+    return res
 
 
 # Compare the hashes of the dexes for the same version
+def compare_dex_hashes(tarfile1, tarfile2):
+    dex_list_1 = get_dex_list(tarfile1)
+    dex_list_2 = get_dex_list(tarfile2)
+    # Create symmetric difference between the sets
+    diff = set(dict_pairs_to_string(dex_list_1)).symmetric_difference(set(dict_pairs_to_string(dex_list_2)))
+    return len(diff) > 0, diff
+
 # TODO
-def compare_dex_hashes(version):
+# Because according to Aditz the first dex file matters more!
+def compare_first_dex_file_hash(tarfile, tarfile2):
     pass

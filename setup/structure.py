@@ -20,6 +20,7 @@ PLAYSTORE_APKS_ROOT = os.path.join(DATA_ROOT, "playstore-mirror")
 PLAYSTORE_UNIVERSAL_UNZIP_PATH = os.path.join(DATA_ROOT, "playstore-universal-unzipped")
 BUNDLETOOL_EXE = os.path.join(".", "bundletool")
 VERSION_CVC_FILE = os.path.join(".", "version_code_tag_mappings.json")
+SUMMARY_ROOT = os.path.join(DATA_ROOT, "summary")
 
 
 def _playstore_apk_path(cvc):
@@ -32,6 +33,24 @@ def universal_apk_path(cvc, relative=False):
         # Assuming posix
         path = create_relpath(path)
     return path
+
+
+def create_or_clear_summary_directory_for(testname, version=True, clear=True):
+    """
+    if !version we create/clear the by/param directry
+    if !clear and the dir exists function does nothing
+    """
+    # Check main folder
+    main_dir = os.path.join(SUMMARY_ROOT, testname)
+    mkdir = local["mkdir"]
+    if not os.path.exists(main_dir):
+        mkdir[main_dir]()
+    subdir = os.path.join(main_dir, "fixed_versions" if version else "fixed_parameters")
+    if os.path.exists(subdir):
+        # Idempotence
+        local["rm"]["-r", subdir]()
+    mkdir["-p", subdir]()
+
 
 
 def turn_cvc_code_mapping_to_json():
