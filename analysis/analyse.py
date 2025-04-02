@@ -61,7 +61,7 @@ def _differences(list1, list2):
 
 
 def assemble_consistent_tarfile_list(consistency_check: Callable[[str], bool]):
-    """metadata to dirorder"""
+    """makes sure that multiple runs with the same parameters are consistent amongst each other"""
     consistent_runs = []
     for tarfile in os.listdir(TARS_ROOT):
         if consistency_check(tarfile):
@@ -81,26 +81,30 @@ def _compare_amongst_runs(classified_runs, key, compare: Callable[[str, str], tu
     print_run_number = False
     if key is None:
         to_compare = []
-        # compare the firs run of each set marked consistent with each other
-        for key in classified_runs.keys():
-            if classified_runs[key]["consistent"]:
-                if len(classified_runs[key]["runs"]) > 0:
-                    to_compare.append(classified_runs[key]["runs"][0])
+        # compare the first run of each set marked consistent with each other
+        for k in classified_runs.keys():
+            if classified_runs[k]["consistent"]:
+                if len(classified_runs[k]["runs"]) > 0:
+                    to_compare.append(classified_runs[k]["runs"][0])
     else:
         to_compare = classified_runs[key]["runs"]
         print_run_number = True
-    middle = int(len(to_compare)/2)
-    for tarfile in to_compare[0:middle]:
+    mid = int(len(to_compare)/2)
+    for tarfile in to_compare[0:mid]:
         for other in [file for file in to_compare if file not in tarfile]:
             (has_diff, diff) = compare(tarfile, other)
             if has_diff:
-                _, run_01 = extract_version_and_run(tarfile) 
-                _, run_02 = extract_version_and_run(other)
+                v_01, run_01 = extract_version_and_run(tarfile) 
+                v_02, run_02 = extract_version_and_run(other)
                 if print_run_number:
                     if "dfstest" in tarfile:
-                        run_01 = f"dfstest_{run_01}"
+                        run_01 = f"{v_01}{f'_{run_01}' if run_01 is not None else ''}_dfstest"
+                    else:
+                        run_01 = f"{v_01}{f'_{run_01}' if run_01 is not None else ''}"
                     if "dfstest" in other:
-                        run_02 = f"dfstest_{run_02}"
+                        run_02 = f"{v_02}{f'_{run_02}' if run_02 is not None else ''}_dfstest"
+                    else:
+                        run_02 = f"{v_02}{f'_{run_02}' if run_02 is not None else ''}"
                     #print(f"diff:\n{"".join(diff)}")
                     classified_runs[key]["consistent"] = False
                 else:
@@ -108,7 +112,7 @@ def _compare_amongst_runs(classified_runs, key, compare: Callable[[str, str], tu
                     # we can cut off the prefix for that
                     run_01 = tarfile.split("signal-android-")[-1].replace(".tar.gz", "")
                     run_02 = other.split("signal-android-")[-1].replace(".tar.gz", "")
-                print(f"run {run_01} was inconsistent with run {run_02}!")
+                print(f"MISSMATCH: {run_01} <=> {run_02}!")
 
     
 def check_consistency_of_classified_runs(classified_runs: Mapping[str, Mapping[str, Union[bool, list]]], compare: Callable[[str, str], tuple[bool, list]]):
@@ -162,12 +166,12 @@ def _get_all_tarfiles_with_params(dfs, alph=None, ctime=None, reverse=None):
             if alph and "alph" in tarfile:
                 if reverse and "reverse" in tarfile:
                     files.append(tarfile)
-                elif "sort" in tarfile:
+                elif not reverse and "sort" in tarfile:
                     files.append(tarfile)
             elif ctime and "ctime" in tarfile:
                 if reverse and "reverse" in tarfile:
                     files.append(tarfile)
-                elif "sort" in tarfile:
+                elif not reverse and "sort" in tarfile:
                     files.append(tarfile)
         else:
             if "alph" not in tarfile and "ctime" not in tarfile \
@@ -190,7 +194,7 @@ def check_for_same_params(tarfiles, compare: Callable[[str, str], tuple[bool, li
     description = ""
     if dfs:
         # Sanity checks
-        assert(not alph and ctime), "Cannot be sorted alphabetically and by ctime simultaneously!"
+        assert(not (alph and ctime)), f"Cannot be sorted alphabetically {alph} and by ctime {ctime} simultaneously!"
         if alph:
             if reverse:
                 description = "alphabetically reverse sorted"
