@@ -64,9 +64,6 @@ def extract_version_and_run(filename):
     if match:
         version = match.group(1)
         run = match.group(2) if match.group(2) else None  # If no run number, return None
-        print(filename)
-        print(version)
-        print(run)
         return version, run
     else:
         return None, None  # Return None if no match is found

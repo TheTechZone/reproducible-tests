@@ -22,7 +22,7 @@ def is_metadata_to_dirorder_consistent(tarfile):
     # True if the files are consistent amongst each other
     diff = _differences(get_mtimes_list(tarfile), get_metadata_list(tarfile))
     if len(diff) > 0:
-        print(f"{tarfile}")
+        print(f"Metadata inconsistency in: {tarfile}")
         print(diff)
         return False
     return True
@@ -152,7 +152,7 @@ def get_all_versions():
     for tarfile in os.listdir(TARS_ROOT):
         v, _ = extract_version_and_run(tarfile)
         versions.append(v)
-    return list(set(v))
+    return list(set(versions))
 
 
 def _get_all_tarfiles_with_params(dfs, alph=None, ctime=None, reverse=None):
@@ -211,8 +211,7 @@ def check_for_same_params(tarfiles, compare: Callable[[str, str], tuple[bool, li
         for tarfile in relevant_files:
                 if v in tarfile:
                     classified_runs[key]["runs"].append(tarfile)
-    print(f"checking the parameters {description}...")
-    print(classified_runs)
+    print(f"checking the parameters: '{description}'...")
     check_consistency_of_classified_runs(classified_runs, compare)
     
 
