@@ -58,12 +58,15 @@ def create_relpath(abspath):
 # filename: one of the runs in data/build/tars
 def extract_version_and_run(filename):
     # Define the regex pattern
-    pattern = r'v(\d+\.\d+\.\d+)(?:_(\d+))?'
+    pattern = r'v(\d+\.\d+\.\d+)(?:_)?(\d+)?'
     # Search for the pattern in the filename
     match = re.search(pattern, filename)
     if match:
         version = match.group(1)
         run = match.group(2) if match.group(2) else None  # If no run number, return None
+        print(filename)
+        print(version)
+        print(run)
         return version, run
     else:
         return None, None  # Return None if no match is found

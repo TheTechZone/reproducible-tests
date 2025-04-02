@@ -1,5 +1,6 @@
 import os
 import json
+from typing import Mapping, Union
 from collections.abc import Callable
 from setup.structure import(
     DATA_ROOT,
@@ -15,6 +16,7 @@ def print_with_params(version, file, sorting_criteria=None, direction=None):
     for key in data.keys():
         if version in key and sorting_criteria in key and direction in key:
             print(f"{key}:{json.dumps(data[key], indent=4, sort_keys=True)}")
+
 
 def is_metadata_to_dirorder_consistent(tarfile):
     # True if the files are consistent amongst each other
@@ -58,11 +60,11 @@ def _differences(list1, list2):
     return differences
 
 
-def assemble_consistent_tarfile_list():
+def assemble_consistent_tarfile_list(consistency_check: Callable[[str], bool]):
     """metadata to dirorder"""
     consistent_runs = []
     for tarfile in os.listdir(TARS_ROOT):
-        if is_metadata_to_dirorder_consistent(tarfile):
+        if consistency_check(tarfile):
             consistent_runs.append(tarfile)
     return consistent_runs
 
@@ -109,7 +111,21 @@ def _compare_amongst_runs(classified_runs, key, compare: Callable[[str, str], tu
                 print(f"run {run_01} was inconsistent with run {run_02}!")
 
     
-def compare_for_same_version(version, tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
+def check_consistency_of_classified_runs(classified_runs: Mapping[str, Mapping[str, Union[bool, list]]], compare: Callable[[str, str], tuple[bool, list]]):
+    for key in classified_runs.keys():
+        runs = len(classified_runs[key]["runs"])
+        if runs < 2:
+            print(f"Only one run was {key}")
+            classified_runs[key]["consistent"] = True
+        else:
+            print(f"There were {runs} {key} runs")
+            # check internal consistency
+            _compare_amongst_runs(classified_runs, key, compare)
+    # Now compare any runs that were consistent amongst each other
+    _compare_amongst_runs(classified_runs, None, compare)
+
+
+def check_for_same_version(version, tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
     versioned_tarfiles = [file for file in tarfiles if version in file]
     #print(versioned_tarfiles)
     alphabetical = []
@@ -126,17 +142,81 @@ def compare_for_same_version(version, tarfiles, compare: Callable[[str, str], tu
         "without disorderfs":{"consistent":True, "runs":vanilla}
     }
     print(f"checking version {version}...")
-    for key in classified_runs.keys():
-        runs = len(classified_runs[key]["runs"])
-        if runs < 2:
-            print(f"Only one run was {key}")
-            classified_runs[key]["consistent"] = True
+    check_consistency_of_classified_runs(classified_runs, compare)
+
+
+
+
+def get_all_versions():
+    versions = []
+    for tarfile in os.listdir(TARS_ROOT):
+        v, _ = extract_version_and_run(tarfile)
+        versions.append(v)
+    return list(set(v))
+
+
+def _get_all_tarfiles_with_params(dfs, alph=None, ctime=None, reverse=None):
+    files = []
+    for tarfile in os.listdir(TARS_ROOT):
+        if dfs:
+            if alph and "alph" in tarfile:
+                if reverse and "reverse" in tarfile:
+                    files.append(tarfile)
+                elif "sort" in tarfile:
+                    files.append(tarfile)
+            elif ctime and "ctime" in tarfile:
+                if reverse and "reverse" in tarfile:
+                    files.append(tarfile)
+                elif "sort" in tarfile:
+                    files.append(tarfile)
         else:
-            print(f"There were {runs} {key} runs")
-            # check internal consistency
-            _compare_amongst_runs(classified_runs, key, compare)
-    # Now compare any runs that were consistent amongst each other
-    _compare_amongst_runs(classified_runs, None, compare)
+            if "alph" not in tarfile and "ctime" not in tarfile \
+            and "sort" not in tarfile and "reverse" not in tarfile:
+                files.append(tarfile)
+    return files
+                
+
+def get_all_tarfiles():
+    return os.listdir(TARS_ROOT)
+
+
+
+def check_for_same_params(tarfiles, compare: Callable[[str, str], tuple[bool, list]], dfs=False, alph=False, ctime=False, reverse=False):
+    """
+        if dfs == False, the other parameters are not considered
+    """
+    versions = get_all_versions()
+    # create description string
+    description = ""
+    if dfs:
+        # Sanity checks
+        assert(not alph and ctime), "Cannot be sorted alphabetically and by ctime simultaneously!"
+        if alph:
+            if reverse:
+                description = "alphabetically reverse sorted"
+            else:
+                description = "alphabetically sorted"
+        elif ctime:
+            if reverse:
+                description = "ctime reverse sorted"
+            else:
+                description = "ctime sorted"
+    else:
+        description = "without disorderfs"
+    relevant_files = _get_all_tarfiles_with_params(dfs, alph, ctime, reverse)
+    classified_runs = {}
+    for v in versions:
+        key = f"{v} {description}"
+        classified_runs[key] = {"consistent": True, "runs":[]} 
+        for tarfile in relevant_files:
+                if v in tarfile:
+                    classified_runs[key]["runs"].append(tarfile)
+    print(f"checking the parameters {description}...")
+    print(classified_runs)
+    check_consistency_of_classified_runs(classified_runs, compare)
+    
+
+
 
 
 # Compare the hashes of the dexes for the same version
