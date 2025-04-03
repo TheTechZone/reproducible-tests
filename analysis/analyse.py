@@ -6,7 +6,9 @@ from setup.structure import(
     DATA_ROOT,
     TARS_ROOT,
     SUMMARY_ROOT,
-    extract_version_and_run
+    extract_version_and_run,
+    extract_parameters,
+    construct_summary_path
 )
 from analysis.tests import COMPARE_TO_TESTNAME
 
@@ -22,8 +24,8 @@ from analysis.tests import COMPARE_TO_TESTNAME
 # and "runs" contain all tarfiles which are grouped by the same fixed parameters & version
 #
 # Examples:
-# classified_runs = {"v7.30.4":{"ctime reverse sorted":{"consistent":True, "runs":["signal-android-ctime-reversed_v7.30.4_01.tar.gz",...]}}...}
-# classified_runs = {"ctime reverse sorted":{"v7.30.4":{"consistent":True, "runs":["signal-android-ctime-reversed_v7.30.4_01.tar.gz",...]}}...}
+# classified_runs = {"v7.30.4":{"consistent":True, "runs":["signal-android-ctime-reversed_v7.30.4_01.tar.gz",...]}...}
+# classified_runs = {"ctime reverse sorted":{"consistent":True, "runs":["signal-android-ctime-reversed_v7.30.4_01.tar.gz",...]}...}
 ###
 
 
@@ -36,17 +38,6 @@ def print_with_params(version, file, sorting_criteria=None, direction=None):
             print(f"{key}:{json.dumps(data[key], indent=4, sort_keys=True)}")
 
 
-def differences(list1, list2):
-    """
-    Compare two given list and return the differences in a human readable form for ad hoc printing
-    """
-    assert(len(list1)==len(list2)), f"The two lists to compare had differing lengths!"
-    differences = []
-    for i, value in enumerate(list1):
-        if value != list2[i]:
-            differences.append(f"{value} -> {list2[i]}\n")
-    return differences
-
 # E.g., used to filter out runs that were not internally consistent for the metadata list
 # Or could be used to filter out runs that did not match something we want to match in their playstore equivalent
 def assemble_consistent_tarfile_list(consistency_check: Callable[[str], bool]):
@@ -57,10 +48,6 @@ def assemble_consistent_tarfile_list(consistency_check: Callable[[str], bool]):
             consistent_runs.append(tarfile)
     return consistent_runs
     
-
-def construct_summary_path(testname, tarfile):
-    pass # TODO
-
 
 def _compare_amongst_runs(classified_runs, key, compare: Callable[[str, str], tuple[bool, list]]):
     """
@@ -79,11 +66,16 @@ def _compare_amongst_runs(classified_runs, key, compare: Callable[[str, str], tu
             if classified_runs[k]["consistent"]:
                 if len(classified_runs[k]["runs"]) > 0:
                     to_compare.append(classified_runs[k]["runs"][0])
+        #print(f"classified_runs:\n{classified_runs}")
+        #print(f"compared to:\n{to_compare}")
+        if len(to_compare) > 0: #TODO: should it be 1 instead? (at least one pair to compare)
             record_result = True
             # Idempotence
-            summary_file = construct_summary_path(COMPARE_TO_TESTNAME[compare], k)
-            with open(summary_file, 'w') as f: # create and write empty dict
-                f.write("{}")
+            summary_file = construct_summary_path(COMPARE_TO_TESTNAME[compare], k, to_compare[0])
+            if not os.path.exists(summary_file):
+                print(f"Creating {summary_file.split(SUMMARY_ROOT)[-1]}...")
+                with open(summary_file, 'w') as f: # create and write empty dict
+                    f.write("{}")
     else:
         to_compare = classified_runs[key]["runs"]
         print_run_number = True
@@ -112,15 +104,21 @@ def _compare_amongst_runs(classified_runs, key, compare: Callable[[str, str], tu
                     run_02 = other.split("signal-android-")[-1].replace(".tar.gz", "")
                 print(f"MISSMATCH: {run_01} <=> {run_02}!")
             if record_result:
+                #print(f"Recording result of {COMPARE_TO_TESTNAME[compare]} between {tarfile} and {other}")
                 with open(summary_file, 'r') as f:
                     obj = json.loads(f.read())
+                # create internal dicts if they do not yet exist
+                if tarfile not in obj.keys():
+                    obj[tarfile] = {}
+                if other not in obj.keys():
+                    obj[other] = {}
                 # Both sides to turn the triangle into a symmetric matrix
                 obj[tarfile][other] = has_diff
                 obj[other][tarfile] = has_diff
                 with open(summary_file, 'w') as f:
                     f.write(json.dumps(obj))
 
-    
+
 def check_consistency_of_classified_runs(classified_runs: Mapping[str, Mapping[str, Union[bool, list]]], compare: Callable[[str, str], tuple[bool, list]]):
     for key in classified_runs.keys():
         runs = len(classified_runs[key]["runs"])
@@ -153,9 +151,8 @@ def check_for_same_version(version, tarfiles, compare: Callable[[str, str], tupl
         "without disorderfs":{"consistent":True, "runs":vanilla}
     }
     print(f"checking version {version}...")
+    #print(classified_runs)
     check_consistency_of_classified_runs(classified_runs, compare)
-
-
 
 
 def get_all_versions():
@@ -214,14 +211,18 @@ def check_for_same_params(tarfiles, compare: Callable[[str, str], tuple[bool, li
                 description = "ctime sorted"
     else:
         description = "without disorderfs"
-    relevant_files = _get_all_tarfiles_with_params(dfs, alph, ctime, reverse)
+    if tarfiles is None:
+        relevant_files = _get_all_tarfiles_with_params(dfs, alph, ctime, reverse)
+    else:
+        relevant_files = tarfiles
     classified_runs = {}
     for v in versions:
-        key = f"{v} {description}"
-        classified_runs[key] = {"consistent": True, "runs":[]} 
+        # I don't thik I want the version in there explicitly...
+        #key = f"{v} {description}"
+        classified_runs[description] = {"consistent": True, "runs":[]} 
         for tarfile in relevant_files:
                 if v in tarfile:
-                    classified_runs[key]["runs"].append(tarfile)
+                    classified_runs[description]["runs"].append(tarfile)
     print(f"checking the parameters: '{description}'...")
     check_consistency_of_classified_runs(classified_runs, compare)
     

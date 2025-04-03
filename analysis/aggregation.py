@@ -18,7 +18,8 @@ from setup.structure import (
 )
 from setup.structure import (
     universal_apk_path,
-    create_relpath
+    create_relpath,
+    extract_parameters
 )
 
 
@@ -283,7 +284,7 @@ def analyse_all_runs(dexsort=True, diffuse=True, apkdiff=True, nav=True, output_
         print(f"Pulling {create_relpath(tarpath)} with git lfs...")
         local["git"]["lfs", "pull","--include", create_relpath(tarpath)]()
         # Extract run parameters from tarfile
-        (_, _ , dfstest, _, _, _) = extract_structure(tarfile)
+        (_, _ , dfstest, _, _, _) = extract_parameters(tarfile)
         # Extract the build to local folder
         print(f"Extracting {tarfile}...")
         extract(os.path.join(TARS_ROOT, tarfile), dfstest)

@@ -2,12 +2,15 @@
 from analysis.analyse import (
     assemble_consistent_tarfile_list, 
     check_for_same_version,
-    compare_metadata_list,
-    compare_dex_hashes,
-    is_metadata_to_dirorder_consistent,
     check_for_same_params,
     get_all_tarfiles,
     get_all_versions
+)
+from analysis.tests import (
+    compare_dex_hashes,
+    compare_first_dex_file_hash,
+    compare_metadata_list,
+    is_metadata_to_dirorder_consistent
 )
 from setup.structure import create_or_clear_summary_directory_for
 from analysis.tests import (
@@ -27,16 +30,16 @@ def run_tests(tarfiles, compare):
         check_for_same_version(v, tarfiles, compare)
         print()
     create_or_clear_summary_directory_for(COMPARE_TO_TESTNAME[compare], version=False)
-    check_for_same_params(tarfiles, compare_metadata_list, dfs=False)
+    check_for_same_params(tarfiles, compare, dfs=False)
     print()
     # Enumerate the 4 parameter combinations
-    check_for_same_params(tarfiles, compare_metadata_list, dfs=True, alph=True, ctime=False, reverse=False)
+    check_for_same_params(tarfiles, compare, dfs=True, alph=True, ctime=False, reverse=False)
     print()
-    check_for_same_params(tarfiles, compare_metadata_list, dfs=True, alph=True, ctime=False, reverse=True)
+    check_for_same_params(tarfiles, compare, dfs=True, alph=True, ctime=False, reverse=True)
     print()
-    check_for_same_params(tarfiles, compare_metadata_list, dfs=True, alph=False, ctime=True, reverse=False)
+    check_for_same_params(tarfiles, compare, dfs=True, alph=False, ctime=True, reverse=False)
     print()
-    check_for_same_params(tarfiles, compare_metadata_list, dfs=True, alph=False, ctime=True, reverse=True)
+    check_for_same_params(tarfiles, compare, dfs=True, alph=False, ctime=True, reverse=True)
     
 
 run_tests(get_all_tarfiles(), compare_dex_hashes)

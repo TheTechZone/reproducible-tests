@@ -36,6 +36,9 @@ def universal_apk_path(cvc, relative=False):
     return path
 
 
+_VERSION = "fixed_versions"
+_PARAMS = "fixed_parameters"
+
 def create_or_clear_summary_directory_for(testname, version=True, clear=True):
     """
     if !version we create/clear the by/param directry
@@ -46,11 +49,24 @@ def create_or_clear_summary_directory_for(testname, version=True, clear=True):
     mkdir = local["mkdir"]
     if not os.path.exists(main_dir):
         mkdir[main_dir]()
-    subdir = os.path.join(main_dir, "fixed_versions" if version else "fixed_parameters")
+    subdir = os.path.join(main_dir, _VERSION if version else _PARAMS)
     if os.path.exists(subdir):
         # Idempotence
         local["rm"]["-r", subdir]()
     mkdir["-p", subdir]()
+
+
+def construct_summary_path(testname, key, tarfile):
+    # Which dimension is fixed?
+    fixed = _PARAMS if "without" in key or "alph" in key or "ctime" in key else _VERSION
+    if fixed == _PARAMS:
+        filename = f'{"_".join(key.split(" "))}.json'
+    else:
+        (v, _) = extract_version_and_run(tarfile)
+        filename = f"{v}.json"
+    p = os.path.join(SUMMARY_ROOT, testname, fixed, filename)
+    #print(f"returning {p} for:\n{testname}, {key}, {tarfile}")
+    return p
 
 
 

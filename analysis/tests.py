@@ -1,12 +1,24 @@
 import os
 import json
-from analysis.analyse import (
-    differences
-)
 from setup.structure import(
     DATA_ROOT
 ) 
 
+
+###
+# General utility
+###
+
+def differences(list1, list2):
+    """
+    Compare two given list and return the differences in a human readable form for ad hoc printing
+    """
+    assert(len(list1)==len(list2)), f"The two lists to compare had differing lengths!"
+    differences = []
+    for i, value in enumerate(list1):
+        if value != list2[i]:
+            differences.append(f"{value} -> {list2[i]}\n")
+    return differences
 
 ###
 # Metadata comparison
