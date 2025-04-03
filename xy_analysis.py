@@ -11,7 +11,7 @@ from analysis.analyse import (
 )
 from setup.structure import create_or_clear_summary_directory_for
 
-COMPARE_TO_TESTNAME = {compare_metadata_list:"metadata_list", compare_dex_hashes:"dex_sort"}
+
 
 
 def run_tests(tarfiles, compare):
