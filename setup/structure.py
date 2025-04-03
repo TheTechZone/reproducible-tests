@@ -56,14 +56,13 @@ def create_or_clear_summary_directory_for(testname, version=True, clear=True):
     mkdir["-p", subdir]()
 
 
-def construct_summary_path(testname, key, tarfile):
+def construct_summary_path(testname, key):
     # Which dimension is fixed?
     fixed = _PARAMS if "without" in key or "alph" in key or "ctime" in key else _VERSION
     if fixed == _PARAMS:
         filename = f'{"_".join(key.split(" "))}.json'
     else:
-        (v, _) = extract_version_and_run(tarfile)
-        filename = f"{v}.json"
+        filename = f"{key}.json"
     p = os.path.join(SUMMARY_ROOT, testname, fixed, filename)
     #print(f"returning {p} for:\n{testname}, {key}, {tarfile}")
     return p
