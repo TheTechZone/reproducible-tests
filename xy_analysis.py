@@ -12,11 +12,13 @@ from analysis.tests import (
     compare_metadata_list,
     is_metadata_to_dirorder_consistent
 )
+from analysis.visualize import (
+    visualize
+)
 from setup.structure import create_or_clear_summary_directory_for
 from analysis.tests import (
     COMPARE_TO_TESTNAME
 )
-
 
 
 def run_tests(tarfiles, compare):
@@ -30,26 +32,37 @@ def run_tests(tarfiles, compare):
         check_for_same_version(v, tarfiles, compare)
         print()
     create_or_clear_summary_directory_for(COMPARE_TO_TESTNAME[compare], version=False)
-    check_for_same_params(tarfiles, compare, dfs=False)
+    check_for_same_params(None, compare, dfs=False)
     print()
     # Enumerate the 4 parameter combinations
-    check_for_same_params(tarfiles, compare, dfs=True, alph=True, ctime=False, reverse=False)
+    check_for_same_params(None, compare, dfs=True, alph=True, ctime=False, reverse=False)
     print()
-    check_for_same_params(tarfiles, compare, dfs=True, alph=True, ctime=False, reverse=True)
+    check_for_same_params(None, compare, dfs=True, alph=True, ctime=False, reverse=True)
     print()
-    check_for_same_params(tarfiles, compare, dfs=True, alph=False, ctime=True, reverse=False)
+    check_for_same_params(None, compare, dfs=True, alph=False, ctime=True, reverse=False)
     print()
-    check_for_same_params(tarfiles, compare, dfs=True, alph=False, ctime=True, reverse=True)
+    check_for_same_params(None, compare, dfs=True, alph=False, ctime=True, reverse=True)
     
 ###
 # Run all the tests
 ###
 
-for test in [compare_first_dex_file_hash, compare_dex_hashes]:
+def run_all_tests():
+    for test in [compare_first_dex_file_hash, compare_dex_hashes]:
         run_tests(get_all_tarfiles(), test)
 
-tarfiles = assemble_consistent_tarfile_list(is_metadata_to_dirorder_consistent)
-run_tests(tarfiles, compare_metadata_list)
+    tarfiles = assemble_consistent_tarfile_list(is_metadata_to_dirorder_consistent)
+    run_tests(tarfiles, compare_metadata_list)
+
+
+###
+# Script
+###
+
+
+visualize()
+#run_all_tests()
+
 
 
 #run_tests(get_all_tarfiles(), compare_dex_hashes)

@@ -212,10 +212,11 @@ def check_for_same_params(tarfiles, compare: Callable[[str, str], tuple[bool, li
                 description = "ctime sorted"
     else:
         description = "without disorderfs"
+    appropriate_tars = _get_all_tarfiles_with_params(dfs, alph, ctime, reverse)
     if tarfiles is None:
-        relevant_files = _get_all_tarfiles_with_params(dfs, alph, ctime, reverse)
+        relevant_files = appropriate_tars
     else:
-        relevant_files = tarfiles
+        relevant_files = [file for file in tarfiles if file in appropriate_tars]
     classified_runs = {}
     for v in versions:
         classified_runs[v] = {"consistent": True, "runs":[]} 
