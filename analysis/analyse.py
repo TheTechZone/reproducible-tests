@@ -9,6 +9,22 @@ from setup.structure import(
     extract_version_and_run
 )
 
+###
+# The analysis makes use of the 'classified_runs' structure
+# a dict of dicts where the first key is the description of the set of runs that
+# follows in the next dict (e.g., version, or which parameters were active)
+# the next dict is keyed by the opposite key
+# the innermost strucure is as follows (basically a named tuple implemented as a dict):
+# TODO: may want to make this a tuple instead
+# DATA := {"consistent":boolean, "runs":list[str]}
+# where the consistent flag indicates internal consistency between runs (if applicable)
+# and "runs" contain all tarfiles which are grouped by the same fixed parameters & version
+#
+# Examples:
+# classified_runs = {"v.7.30.4":{"ctime reverse sorted":{"consistent":True, runs["",...]}}...}
+#
+###
+
 
 def print_with_params(version, file, sorting_criteria=None, direction=None):
     with open(os.path.join(DATA_ROOT, "res", file), "r") as f:

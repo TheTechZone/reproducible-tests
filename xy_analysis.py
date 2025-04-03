@@ -10,7 +10,9 @@ from analysis.analyse import (
     get_all_versions
 )
 from setup.structure import create_or_clear_summary_directory_for
-
+from analysis.tests import (
+    COMPARE_TO_TESTNAME
+)
 
 
 
@@ -38,7 +40,6 @@ def run_tests(tarfiles, compare):
     
 
 run_tests(get_all_tarfiles(), compare_dex_hashes)
-
 
 
 #tarfiles = assemble_consistent_tarfile_list(is_metadata_to_dirorder_consistent)

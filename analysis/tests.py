@@ -98,7 +98,6 @@ def compare_first_dex_file_hash(tarfile1, tarfile2):
     return equal, [] if equal else [f"{dex_hash_1}->{dex_hash_2}"]
 
 
-
 ####
 # Define a name for each toplevel test, this will be used when updating the 'summary' results of this test
 ####
