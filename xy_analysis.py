@@ -41,9 +41,20 @@ def run_tests(tarfiles, compare):
     print()
     check_for_same_params(tarfiles, compare, dfs=True, alph=False, ctime=True, reverse=True)
     
+###
+# Run all the tests
+###
 
-run_tests(get_all_tarfiles(), compare_dex_hashes)
+for test in [compare_first_dex_file_hash, compare_dex_hashes]:
+        run_tests(get_all_tarfiles(), test)
 
+tarfiles = assemble_consistent_tarfile_list(is_metadata_to_dirorder_consistent)
+run_tests(tarfiles, compare_metadata_list)
+
+
+#run_tests(get_all_tarfiles(), compare_dex_hashes)
+#tarfiles = assemble_consistent_tarfile_list(is_metadata_to_dirorder_consistent)
+#run_tests(tarfiles, compare_metadata_list)
 
 #tarfiles = assemble_consistent_tarfile_list(is_metadata_to_dirorder_consistent)
 #print(tarfiles)

@@ -122,7 +122,8 @@ def check_consistency_of_classified_runs(classified_runs: Mapping[str, Mapping[s
         else:
             print(f"There were {runs} {key} runs")
             # check internal consistency
-            _compare_amongst_runs(classified_runs, key, compare)
+            # Writing down the result each time no matter if internal test or not
+            _compare_amongst_runs(classified_runs, key, compare, summary_file)
     # Now compare any runs that were consistent amongst each other
     print("Checking consistency of equal and internally consistent runs...")
     _compare_amongst_runs(classified_runs, None, compare, summary_file)
