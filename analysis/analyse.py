@@ -8,6 +8,7 @@ from setup.structure import(
     SUMMARY_ROOT,
     extract_version_and_run
 )
+from analysis.tests import COMPARE_TO_TESTNAME
 
 ###
 # The analysis makes use of the 'classified_runs' structure
@@ -21,8 +22,8 @@ from setup.structure import(
 # and "runs" contain all tarfiles which are grouped by the same fixed parameters & version
 #
 # Examples:
-# classified_runs = {"v.7.30.4":{"ctime reverse sorted":{"consistent":True, runs["",...]}}...}
-#
+# classified_runs = {"v7.30.4":{"ctime reverse sorted":{"consistent":True, "runs":["signal-android-ctime-reversed_v7.30.4_01.tar.gz",...]}}...}
+# classified_runs = {"ctime reverse sorted":{"v7.30.4":{"consistent":True, "runs":["signal-android-ctime-reversed_v7.30.4_01.tar.gz",...]}}...}
 ###
 
 
@@ -33,7 +34,6 @@ def print_with_params(version, file, sorting_criteria=None, direction=None):
     for key in data.keys():
         if version in key and sorting_criteria in key and direction in key:
             print(f"{key}:{json.dumps(data[key], indent=4, sort_keys=True)}")
-
 
 
 def differences(list1, list2):
@@ -47,7 +47,8 @@ def differences(list1, list2):
             differences.append(f"{value} -> {list2[i]}\n")
     return differences
 
-
+# E.g., used to filter out runs that were not internally consistent for the metadata list
+# Or could be used to filter out runs that did not match something we want to match in their playstore equivalent
 def assemble_consistent_tarfile_list(consistency_check: Callable[[str], bool]):
     """makes sure that multiple runs with the same parameters are consistent amongst each other"""
     consistent_runs = []
@@ -57,14 +58,20 @@ def assemble_consistent_tarfile_list(consistency_check: Callable[[str], bool]):
     return consistent_runs
     
 
+def construct_summary_path(testname, tarfile):
+    pass # TODO
+
+
 def _compare_amongst_runs(classified_runs, key, compare: Callable[[str, str], tuple[bool, list]]):
     """
-        if key is given, method checks for internal consistency between the multiple runs
+        if key is given, method checks for internal consistency between multiple runs
         contained in this object,
         Otherwise we check pairwise for each run that was classified as internally consistent,
         and record the result
     """
-    print_run_number = False
+    #TODO: Do I want both of these to be optional args?
+    print_run_number = False 
+    record_result = False 
     if key is None:
         to_compare = []
         # compare the first run of each set marked consistent with each other
@@ -72,6 +79,11 @@ def _compare_amongst_runs(classified_runs, key, compare: Callable[[str, str], tu
             if classified_runs[k]["consistent"]:
                 if len(classified_runs[k]["runs"]) > 0:
                     to_compare.append(classified_runs[k]["runs"][0])
+            record_result = True
+            # Idempotence
+            summary_file = construct_summary_path(COMPARE_TO_TESTNAME[compare], k)
+            with open(summary_file, 'w') as f: # create and write empty dict
+                f.write("{}")
     else:
         to_compare = classified_runs[key]["runs"]
         print_run_number = True
@@ -99,6 +111,14 @@ def _compare_amongst_runs(classified_runs, key, compare: Callable[[str, str], tu
                     run_01 = tarfile.split("signal-android-")[-1].replace(".tar.gz", "")
                     run_02 = other.split("signal-android-")[-1].replace(".tar.gz", "")
                 print(f"MISSMATCH: {run_01} <=> {run_02}!")
+            if record_result:
+                with open(summary_file, 'r') as f:
+                    obj = json.loads(f.read())
+                # Both sides to turn the triangle into a symmetric matrix
+                obj[tarfile][other] = has_diff
+                obj[other][tarfile] = has_diff
+                with open(summary_file, 'w') as f:
+                    f.write(json.dumps(obj))
 
     
 def check_consistency_of_classified_runs(classified_runs: Mapping[str, Mapping[str, Union[bool, list]]], compare: Callable[[str, str], tuple[bool, list]]):
