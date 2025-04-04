@@ -82,13 +82,13 @@ def _compare_amongst_runs(classified_runs, key, compare: Callable[[str, str], tu
                 if mark_consistency: #TODO: this is a confusing overload, unconfuse at some point
                     classified_runs[key]["consistent"] = False
                     if "dfstest" in tarfile:
-                        run_01 = f"{v_01}{f'_{run_01}' if run_01 is not None else ''}_dfstest"
+                        run_01 = f"{v_01}_{run_01}_dfstest"
                     else:
-                        run_01 = f"{v_01}{f'_{run_01}' if run_01 is not None else ''}"
+                        run_01 = f"{v_01}_{run_01}"
                     if "dfstest" in other:
-                        run_02 = f"{v_02}{f'_{run_02}' if run_02 is not None else ''}_dfstest"
+                        run_02 = f"{v_02}_{run_02}_dfstest"
                     else:
-                        run_02 = f"{v_02}{f'_{run_02}' if run_02 is not None else ''}"
+                        run_02 = f"{v_02}_{run_02}"
                     #print(f"diff:\n{"".join(diff)}")
                 else:
                     # we want to indicate which parameters were compared against each other in this case
@@ -189,14 +189,7 @@ def get_all_tarfiles():
     return os.listdir(TARS_ROOT)
 
 
-
-def check_for_same_params(tarfiles, compare: Callable[[str, str], tuple[bool, list]], dfs=False, alph=False, ctime=False, reverse=False):
-    """
-        if dfs == False, the other parameters are not considered
-    """
-    versions = get_all_versions()
-    # create description string
-    description = ""
+def description_from_params(dfs, alph, ctime, reverse):
     if dfs:
         # Sanity checks
         assert(not (alph and ctime)), f"Cannot be sorted alphabetically {alph} and by ctime {ctime} simultaneously!"
@@ -212,6 +205,16 @@ def check_for_same_params(tarfiles, compare: Callable[[str, str], tuple[bool, li
                 description = "ctime sorted"
     else:
         description = "without disorderfs"
+    return description
+
+
+def check_for_same_params(tarfiles, compare: Callable[[str, str], tuple[bool, list]], dfs=False, alph=False, ctime=False, reverse=False):
+    """
+        if dfs == False, the other parameters are not considered
+    """
+    versions = get_all_versions()
+    # create description string
+    description = description_from_params(dfs, alph, ctime, reverse)
     appropriate_tars = _get_all_tarfiles_with_params(dfs, alph, ctime, reverse)
     if tarfiles is None:
         relevant_files = appropriate_tars

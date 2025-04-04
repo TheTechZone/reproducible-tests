@@ -98,10 +98,10 @@ def extract_version_and_run(filename):
     match = re.search(pattern, filename)
     if match:
         version = match.group(1)
-        run = match.group(2) if match.group(2) else None  # If no run number, return None
+        run = match.group(2) if match.group(2) else "01"  # If no run number, return 01
         return version, run
     else:
-        return None, None  # Return None if no match is found
+        return None, None  # Return None if no match is found (TODO: Should this throw an error instead?)
     
 
 def extract_parameters(tar_filename):
