@@ -8,8 +8,8 @@
 # key summary
 
 we were unable to "fully" (i.e. as per  the [documentation](./repproducible-signal.md)) reproduce any build of signal from 7.25.0 onwards, and we suspect the issue might have exited for longer[^to-be-validated].
-- part of the issues can be explained away by discrepancies in tooling (Google Play having a disjoing way of exposing apks.) the comparison script should take that into account of attempt to mitigate it.
-- most concerning difference is in the dex order sensitvity: the same application, built under the same conditons ends up with differntly ordered classes.dex files. we expect this is due to file-order sensitivity and we show how using [disorderfs] can
+- part of the issues can be explained away by discrepancies in tooling (Google Play having a disjoing way of exposing apks.) the comparison script should take that into account of attempt to mitigate it. we have written custom tooling to account for differences in those files.
+- most concerning difference is in the dex order sensitvity: the same application, built under the same conditons ends up with differntly ordered classes.dex files. we expect this is due to file-order sensitivity and we show how using [disorderfs] can allieviate part of the issue.
 
 
 <!-- - yo app ain't no reproducible... partly ya fault <3  -->
