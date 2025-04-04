@@ -12,7 +12,7 @@ from analysis.tests import (
     compare_metadata_list,
     is_metadata_to_dirorder_consistent
 )
-from analysis.visualize import (
+from analysis.plotinator import (
     visualize
 )
 from setup.structure import create_or_clear_summary_directory_for

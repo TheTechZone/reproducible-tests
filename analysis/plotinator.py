@@ -40,7 +40,7 @@ def create_multiindex(index, hierarchy="version"):
         else:
             new_index.append((f"{'ctime' if ctime else 'alph'}_{'reversed' if reverse else 'sorted'}", complete_run))
     names = ["version" if version else "parameters", "run"]
-    return pd.MultiIndex.from_tuples(new_index), names
+    return pd.MultiIndex.from_tuples(new_index, names=names)
 
 
 def visualize():
@@ -49,33 +49,23 @@ def visualize():
     print(json.dumps(obj, indent=4))
     # turn this into a dataframe which will later be copied into a new one with meaningful indices
     df = pd.DataFrame(data=obj)
-    # the matrix is symmetric
-    nr_of_labels = len(df.index)
-    new_index, names = create_multiindex(df.index)
-    new_column_labels, names = create_multiindex(df.columns)
-    print(new_index)
-    print(new_column_labels)
-    print(df)
+    new_index = create_multiindex(df.index)
+    new_column_labels = create_multiindex(df.columns)
     df = pd.DataFrame(df.to_numpy(), index=new_index, columns=new_column_labels)
-    print(df)
-    exit(0)
-
-
-
     df.sort_index(axis=1, inplace=True)
     df.sort_index(inplace=True)
-    print(df)
+    #print(df)
     df.replace({False:0, True:1}, inplace=True)
-    print(df)
+    #print(df)
     df.fillna(3, inplace=True)
-    print(df)
+    #print(df)
     #df = df.reindex(sorted(df.rows), axis=0)
     #print(df)
     #mask = np.triu(np.ones_like(df, dtype=bool))
-    #sns.heatmap(df, center=0, square=True, linewidths=.5, cbar_kws={"shrink": .5})
+    sns.heatmap(df, center=0, square=True, linewidths=.5, cbar_kws={"shrink": .5})
     #plt.savefig()
-    #plt.tight_layout()
-    #plt.show()
+    plt.tight_layout()
+    plt.show()
 
 
 
