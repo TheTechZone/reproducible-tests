@@ -26,7 +26,7 @@ from setup.structure import create_or_clear_summary_directory_for
 
 
 # redo apkdiff
-aggregate_all_runs(dexsort=False, diffuse=False, apkdiff=True, nav=False, output_meta=False)
+# aggregate_all_runs(dexsort=False, diffuse=False, apkdiff=True, nav=False, output_meta=False)
 
-#visualize()
+visualize()
 #run_all_tests([compare_dex_hashes, compare_first_dex_file_hash], with_metadata_list=False)
