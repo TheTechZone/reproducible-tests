@@ -10,7 +10,6 @@ apkdiff.py
 tools/
 *.swp
 .clean_logs/
-*.aab
 .idea/
 disorderfs/
 *__pycache__*

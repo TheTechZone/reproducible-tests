@@ -1,0 +1,12 @@
+Tue Mar 25 10:47:20 AM UTC 2025
+ls -lcfU --full-time /mnt/sdc1_android/mudkip/historic-data/reproducible-tests/ctime_sort_reversed/test/witness-20250325-104719
+total 13
+drwxr-xr-x 22 root root 4096 2025-03-25 10:47:20.469409712 +0000 ..
+-rw-r--r--  1 root root    0 2025-03-25 10:47:20.367411266 +0000 b
+drwxr-xr-x  2 root root 4096 2025-03-25 10:47:20.366411281 +0000 .
+-rw-r--r--  1 root root    0 2025-03-25 10:47:20.264412833 +0000 d
+-rw-r--r--  1 root root    0 2025-03-25 10:47:20.162414389 +0000 f
+-rw-r--r--  1 root root    0 2025-03-25 10:47:20.060415942 +0000 g
+-rw-r--r--  1 root root    0 2025-03-25 10:47:19.957417511 +0000 e
+-rw-r--r--  1 root root    0 2025-03-25 10:47:19.855419066 +0000 c
+-rw-r--r--  1 root root    0 2025-03-25 10:47:19.753420619 +0000 a
