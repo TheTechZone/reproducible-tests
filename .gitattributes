@@ -1,3 +1,4 @@
 data/runs/**/*.apk filter=lfs diff=lfs merge=lfs -text
 data/playstore-mirror/**/*.apk filter=lfs diff=lfs merge=lfs -text
 data/historical/**/*.aab filter=lfs diff=lfs merge=lfs -text
+data/build/tars/*.tar.gz filter=lfs diff=lfs merge=lfs -text
