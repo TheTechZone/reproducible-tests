@@ -4,11 +4,12 @@ Signal-Android/
 reproducible-signal/
 .ipynb_checkpoints/
 __pycache__
+.swp
 .idea
 apkdiff.py
 tools/
+*.swp
 .clean_logs/
-*.aab
 .idea/
 disorderfs/
 *__pycache__*
