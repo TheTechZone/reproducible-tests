@@ -12,6 +12,7 @@ tools/
 .idea/
 disorderfs/
 *__pycache__*
+.vscode/
 
 mismatches
 sort
