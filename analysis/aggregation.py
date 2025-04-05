@@ -232,10 +232,12 @@ def create_apkdiff_record(local_apk_filename):
 # PRE: local apks must already be extracted
 def record_all_apkdiff_comparisons(tarfile_name):
     print("Running apkdiff on all pairs in APK_COMPARE_MAP...") 
+    result = {}
     for apk in APK_COMPARE_MAP.keys():
         rec = create_apkdiff_record(apk)
         id = tarfile_name
-        _update_result_summary("apkdiff.json", id, rec, log=False)
+        result[apk] = rec
+    _update_result_summary("apkdiff.json", id, result, log=False)
     print("Updated apkdiff.json!")
 
 

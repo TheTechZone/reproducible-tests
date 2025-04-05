@@ -1,6 +1,7 @@
 import os
 import json
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -13,6 +14,13 @@ from setup.structure import(
 from analysis.analyse import(
     description_from_params
 )
+
+
+# matrices should be symmetrical, sanity check this before turning the plot into a triangle
+def is_matrix_symmetric(dataframe):
+    array = dataframe.to_numpy()
+    for x, y in np.ndindex(array.shape):
+        assert(array[x, y] == array[y, x]), f"Symmetry broken for {x} <=> {y}"
 
 
 def create_multiindex(index, hierarchy="version"):
@@ -54,15 +62,19 @@ def visualize():
     df = pd.DataFrame(df.to_numpy(), index=new_index, columns=new_column_labels)
     df.sort_index(axis=1, inplace=True)
     df.sort_index(inplace=True)
-    #print(df)
     df.replace({False:0, True:1}, inplace=True)
-    #print(df)
-    df.fillna(3, inplace=True)
-    #print(df)
-    #df = df.reindex(sorted(df.rows), axis=0)
-    #print(df)
-    #mask = np.triu(np.ones_like(df, dtype=bool))
-    sns.heatmap(df, center=0, square=True, linewidths=.5, cbar_kws={"shrink": .5})
+    df.fillna(2, inplace=True)
+    is_matrix_symmetric(df)
+    mask = np.triu(np.ones_like(df, dtype=bool))
+    #plt.xkcd()
+    print(df)
+    colors = [(0,"r"), (0.5,"k"), (1,"b")]
+    cmap = LinearSegmentedColormap.from_list('Custom', colors, len(colors))
+    ax = sns.heatmap(df, center=0, square=True, mask=mask, linewidths=.5, cbar_kws={"shrink": .5}, cmap=cmap)
+    colorbar = ax.collections[0].colorbar
+    colorbar.set_ticks([0, 1, 2])
+    colorbar.set_ticklabels(['match', 'inconsistent', 'No compariso'])
+    plt.xticks(rotation=45)
     #plt.savefig()
     plt.tight_layout()
     plt.show()
