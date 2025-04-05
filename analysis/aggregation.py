@@ -277,7 +277,7 @@ def extract_output_metadata(tarfile):
 
 
 # Iterates through the data/tars folder and aggregates the results one run at a time
-def analyse_all_runs(dexsort=True, diffuse=True, apkdiff=True, nav=True, output_meta=True):
+def aggregate_all_runs(dexsort=True, diffuse=True, apkdiff=True, nav=True, output_meta=True):
     # Update lfs refs
     local["git"]["lfs", "checkout"]()
     for tarfile in os.listdir(TARS_ROOT):# meep hard 

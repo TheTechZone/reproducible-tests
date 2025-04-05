@@ -8,9 +8,51 @@ from setup.structure import(
     SUMMARY_ROOT,
     extract_version_and_run,
     extract_parameters,
-    construct_summary_path
+    construct_summary_path,
+    create_or_clear_summary_directory_for
 )
-from analysis.tests import COMPARE_TO_TESTNAME
+from analysis.tests import (
+    COMPARE_TO_TESTNAME,
+    compare_dex_hashes,
+    compare_first_dex_file_hash,
+    compare_metadata_list,
+    is_metadata_to_dirorder_consistent
+)
+
+
+def run_tests(tarfiles, compare):
+    """
+    Currently this takes the same set of files for between and within version comparisons. May want to separate that
+    for some of the tests (e.g., metadata consistency)
+    """
+    create_or_clear_summary_directory_for(COMPARE_TO_TESTNAME[compare], version=True)
+    versions = get_all_versions()
+    for v in versions:
+        check_for_same_version(v, tarfiles, compare)
+        print()
+    create_or_clear_summary_directory_for(COMPARE_TO_TESTNAME[compare], version=False)
+    check_for_same_params(None, compare, dfs=False)
+    print()
+    # Enumerate the 4 parameter combinations
+    check_for_same_params(None, compare, dfs=True, alph=True, ctime=False, reverse=False)
+    print()
+    check_for_same_params(None, compare, dfs=True, alph=True, ctime=False, reverse=True)
+    print()
+    check_for_same_params(None, compare, dfs=True, alph=False, ctime=True, reverse=False)
+    print()
+    check_for_same_params(None, compare, dfs=True, alph=False, ctime=True, reverse=True)
+    
+###
+# Run all the tests
+###
+
+def run_all_tests(tests, with_metadata_list=True):
+    for test in tests:
+        run_tests(get_all_tarfiles(), test)
+    if with_metadata_list:
+        tarfiles = assemble_consistent_tarfile_list(is_metadata_to_dirorder_consistent)
+        run_tests(tarfiles, compare_metadata_list)
+
 
 ###
 # The analysis makes use of the 'classified_runs' structure
@@ -27,7 +69,6 @@ from analysis.tests import COMPARE_TO_TESTNAME
 # classified_runs = {"v7.30.4":{"consistent":True, "runs":["signal-android-ctime-reversed_v7.30.4_01.tar.gz",...]}...}
 # classified_runs = {"ctime reverse sorted":{"consistent":True, "runs":["signal-android-ctime-reversed_v7.30.4_01.tar.gz",...]}...}
 ###
-
 
 def print_with_params(version, file, sorting_criteria=None, direction=None):
     with open(os.path.join(DATA_ROOT, "res", file), "r") as f:
@@ -233,4 +274,3 @@ def check_for_same_params(tarfiles, compare: Callable[[str, str], tuple[bool, li
         with open(summary_file, 'w') as f: # create and write empty dict
             f.write("{}")
     check_consistency_of_classified_runs(classified_runs, compare, summary_file)
-    
