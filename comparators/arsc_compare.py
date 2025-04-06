@@ -569,8 +569,8 @@ def main():
         description="Compare and patch Android ARSC resource files"
     )
 
-    parser.add_argument("target_arsc", help="Target ARSC file (usually from PlayStore)")
     parser.add_argument("source_arsc", help="Source ARSC file (compiled by yourself)")
+    parser.add_argument("target_arsc", help="Target ARSC file (usually from PlayStore)")
     parser.add_argument(
         "-o", "--output", help="Output file for comparison results", default=None
     )
