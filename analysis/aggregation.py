@@ -278,7 +278,7 @@ def run_comparator_on_apkdiff_mismatches():
     mismatches_path = os.path.join("mismatches")
     result = defaultdict(dict)
     axml = local[os.path.join(COMPARATORS_PATH, "axml_compare.py")]
-    arsc = local[os.path.join(COMPARATORS_PATH, "arcs_compare.py")]
+    arsc = local[os.path.join(COMPARATORS_PATH, "arsc_compare.py")]
     # local, playstore
     local_mismatches_dir = os.path.join(mismatches_path, "first")
     # call comparatinator
@@ -291,7 +291,7 @@ def run_comparator_on_apkdiff_mismatches():
                     result["axml"][filename] = stdout
                 if ".arsc" in filename:
                     (retcode, stdout, _) = arsc[local_item, playstore_item].run()
-                    if retcode is not 1:
+                    if retcode != 1:
                         result["arsc"][f"{filename}|local->playstore"] = stdout
                         (retcode, stdout, _) = arsc[playstore_item, local_item].run()
                         result["arsc"][f"{filename}|playstore->local"] = stdout
