@@ -2,6 +2,7 @@ import os
 import json
 from plumbum import local
 from setup.structure import (
+    COMPARATORS_PATH,
     BUILDS_ROOT,
     BUNDLETOOL_EXE,
     DATA_ROOT,
@@ -245,7 +246,9 @@ def create_apkdiff_record(local_apk_filename):
     if not match:
         for dirpath, _, filenames in os.walk("mismatches"):
             for filename in filenames:
-                mismatched_files.append(os.path.join(dirpath, filename))
+                item = os.path.join(dirpath, filename)
+                item = item.replace("first", "local") if "first" in item else item.replace("second", "playstore")
+                mismatched_files.append(item)
     apkdiff_res["mismatched_files"] = mismatched_files
     return apkdiff_res
 
@@ -260,10 +263,32 @@ def record_all_apkdiff_comparisons(tarfile_name):
     result = {}
     for apk in APK_COMPARE_MAP.keys():
         rec = create_apkdiff_record(apk)
-        id = tarfile_name
+        # Now apkdiff was run and we can call the comparator on interesting files
+
         result[apk] = rec
-    _update_result_summary("apkdiff.json", id, result, log=False)
+    _update_result_summary("apkdiff.json", tarfile_name, result, log=False)
     print("Updated apkdiff.json!")
+
+
+def run_comparator_on_apkdiff_mismatches(tarfilename, apk):
+    mismatches_path = os.path.join("mismatches")
+    result = {}
+    axml = local[os.path.join(COMPARATORS_PATH, "axml_compare.py")]
+    arsc = local[os.path.join(COMPARATORS_PATH, "arcs_compare.py")]
+    # local, playstore
+    local_mismatches_dir = os.path.join(mismatches_path, "first")
+    for dirpath, _, filenames in os.walk(local_mismatches_dir):
+            for filename in filenames:
+                local_item = os.path.join(dirpath, filename)
+                playstore_item = os.path.join(dirpath.replace("first", "second"), filename)
+                if ".xml" in filename:
+
+                # call comparatinator
+                item = item.replace("first", "local") if "first" in item else item.replace("second", "playstore")
+                mismatched_files.append(item)
+                mismatched_files.append(os.path.join(dirpath, filename))
+                # 
+
 
 
 def copy_navigation_jsons(tarfile_name):

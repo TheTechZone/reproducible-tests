@@ -7,6 +7,7 @@ from plumbum import local
 
 # Constants
 # Assumes that "." resolves to the directory of the analysis notebook
+COMPARATORS_PATH = os.path.abspath(os.path.join(".", "comparators"))
 DATA_ROOT = os.path.abspath(os.path.join(".", "data"))
 BUILDS_ROOT = os.path.join(DATA_ROOT, "build")
 # CB: Current Build
