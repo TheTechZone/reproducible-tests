@@ -1,6 +1,7 @@
 import os
 import json
 from plumbum import local
+from collections import defaultdict
 from setup.structure import (
     COMPARATORS_PATH,
     BUILDS_ROOT,
@@ -130,7 +131,7 @@ def _unzip_playstore_apk(cvc):
     print(f"Successfully unzipped universal-{cvc}!")
 
 
-def _update_result_summary(file, key, value, log=True):
+def _update_aggregation_result(file, key, value, log=True):
     if log:
         print(f"Updating {file}...")
     filepath = os.path.join(DATA_ROOT, "res", file)
@@ -261,33 +262,44 @@ def create_apkdiff_record(local_apk_filename):
 def record_all_apkdiff_comparisons(tarfile_name):
     print("Running apkdiff on all pairs in APK_COMPARE_MAP...")
     result = {}
+    comparator_result = {}
     for apk in APK_COMPARE_MAP.keys():
         rec = create_apkdiff_record(apk)
-        # Now apkdiff was run and we can call the comparator on interesting files
-
         result[apk] = rec
-    _update_result_summary("apkdiff.json", tarfile_name, result, log=False)
-    print("Updated apkdiff.json!")
+        # Now apkdiff was run and we can call the comparators on interesting files
+        comparator_rec = run_comparator_on_apkdiff_mismatches()
+        comparator_result[apk] = comparator_rec
+    _update_aggregation_result("apkdiff.json", tarfile_name, result, log=False)
+    _update_aggregation_result("apkdiff_comparators.json", tarfile_name, comparator_result, log=False)
+    print("Updated apkdiff aggregations!")
 
 
-def run_comparator_on_apkdiff_mismatches(tarfilename, apk):
+def run_comparator_on_apkdiff_mismatches():
     mismatches_path = os.path.join("mismatches")
-    result = {}
+    result = defaultdict(dict)
     axml = local[os.path.join(COMPARATORS_PATH, "axml_compare.py")]
     arsc = local[os.path.join(COMPARATORS_PATH, "arcs_compare.py")]
     # local, playstore
     local_mismatches_dir = os.path.join(mismatches_path, "first")
+    # call comparatinator
     for dirpath, _, filenames in os.walk(local_mismatches_dir):
             for filename in filenames:
                 local_item = os.path.join(dirpath, filename)
                 playstore_item = os.path.join(dirpath.replace("first", "second"), filename)
                 if ".xml" in filename:
-
-                # call comparatinator
-                item = item.replace("first", "local") if "first" in item else item.replace("second", "playstore")
-                mismatched_files.append(item)
-                mismatched_files.append(os.path.join(dirpath, filename))
-                # 
+                    (_, stdout, _) = axml[local_item, playstore_item].run()
+                    result["axml"][filename] = stdout
+                if ".arsc" in filename:
+                    (retcode, stdout, _) = arsc[local_item, playstore_item].run()
+                    if retcode is not 1:
+                        result["arsc"][f"{filename}|local->playstore"] = stdout
+                        (retcode, stdout, _) = arsc[playstore_item, local_item].run()
+                        result["arsc"][f"{filename}|playstore->local"] = stdout
+                    else:
+                        # Record two failures
+                        result["arsc"][f"{filename}|local->playstore"] = "Failure"
+                        result["arsc"][f"{filename}|playstore->local"] = "Failure"
+    return result
 
 
 
@@ -337,7 +349,7 @@ def extract_output_metadata(tarfile):
     timeinfo = local["ls"]["-ltr", "--full-time", directory_path]()
     filecontents = local["cat"][os.path.join(directory_path, "output-metadata.json")]()
     data = {"mtimes": timeinfo, "output-metadata.json": filecontents}
-    _update_result_summary("output_metadata_mtimes.json", tarfile, data)
+    _update_aggregation_result("output_metadata_mtimes.json", tarfile, data)
 
 
 # Iterates through the data/tars folder and aggregates the results one run at a time
@@ -359,10 +371,10 @@ def aggregate_all_runs(
         id = tarfile
         if dexsort:  # Dex sort test
             dex_set = create_dex_sets(current_cvc())
-            _update_result_summary("dex_sort.json", id, dex_set)
+            _update_aggregation_result("dex_sort.json", id, dex_set)
         if diffuse:  # diffuse
             diffuse_record = create_diffuse_record()
-            _update_result_summary("diffuse.json", id, diffuse_record)
+            _update_aggregation_result("diffuse.json", id, diffuse_record)
         if apkdiff:  # apkdiff
             record_all_apkdiff_comparisons(tarfile)
         if nav:
