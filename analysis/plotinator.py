@@ -11,6 +11,12 @@ from setup.structure import SUMMARY_ROOT, extract_parameters
 from analysis.analyse import description_from_params
 
 
+def pretty_print_raw(filepath):
+    with open(filepath, "r") as f:
+        obj = json.loads(f.read())
+    print(json.dumps(obj, indent=4))
+
+
 # matrices should be symmetrical, sanity check this before turning the plot into a triangle
 def is_matrix_symmetric(dataframe):
     array = dataframe.to_numpy()
@@ -32,24 +38,31 @@ def create_multiindex(index, fixed_version):
         else:
             hierarchy.append(version)
     assert (
-        len(set(hierarchy)) == 1
-    ), f"Unexpected {"parameters" if fixed_version else "versions"}: {set(hierarchy)} for:\n{index}"
+        len(set(hierarchy)) >= 1
+    ), f"Unexpected {"parameters" if fixed_version else "versions"}: {hierarchy} for:\n{index}"
     # Now create hierarchical multiindex for each run
     # if it was a dfstest run, prepent the run nr. with a 't_'
     new_index = []
     for tarfile in index:
         (version, run, dfstest, dfs, ctime, reverse) = extract_parameters(tarfile)
         complete_run = f"t_{run}" if dfstest else run
-        if fixed_version:
+        if not fixed_version:
             new_index.append((version, complete_run))
         else:
-            new_index.append(
-                (
-                    f"{'ctime' if ctime else 'alph'}_{'reversed' if reverse else 'sorted'}",
-                    complete_run,
+            if not dfs:
+                new_index.append(
+                    (
+                    "no_dfs", complete_run
+                    )
                 )
-            )
-    names = ["version" if version else "parameters", "run"]
+            else:
+                new_index.append(
+                    (
+                        f"{'ctime' if ctime else 'alph'}_{'reversed' if reverse else 'sorted'}",
+                        complete_run,
+                    )
+                )
+    names = ["version" if not fixed_version else "parameters", "run"]
     return pd.MultiIndex.from_tuples(new_index, names=names)
 
 
@@ -85,41 +98,49 @@ def correlation_triangles(root, fixed_version):
     plots = []
     for summary_file in os.listdir(root):
         df = generate_pd_frame(os.path.join(root, summary_file), fixed_version)
-        mask = np.triu(np.ones_like(df, dtype=bool))
-        plt.xkcd()
-        np.fill_diagonal(mask, False)  # maybe?
-        colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]
-        cmap = LinearSegmentedColormap.from_list("Custom", colors, len(colors))
-        plt.figure(figsize=(10, 8), dpi=80)
-        ax = sns.heatmap(
-            df,
-            center=1,
-            square=True,
-            mask=mask,
-            linewidths=0.5,
-            cbar_kws={"shrink": 0.5},
-            cmap=cmap,
-            vmin=np.amin(df),
-            vmax=np.amax(df),
-        )
-        colorbar = ax.collections[0].colorbar
-        colorbar.set_ticks([0, 1, 2])
-        colorbar.set_ticklabels(["match", "inconsistent", "n/a"])
-        plt.xticks(rotation=45)
-        plots.add(ax)
+        if df is not None: # otherwise we skip the file
+            mask = np.triu(np.ones_like(df, dtype=bool))
+            plt.xkcd()
+            np.fill_diagonal(mask, False)  # maybe?
+            colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]
+            cmap = LinearSegmentedColormap.from_list("Custom", colors, len(colors))
+            plt.figure(figsize=(10, 8), dpi=80)
+            ax = sns.heatmap(
+                df,
+                center=1,
+                square=True,
+                mask=mask,
+                linewidths=0.5,
+                cbar_kws={"shrink": 0.5},
+                cmap=cmap,
+                vmin=np.amin(df),
+                vmax=np.amax(df),
+            )
+            colorbar = ax.collections[0].colorbar
+            colorbar.set_ticks([0, 1, 2])
+            # I save (len(diff) > 0) => true means inconsitent
+            colorbar.set_ticklabels(["match", "inconsistent", "n/a"])
+            plt.xticks(rotation=45)
+            plots.append(ax)
+        else:
+            print(f"Skipped {summary_file}...")
 
 
 
 def generate_pd_frame(file_path, fixed_version):
     with open(os.path.join(file_path), "r") as f:
         obj = json.loads(f.read())
+    if len(obj) == 0: # Not all tests can always be run, e.g., we only have a single 34 run
+        return None
     df = pd.DataFrame(data=obj)
     print(f"Working on {file_path}...")
     new_index = create_multiindex(df.index, fixed_version)
     new_column_labels = create_multiindex(df.columns, fixed_version)
+    #print(df)
     df = pd.DataFrame(df.to_numpy(), index=new_index, columns=new_column_labels)
     df.sort_index(axis=1, inplace=True)
     df.sort_index(inplace=True)
+    #print(df)
     df.replace({False: 0, True: 1}, inplace=True)
     df.fillna(2, inplace=True)
     is_matrix_symmetric(df)
