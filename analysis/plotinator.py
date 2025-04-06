@@ -72,7 +72,7 @@ def nr_of_subplots(root):
 
 def subfigures(test, fixed_title, fixed_version):
     # root of the files?
-    root = os.path.join(SUMMARY_ROOT, test)        
+    root = os.path.join(SUMMARY_ROOT, test, "fixed_versions" if fixed_version else "fixed_parameters")        
     # Organisation of subplots?
     nr_of_plots = int(nr_of_subplots(root))
     nr_x = int(nr_of_plots/2) + 1
@@ -82,51 +82,46 @@ def subfigures(test, fixed_title, fixed_version):
     # title?
     fig.suptitle(f"{test} for {fixed_title}")
     # Create all plots
-    plots = correlation_triangles(root, fixed_version)
+    all_files = os.listdir(root)
     i = 0
     # call plotting
     for x in range(nr_x):
         for y in range(nr_y):
-            while i < len(plots):
-                axs[x, y] = plots[i]
+            while i < len(all_files):
+                correlation_triangle(fixed_version, axs[x, y], os.path.join(root, all_files[i]))
                 i = i + 1
     plt.show()
 
 
 
-def correlation_triangles(root, fixed_version):
-    # returns an array of ax populated by the triangles
-    root = os.path.join(root, "fixed_versions" if fixed_version else "fixed_parameters")
-    plots = []
-    for summary_file in os.listdir(root):
-        df = generate_pd_frame(os.path.join(root, summary_file), fixed_version)
-        if df is not None: # otherwise we skip the file
-            mask = np.triu(np.ones_like(df, dtype=bool))
-            plt.xkcd()
-            np.fill_diagonal(mask, False)  # maybe?
-            colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]
-            cmap = LinearSegmentedColormap.from_list("Custom", colors, len(colors))
-            plt.figure(figsize=(10, 8), dpi=80)
-            ax = sns.heatmap(
-                df,
-                center=1,
-                square=True,
-                mask=mask,
-                linewidths=0.5,
-                cbar_kws={"shrink": 0.5},
-                cmap=cmap,
-                vmin=np.amin(df),
-                vmax=np.amax(df),
-            )
-            colorbar = ax.collections[0].colorbar
-            colorbar.set_ticks([0, 1, 2])
-            # I save (len(diff) > 0) => true means inconsitent
-            colorbar.set_ticklabels(["match", "inconsistent", "n/a"])
-            plt.xticks(rotation=45)
-            plots.append(ax)
-        else:
-            print(f"Skipped {summary_file}...")
-    return plots
+def correlation_triangle(fixed_version, axes, filepath):
+    df = generate_pd_frame(filepath, fixed_version)
+    if df is not None: # otherwise we skip the file
+        mask = np.triu(np.ones_like(df, dtype=bool))
+        plt.xkcd()
+        np.fill_diagonal(mask, False)  # maybe?
+        colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]
+        cmap = LinearSegmentedColormap.from_list("Custom", colors, len(colors))
+        plt.figure(figsize=(10, 8), dpi=80)
+        ax = sns.heatmap(
+            df,
+            center=1,
+            square=True,
+            mask=mask,
+            linewidths=0.5,
+            cbar_kws={"shrink": 0.5},
+            cmap=cmap,
+            vmin=np.amin(df),
+            vmax=np.amax(df),
+            axes=axes
+        )
+        colorbar = ax.collections[0].colorbar
+        colorbar.set_ticks([0, 1, 2])
+        # I save (len(diff) > 0) => true means inconsitent
+        colorbar.set_ticklabels(["match", "inconsistent", "n/a"])
+        plt.xticks(rotation=45)
+    else:
+        print(f"Skipped {filepath}...")
 
 
 
