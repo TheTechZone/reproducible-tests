@@ -80,9 +80,9 @@ def run_all_tests(tests, with_metadata_list=True):
 def print_with_params(version, file, sorting_criteria=None, direction=None):
     with open(os.path.join(DATA_ROOT, "res", file), "r") as f:
         data = json.loads(f.read())
-
+    
     for key in data.keys():
-        if version in key and sorting_criteria in key and direction in key:
+        if version in key and (sorting_criteria and sorting_criteria in key) and (direction and direction in key):
             print(f"{key}:{json.dumps(data[key], indent=4, sort_keys=True)}")
 
 
