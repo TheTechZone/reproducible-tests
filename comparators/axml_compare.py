@@ -576,7 +576,8 @@ ALLOWED_PLAYSTORE_VENDING_TYPES = {
 def main():
     # Check arguments
     if len(sys.argv) != 3:
-        print("Usage: python3 android_xml_semantic_diff.py <file1.xml> <file2.xml>")
+        print("Compare two Android XML (axml) files, accounting for known/allowed differences.")
+        print("Usage: axml_compare.py <file1.xml> <file2.xml>")
         sys.exit(1)
 
     # Get file paths
@@ -644,9 +645,30 @@ def main():
             else:
                 print("All keys are valid")
 
+        elif "res/xml/splits0.xml" in comparator.file1 and  "res/xml/splits0.xml" in comparator.file2:
+            print("language files")
+            added = comparator.filter_differences(
+                change_type=ChangeType.ADDED, element_type="element"
+            )
+            removed = comparator.filter_differences(
+                change_type=ChangeType.REMOVED, element_type="element"
+            )
+            modified = comparator.filter_differences(change_type=ChangeType.MODIFIED)
+            if modified:
+                print(f"encountered unexpected differences: {modified}")
+
+            added_keys, removed_keys = {
+                d.details["attributes"][
+                    "key"
+                ] for d in added
+            }, {
+                d.details["attributes"][
+                    "key"
+                ] for d in removed
+            }
+            print(added_keys, removed_keys)
         else:
             print("differences were not expected :(")
-        # comparator.filter_differences(element_type="element", change_type=ChangeType.ADDED)
     # # Example of programmatic access to differences
     # if has_differences:
     #     print("\nProgrammatic access examples:")
