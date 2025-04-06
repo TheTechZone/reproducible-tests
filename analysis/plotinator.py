@@ -74,10 +74,11 @@ def subfigures(test, fixed_title, fixed_version):
     # root of the files?
     root = os.path.join(SUMMARY_ROOT, test)        
     # Organisation of subplots?
-    nr_of_plots = nr_of_subplots(root)
-    nr_x = int(nr_of_plots/2)
-    nr_y = int(nr_of_plots/2) + ( 1 if nr_of_plots%2 == 0 else 0)
-    fig, ax = plt.subplots(nr_x, nr_y)
+    nr_of_plots = int(nr_of_subplots(root))
+    nr_x = int(nr_of_plots/2) + 1
+    nr_y = int(nr_of_plots/2) + ( 1 if nr_of_plots%2 == 0 else 0) + 1
+    print(f"Creating {nr_x}x{nr_y} subplots...")
+    fig, axs = plt.subplots(nr_x, nr_y)
     # title?
     fig.suptitle(f"{test} for {fixed_title}")
     # Create all plots
@@ -86,8 +87,9 @@ def subfigures(test, fixed_title, fixed_version):
     # call plotting
     for x in range(nr_x):
         for y in range(nr_y):
-            ax[x, y] = plots[i]
-            i = i + 1
+            while i < len(plots):
+                axs[x, y] = plots[i]
+                i = i + 1
     plt.show()
 
 
@@ -124,6 +126,7 @@ def correlation_triangles(root, fixed_version):
             plots.append(ax)
         else:
             print(f"Skipped {summary_file}...")
+    return plots
 
 
 

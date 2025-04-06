@@ -20,6 +20,6 @@ from setup.structure import create_or_clear_summary_directory_for
 #aggregate_all_runs(dexsort=False, diffuse=False, apkdiff=True, nav=False, output_meta=False)
 
 
-pretty_print_raw("/home/chrissy/Code/reproducible-tests/data/summary/dex_sort/fixed_versions/7.30.2.json")
+#pretty_print_raw("/home/chrissy/Code/reproducible-tests/data/summary/dex_sort/fixed_versions/7.30.2.json")
 visualize()
 # run_all_tests([compare_dex_hashes, compare_first_dex_file_hash], with_metadata_list=False)
