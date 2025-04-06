@@ -53,10 +53,76 @@ def create_multiindex(index, hierarchy="version"):
     return pd.MultiIndex.from_tuples(new_index, names=names)
 
 
+def nr_of_subplots(root):
+    return len(os.listdir(root))
 
-def subfigures_by_param(test):
-    pass
 
+def subfigures(test, fixed_title, fixed_version):
+    # root of the files?
+    root = os.path.join(SUMMARY_ROOT, test)        
+    # Organisation of subplots?
+    nr_of_plots = nr_of_subplots(root)
+    nr_x = int(nr_of_plots/2)
+    nr_y = int(nr_of_plots/2) + ( 1 if nr_of_plots%2 == 0 else 0)
+    fig, ax = plt.subplots(nr_x, nr_y)
+    # title?
+    fig.suptitle(f"{test} for {fixed_part}")
+    # Create all plots
+    plots = correlation_triangles(root, fixed_version)
+    i = 0
+    # call plotting
+    for x in range(nr_x):
+        for y in range(nr_y):
+            ax[x, y] = plots[i]
+            i = i + 1
+    plt.show()
+
+
+
+def correlation_triangles(root, fixed_version=True):
+    # returns an array of ax populated by the triangles
+    root = os.path.join(root, "fixed_versions" if fixed_version else "fixed_parameters")
+    plots = []
+    for summary_file in os.listdir(root):
+        df = generate_pd_frame(summary_file)
+        mask = np.triu(np.ones_like(df, dtype=bool))
+        plt.xkcd()
+        np.fill_diagonal(mask, False)  # maybe?
+        colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]
+        cmap = LinearSegmentedColormap.from_list("Custom", colors, len(colors))
+        plt.figure(figsize=(10, 8), dpi=80)
+        ax = sns.heatmap(
+            df,
+            center=1,
+            square=True,
+            mask=mask,
+            linewidths=0.5,
+            cbar_kws={"shrink": 0.5},
+            cmap=cmap,
+            vmin=np.amin(df),
+            vmax=np.amax(df),
+        )
+        colorbar = ax.collections[0].colorbar
+        colorbar.set_ticks([0, 1, 2])
+        colorbar.set_ticklabels(["match", "inconsistent", "n/a"])
+        plt.xticks(rotation=45)
+        plots.add(ax)
+
+
+
+def generate_pd_frame(file_path):
+    with os.path.join(file_path, "r") as f:
+        obj = json.loads(f.read())
+    df = pd.DataFrame(data=obj)
+    new_index = create_multiindex(df.index)
+    new_column_labels = create_multiindex(df.columns)
+    df = pd.DataFrame(df.to_numpy(), index=new_index, columns=new_column_labels)
+    df.sort_index(axis=1, inplace=True)
+    df.sort_index(inplace=True)
+    df.replace({False: 0, True: 1}, inplace=True)
+    df.fillna(2, inplace=True)
+    is_matrix_symmetric(df)
+    return df
 
 
 def visualize():
