@@ -6,10 +6,11 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from setup.structure import SUMMARY_ROOT, extract_parameters
+from setup.structure import SUMMARY_ROOT, PLOT_ROOT, extract_parameters
 
 from analysis.analyse import description_from_params
 
+from analysis.tests import COMPARE_TO_TESTNAME
 
 def pretty_print_raw(filepath):
     with open(filepath, "r") as f:
@@ -70,20 +71,21 @@ def nr_of_subplots(root):
     return len(os.listdir(root))
 
 
-def subfigures(test, fixed_title, fixed_version):
+def subfigures(test, fixed_version):
     # root of the files?
     root = os.path.join(SUMMARY_ROOT, test, "fixed_versions" if fixed_version else "fixed_parameters")        
     # Organisation of subplots?
     nr_of_plots = int(nr_of_subplots(root))
-    nr_x = int(nr_of_plots/2) + 1
+    nr_x = int(nr_of_plots/2)
     #nr_x = 2
     #nr_y = 3
-    nr_y = int(nr_of_plots/2) + ( 1 if nr_of_plots%2 == 0 else 0) + 1
+    nr_y = int(nr_of_plots/2) + (1 if nr_of_plots%2 == 0 else 0) + 1
     print(f"Creating {nr_x}x{nr_y} subplots...")
-    #fig, axes = plt.subplots(nr_x, nr_y)
-    fig = plt.figure()
-    # title?
-    fig.suptitle(f"{test} for {fixed_title}")
+    fig, axes = plt.subplots(nrows=nr_x, ncols=nr_y, figsize=(22,7))
+    # Create title from filepath
+    print(root)
+    version_or_params = root.split("/")[-1].replace(".json", "")
+    fig.suptitle(f"{test} for {version_or_params.replace("_", " ")}")
     # Create all plots
     all_files = os.listdir(root)
     i = 0
@@ -93,14 +95,18 @@ def subfigures(test, fixed_title, fixed_version):
         for y in range(nr_y):
             if i < len(all_files):
                 print(f"x:{x}, y:{y}")
-                ax = fig.add_subplot(nr_x, nr_y, plot_idx)
-                success = correlation_triangle(fixed_version, ax, os.path.join(root, all_files[i]))
+                #ax = fig.add_subplot(nr_x, nr_y, plot_idx)
+                success = correlation_triangle(fixed_version, axes[x, y], os.path.join(root, all_files[i]))
                 while not success:
                     i = i + 1
-                    success = correlation_triangle(fixed_version, ax, os.path.join(root, all_files[i]))
+                    success = correlation_triangle(fixed_version, axes[x, y], os.path.join(root, all_files[i]))
+                # Set title:
+                axes[x,y].set_title(all_files[i].replace(".json", "").replace("_", " "))
                 i = i + 1
                 plot_idx = plot_idx + 1
-    plt.show()
+                #axes[x, y].tick_params(axis='x', labelrotation=45)
+    plt.subplots_adjust(hspace=1.2, wspace=0.7)
+    plt.savefig(os.path.join(PLOT_ROOT, f"{test}_{version_or_params}"))
 
 
 def test():
@@ -177,7 +183,11 @@ def generate_pd_frame(file_path, fixed_version):
 
 
 def visualize():
-    subfigures("dex_sort", "blah", True)
-    # plt.savefig()
-    plt.tight_layout()
-    plt.show()
+    for key in COMPARE_TO_TESTNAME.keys():
+        test = COMPARE_TO_TESTNAME[key]
+        print(test)
+        for fixed_version in [True, False]:
+            subfigures(test, fixed_version)
+    #plt.savefig()
+    #plt.tight_layout()
+    #plt.show()

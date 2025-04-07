@@ -23,6 +23,7 @@ PLAYSTORE_UNIVERSAL_UNZIP_PATH = os.path.join(DATA_ROOT, "playstore-universal-un
 BUNDLETOOL_EXE = os.path.join(".", "bundletool")
 VERSION_CVC_FILE = os.path.join(".", "version_code_tag_mappings.json")
 SUMMARY_ROOT = os.path.join(DATA_ROOT, "summary")
+PLOT_ROOT = os.path.join(DATA_ROOT, "plots")
 
 
 def _playstore_apk_path(cvc):
