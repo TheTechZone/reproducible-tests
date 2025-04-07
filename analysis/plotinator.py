@@ -91,6 +91,8 @@ def subfigures(test, fixed_version):
     all_files = os.listdir(root)
     i = 0
     plot_idx = 1
+
+    successful_plots = []
     # call plotting
     for x in range(nr_x):
         for y in range(nr_y):
@@ -109,10 +111,111 @@ def subfigures(test, fixed_version):
                 axes[x, y].set_title(
                     all_files[i].replace(".json", "").replace("_", " ")
                 )
+                # Record the successful plot
+                successful_plots.append(
+                    {
+                        "ax": axes[x, y],
+                        "title": all_files[i].replace(".json", "").replace("_", " "),
+                        "position": (x, y),
+                    }
+                )
                 i = i + 1
                 plot_idx = plot_idx + 1
                 # axes[x, y].tick_params(axis='x', labelrotation=45)
-    plt.subplots_adjust(hspace=1.2, wspace=0.7)
+            else:
+                # No more files to plot, hide the remaining axes
+                axes[x, y].set_visible(False)
+
+    cbar_shrink = 0.5
+    total_plots = len(successful_plots)
+    if total_plots > 0:
+        # Calculate optimal grid dimensions
+        optimal_cols = int(np.ceil(np.sqrt(total_plots)))
+        optimal_rows = int(np.ceil(total_plots / optimal_cols))
+
+        # Only rearrange if the current layout is not optimal
+        if nr_x != optimal_rows or nr_y != optimal_cols:
+            print(f"Rebalancing layout to {optimal_rows}x{optimal_cols}")
+            cbar_shrink = 0.4
+            # Hide all current axes
+            for x in range(nr_x):
+                for y in range(nr_y):
+                    axes[x, y].set_visible(False)
+
+            # Create a new figure with optimal dimensions
+            new_fig, new_axes = plt.subplots(
+                nrows=optimal_rows,
+                ncols=optimal_cols,
+                figsize=(optimal_cols * 12.75, optimal_rows * 4.25),
+            )
+
+            # Make sure new_axes is a 2D array
+            if optimal_rows == 1 and optimal_cols == 1:
+                new_axes = np.array([[new_axes]])
+            elif optimal_rows == 1:
+                new_axes = new_axes.reshape(1, -1)
+            elif optimal_cols == 1:
+                new_axes = new_axes.reshape(-1, 1)
+
+            # Copy content from old figure to new figure
+            for idx, plot in enumerate(successful_plots):
+                new_x = idx // optimal_cols
+                new_y = idx % optimal_cols
+
+                # Get the old plot's content and transfer it
+                # This is a simplified approach - in reality, you may need to
+                # re-run correlation_triangle with the new axes
+                old_ax = plot["ax"]
+                new_ax = new_axes[new_x, new_y]
+
+                # Transfer the title
+                new_ax.set_title(plot["title"])
+
+                # Re-run correlation_triangle with the new axis
+                # old_pos = plot['position']
+                file_name = plot["title"].replace(" ", "_") + ".json"
+                correlation_triangle(
+                    fixed_version, new_ax, os.path.join(root, file_name)
+                )
+
+            # Set the title on the new figure
+            new_fig.suptitle(f"{test} for {version_or_params.replace('_', ' ')}")
+
+            # # Adjust spacing for the new figure
+            # new_fig.subplots_adjust(hspace=1.4, wspace=0.9)
+
+            # # Save the new figure and close the old one
+            # new_fig.savefig(os.path.join(PLOT_ROOT, f"{test}_{version_or_params}"), dpi=300)
+            plt.close(fig)
+
+            fig = new_fig
+            axes = new_axes
+            # return
+
+    # plt.subplots_adjust(hspace=1.4, wspace=1.4)
+    plt.tight_layout()
+
+    # cax = plt.axes((0.85, 0.1, 0.075, 0.8))
+    # plt.colorbar(cax=cax)
+    import matplotlib as mpl
+
+    # cmap = mpl.cm.viridis
+
+    colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]
+    cmap = LinearSegmentedColormap.from_list("Custom", colors, len(colors))
+    # cmap = (mpl.colors.ListedColormap(['red', 'green', 'blue']))
+    bounds = [0, 1, 2, 3]
+    norm = mpl.colors.BoundaryNorm(bounds, 4)
+
+    cbar = fig.colorbar(
+        mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+        ax=axes,
+        orientation="vertical",
+        ticks=[0.5, 1.5, 2.5],
+        shrink=cbar_shrink,
+    )
+    cbar.set_ticklabels(["match", "inconsistent", "n/a"])
+
     plt.savefig(os.path.join(PLOT_ROOT, f"{test}_{version_or_params}"), dpi=300)
 
 
@@ -162,7 +265,16 @@ def correlation_triangle(fixed_version, ax, filepath, cbar_ax=None):
                 colorbar.set_ticks([0, 1, 2])
                 # # I save (len(diff) > 0) => true means inconsitent
                 colorbar.set_ticklabels(["match", "inconsistent", "n/a"])
-            plt.xticks(rotation=45)
+                colorbar.visible = False
+            # plt.xticks(rotation=90)
+            plt.setp(
+                ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+            )
+            plt.setp(
+                ax.get_yticklabels(), rotation=0, ha="right", rotation_mode="anchor"
+            )
+
+            # ax.set_yticks(rotation=90)
     else:
         print(f"Skipped {filepath}...")
         return False
@@ -194,7 +306,7 @@ def visualize():
         print(test)
         for fixed_version in [True, False]:
             subfigures(test, fixed_version)
-        break
+        # break
     # plt.savefig()
     # plt.tight_layout()
     # plt.show()
