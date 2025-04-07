@@ -104,40 +104,51 @@ def subfigures(test, fixed_title, fixed_version):
 
 
 def test():
-    path = "/home/chrissy/Code/reproducible-tests/data/summary/dex_sort/fixed_versions/7.30.2.json"
+    # assuming you call this from the root of the repo
+    from pathlib import Path
+    path = Path("./data/summary/dex_sort/fixed_versions/7.30.2.json").resolve()
+    path2 = Path("./data/summary/dex_sort/fixed_versions/7.37.2.json").resolve()
+
     #fig = plt.figure()
-    fig, axes = plt.subplots(2, 1)
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(12,5))
     #ax = fig.add_subplot(1,1,1)
     correlation_triangle(True, axes[0], path)
+    correlation_triangle(True, axes[1], path2, cbar_ax=axes[1])
+    plt.tight_layout()
+    plt.show()
 
 
-
-def correlation_triangle(fixed_version, axes, filepath):
+def correlation_triangle(fixed_version, ax, filepath, cbar_ax=None):
     df = generate_pd_frame(filepath, fixed_version)
     if df is not None: # otherwise we skip the file
         mask = np.triu(np.ones_like(df, dtype=bool))
-        plt.xkcd()
-        np.fill_diagonal(mask, False)  # maybe?
-        colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]
-        cmap = LinearSegmentedColormap.from_list("Custom", colors, len(colors))
-        plt.figure(figsize=(10, 8), dpi=80)
-        sns.heatmap(
-            df,
-            center=1,
-            square=True,
-            mask=mask,
-            linewidths=0.5,
-            cbar_kws={"shrink": 0.5},
-            cmap=cmap,
-            vmin=np.amin(df),
-            vmax=np.amax(df),
-            axes=axes
-        )
-        colorbar = axes.collections[0].colorbar
-        colorbar.set_ticks([0, 1, 2])
-        # I save (len(diff) > 0) => true means inconsitent
-        colorbar.set_ticklabels(["match", "inconsistent", "n/a"])
-        plt.xticks(rotation=45)
+        with plt.xkcd():
+            np.fill_diagonal(mask, False)  # maybe?
+            colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]
+            cmap = LinearSegmentedColormap.from_list("Custom", colors, len(colors))
+            # plt.figure(figsize=(10, 8), dpi=80) 
+            # needs to be removed if called from outside
+            # else you get a shadow plot
+            plot_cbar = cbar_ax is not None
+            sns.heatmap(
+                df,
+                center=1,
+                square=True,
+                mask=mask,
+                linewidths=0.5,
+                cmap=cmap,
+                vmin=0,
+                vmax=2,
+                cbar=plot_cbar,
+                cbar_kws={"shrink": 0.5},
+                ax=ax,
+            )
+            if plot_cbar:
+                colorbar = ax.collections[0].colorbar
+                colorbar.set_ticks([0, 1, 2])
+            # # I save (len(diff) > 0) => true means inconsitent
+                colorbar.set_ticklabels(["match", "inconsistent", "n/a"])
+            plt.xticks(rotation=45)
     else:
         print(f"Skipped {filepath}...")
         return False
