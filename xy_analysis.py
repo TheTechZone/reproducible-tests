@@ -7,7 +7,7 @@ from analysis.tests import (
     compare_metadata_list,
     is_metadata_to_dirorder_consistent,
 )
-from analysis.plotinator import visualize, pretty_print_raw
+from analysis.plotinator import visualize, pretty_print_raw, test
 from setup.structure import create_or_clear_summary_directory_for
 
 
@@ -21,5 +21,6 @@ from setup.structure import create_or_clear_summary_directory_for
 
 
 #pretty_print_raw("/home/chrissy/Code/reproducible-tests/data/summary/dex_sort/fixed_versions/7.30.2.json")
-visualize()
+#visualize()
+test()
 # run_all_tests([compare_dex_hashes, compare_first_dex_file_hash], with_metadata_list=False)
