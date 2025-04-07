@@ -106,7 +106,7 @@ def subfigures(test, fixed_version):
                 plot_idx = plot_idx + 1
                 #axes[x, y].tick_params(axis='x', labelrotation=45)
     plt.subplots_adjust(hspace=1.2, wspace=0.7)
-    plt.savefig(os.path.join(PLOT_ROOT, f"{test}_{version_or_params}"))
+    plt.savefig(os.path.join(PLOT_ROOT, f"{test}_{version_or_params}"), dpi=300)
 
 
 def test():
