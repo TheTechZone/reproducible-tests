@@ -80,9 +80,13 @@ def run_all_tests(tests, with_metadata_list=True):
 def print_with_params(version, file, sorting_criteria=None, direction=None):
     with open(os.path.join(DATA_ROOT, "res", file), "r") as f:
         data = json.loads(f.read())
-    
+
     for key in data.keys():
-        if version in key and (sorting_criteria and sorting_criteria in key) and (direction and direction in key):
+        if (
+            version in key
+            and (sorting_criteria and sorting_criteria in key)
+            and (direction and direction in key)
+        ):
             print(f"{key}:{json.dumps(data[key], indent=4, sort_keys=True)}")
 
 
@@ -270,7 +274,8 @@ def get_all_tarfiles():
     return os.listdir(TARS_ROOT)
 
 
-def description_from_params(dfs, alph, ctime, reverse):
+def description_from_params(dfs, alph, ctime, reverse) -> str:
+    description = ""
     if dfs:
         # Sanity checks
         assert not (

@@ -1,6 +1,8 @@
 import os
 import json
+from typing import Optional
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 import pandas as pd
@@ -8,67 +10,28 @@ import seaborn as sns
 
 from setup.structure import SUMMARY_ROOT, PLOT_ROOT, extract_parameters
 
-from analysis.analyse import description_from_params
-
 from analysis.tests import COMPARE_TO_TESTNAME
 
 
-def pretty_print_raw(filepath):
-    with open(filepath, "r") as f:
-        obj = json.loads(f.read())
-    print(json.dumps(obj, indent=4))
+def assert_symmetry(df: pd.DataFrame) -> None:
+    """
+    matrices should be symmetrical, sanity check this before turning the plot into a triangle
 
-
-# matrices should be symmetrical, sanity check this before turning the plot into a triangle
-def assert_symmetry(dataframe):
-    array = dataframe.to_numpy()
+    Raises:
+           AssertionError: If any check fails
+    """
+    array = df.to_numpy()
     for x, y in np.ndindex(array.shape):
         assert (
             array[x, y] == array[y, x]
-        ), f"Symmetry broken for {x} <=> {y} was: {array[x, y]} and {array[y, x]}\n{dataframe}"
+        ), f"Symmetry broken for {x} <=> {y} was: {array[x, y]} and {array[y, x]}\n{df}"
 
 
-# def create_multiindex(index, fixed_version):
-#     """
-#     hierarchy := "version"|"params"
-#     """
-#     # Sanity check if the version/parameters are really fixed
-#     hierarchy = []
-#     for tarfile in index:
-#         # print(tarfile)
-#         (version, _, _, dfs, ctime, reverse) = extract_parameters(tarfile)
-#         if not fixed_version:
-#             hierarchy.append((dfs, ctime, reverse))
-#         else:
-#             hierarchy.append(version)
-#     assert (
-#         len(set(hierarchy)) >= 1
-#     ), f"Unexpected {"parameters" if fixed_version else "versions"}: {hierarchy} for:\n{index}"
-#     # Now create hierarchical multiindex for each run
-#     # if it was a dfstest run, prepent the run nr. with a 't_'
-#     new_index = []
-#     for tarfile in index:
-#         (version, run, dfstest, dfs, ctime, reverse) = extract_parameters(tarfile)
-#         complete_run = f"t_{run}" if dfstest else run
-#         if not fixed_version:
-#             new_index.append((version, complete_run))
-#         else:
-#             if not dfs:
-#                 new_index.append(("no_dfs", complete_run))
-#             else:
-#                 new_index.append(
-#                     (
-#                         f"{'ctime' if ctime else 'alph'}_{'reversed' if reverse else 'sorted'}",
-#                         complete_run,
-#                     )
-#                 )
-#     names = ["version" if not fixed_version else "parameters", "run"]
-#     return pd.MultiIndex.from_tuples(new_index, names=names)
-
-
-def create_multiindex(index, fixed_version):
+def create_multiindex(index: pd.Index, fixed_version: bool) -> pd.MultiIndex:
     """
     Create a MultiIndex based on either fixed versions or parameters.
+
+    hierarchy := "version"|"params"
     """
     hierarchy = []
 
@@ -111,7 +74,7 @@ def create_multiindex(index, fixed_version):
     return pd.MultiIndex.from_tuples(new_index, names=names)
 
 
-def nr_of_subplots(root):
+def nr_of_subplots(root) -> int:
     return len(os.listdir(root))
 
 
@@ -240,15 +203,8 @@ def subfigures(test, fixed_version):
     # plt.subplots_adjust(hspace=1.4, wspace=1.4)
     plt.tight_layout()
 
-    # cax = plt.axes((0.85, 0.1, 0.075, 0.8))
-    # plt.colorbar(cax=cax)
-    import matplotlib as mpl
-
-    # cmap = mpl.cm.viridis
-
     colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]
     cmap = LinearSegmentedColormap.from_list("Custom", colors, len(colors))
-    # cmap = (mpl.colors.ListedColormap(['red', 'green', 'blue']))
     bounds = [0, 1, 2, 3]
     norm = mpl.colors.BoundaryNorm(bounds, 4)
 
@@ -264,18 +220,14 @@ def subfigures(test, fixed_version):
     plt.savefig(os.path.join(PLOT_ROOT, f"{test}_{version_or_params}"), dpi=300)
 
 
-def correlation_triangle(fixed_version, ax, filepath, cbar_ax=None):
+def correlation_triangle(fixed_version, ax, filepath: str):
     df = generate_pd_frame(filepath, fixed_version)
     if df is not None:  # otherwise we skip the file
         mask = np.triu(np.ones_like(df, dtype=bool))
         with plt.xkcd():
-            np.fill_diagonal(mask, False)  # maybe?
+            np.fill_diagonal(mask, False)
             colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]
             cmap = LinearSegmentedColormap.from_list("Custom", colors, len(colors))
-            # plt.figure(figsize=(10, 8), dpi=80)
-            # needs to be removed if called from outside
-            # else you get a shadow plot
-            plot_cbar = cbar_ax is not None
             sns.heatmap(
                 df,
                 center=1,
@@ -285,32 +237,23 @@ def correlation_triangle(fixed_version, ax, filepath, cbar_ax=None):
                 cmap=cmap,
                 vmin=0,
                 vmax=2,
-                cbar=plot_cbar,
-                cbar_kws={"shrink": 0.5},
+                cbar=False,
                 ax=ax,
             )
-            if plot_cbar:
-                colorbar = ax.collections[0].colorbar
-                colorbar.set_ticks([0, 1, 2])
-                # # I save (len(diff) > 0) => true means inconsitent
-                colorbar.set_ticklabels(["match", "inconsistent", "n/a"])
-                colorbar.visible = False
-            # plt.xticks(rotation=90)
+
             plt.setp(
                 ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
             )
             plt.setp(
                 ax.get_yticklabels(), rotation=0, ha="right", rotation_mode="anchor"
-            )
-
-            # ax.set_yticks(rotation=90)
+            )  # to fix some inconsistency with the rotation angles
     else:
         print(f"Skipped {filepath}...")
         return False
     return True
 
 
-def generate_pd_frame(file_path, fixed_version):
+def generate_pd_frame(file_path: str, fixed_version: bool) -> Optional[pd.DataFrame]:
     # Read the JSON file directly into a DataFrame
     try:
         df = pd.read_json(file_path)
@@ -322,7 +265,7 @@ def generate_pd_frame(file_path, fixed_version):
         # Not all tests can always be run, e.g., we only have a single 34 run
         return None
     df.fillna(2, inplace=True)
-    print(df)
+
     print(f"Working on {file_path}...")
     new_index = create_multiindex(df.index, fixed_version)
     new_column_labels = create_multiindex(df.columns, fixed_version)
@@ -333,13 +276,9 @@ def generate_pd_frame(file_path, fixed_version):
     return df
 
 
-def visualize():
+def visualize() -> None:
     for key in COMPARE_TO_TESTNAME.keys():
         test = COMPARE_TO_TESTNAME[key]
         print(test)
         for fixed_version in [True, False]:
             subfigures(test, fixed_version)
-        # break
-    # plt.savefig()
-    # plt.tight_layout()
-    # plt.show()

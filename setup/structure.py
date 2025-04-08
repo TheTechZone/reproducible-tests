@@ -34,11 +34,11 @@ SUMMARY_ROOT = os.path.join(DATA_ROOT, "summary")
 PLOT_ROOT = os.path.join(DATA_ROOT, "plots")
 
 
-def _playstore_apk_path(cvc):
+def _playstore_apk_path(cvc) -> str:
     return os.path.join(PLAYSTORE_APKS_ROOT, cvc)
 
 
-def universal_apk_path(cvc, relative=False):
+def universal_apk_path(cvc, relative=False) -> str:
     path = os.path.join(
         _playstore_apk_path(cvc), f"org.thoughtcrime.securesms-{cvc}.apk"
     )
@@ -52,7 +52,7 @@ _VERSION = "fixed_versions"
 _PARAMS = "fixed_parameters"
 
 
-def create_or_clear_summary_directory_for(testname, version=True, clear=True):
+def create_or_clear_summary_directory_for(testname, version=True, clear=True) -> None:
     """
     if !version we create/clear the by/param directry
     if !clear and the dir exists function does nothing
@@ -69,7 +69,7 @@ def create_or_clear_summary_directory_for(testname, version=True, clear=True):
     mkdir["-p", subdir]()
 
 
-def construct_summary_path(testname, key):
+def construct_summary_path(testname, key) -> str:
     # Which dimension is fixed?
     fixed = _PARAMS if "without" in key or "alph" in key or "ctime" in key else _VERSION
     if fixed == _PARAMS:
@@ -81,7 +81,7 @@ def construct_summary_path(testname, key):
     return p
 
 
-def turn_cvc_code_mapping_to_json():
+def turn_cvc_code_mapping_to_json() -> None:
     json_obj = {}
     with open(
         os.path.join(PLAYSTORE_APKS_ROOT, "versioncode-tags-mapping.txt"), "r"
@@ -96,7 +96,7 @@ def turn_cvc_code_mapping_to_json():
         f.writelines(json.dumps(json_obj))
 
 
-def create_relpath(abspath):
+def create_relpath(abspath) -> str:
     # git rev-parse --show-toplevel
     stdout = local["git"]["rev-parse", "--show-toplevel"]()
     # Assuming posix

@@ -248,7 +248,11 @@ def create_apkdiff_record(local_apk_filename):
         for dirpath, _, filenames in os.walk("mismatches"):
             for filename in filenames:
                 item = os.path.join(dirpath, filename)
-                item = item.replace("first", "local") if "first" in item else item.replace("second", "playstore")
+                item = (
+                    item.replace("first", "local")
+                    if "first" in item
+                    else item.replace("second", "playstore")
+                )
                 mismatched_files.append(item)
     apkdiff_res["mismatched_files"] = mismatched_files
     return apkdiff_res
@@ -270,7 +274,9 @@ def record_all_apkdiff_comparisons(tarfile_name):
         comparator_rec = run_comparator_on_apkdiff_mismatches()
         comparator_result[apk] = comparator_rec
     _update_aggregation_result("apkdiff.json", tarfile_name, result, log=False)
-    _update_aggregation_result("apkdiff_comparators.json", tarfile_name, comparator_result, log=False)
+    _update_aggregation_result(
+        "apkdiff_comparators.json", tarfile_name, comparator_result, log=False
+    )
     print("Updated apkdiff aggregations!")
 
 
@@ -283,24 +289,23 @@ def run_comparator_on_apkdiff_mismatches():
     local_mismatches_dir = os.path.join(mismatches_path, "first")
     # call comparatinator
     for dirpath, _, filenames in os.walk(local_mismatches_dir):
-            for filename in filenames:
-                local_item = os.path.join(dirpath, filename)
-                playstore_item = os.path.join(dirpath.replace("first", "second"), filename)
-                if ".xml" in filename:
-                    (_, stdout, _) = axml[local_item, playstore_item].run()
-                    result["axml"][filename] = stdout
-                if ".arsc" in filename:
-                    (retcode, stdout, _) = arsc[local_item, playstore_item].run()
-                    if retcode != 1:
-                        result["arsc"][f"{filename}|local->playstore"] = stdout
-                        (retcode, stdout, _) = arsc[playstore_item, local_item].run()
-                        result["arsc"][f"{filename}|playstore->local"] = stdout
-                    else:
-                        # Record two failures
-                        result["arsc"][f"{filename}|local->playstore"] = "Failure"
-                        result["arsc"][f"{filename}|playstore->local"] = "Failure"
+        for filename in filenames:
+            local_item = os.path.join(dirpath, filename)
+            playstore_item = os.path.join(dirpath.replace("first", "second"), filename)
+            if ".xml" in filename:
+                (_, stdout, _) = axml[local_item, playstore_item].run()
+                result["axml"][filename] = stdout
+            if ".arsc" in filename:
+                (retcode, stdout, _) = arsc[local_item, playstore_item].run()
+                if retcode != 1:
+                    result["arsc"][f"{filename}|local->playstore"] = stdout
+                    (retcode, stdout, _) = arsc[playstore_item, local_item].run()
+                    result["arsc"][f"{filename}|playstore->local"] = stdout
+                else:
+                    # Record two failures
+                    result["arsc"][f"{filename}|local->playstore"] = "Failure"
+                    result["arsc"][f"{filename}|playstore->local"] = "Failure"
     return result
-
 
 
 def copy_navigation_jsons(tarfile_name):
