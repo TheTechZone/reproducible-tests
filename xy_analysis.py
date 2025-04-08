@@ -5,9 +5,9 @@ from analysis.tests import (
     compare_dex_hashes,
     compare_first_dex_file_hash,
     compare_metadata_list,
-    is_metadata_to_dirorder_consistent
+    is_metadata_to_dirorder_consistent,
 )
-from analysis.plotinator import visualize, pretty_print_raw, test
+from analysis.plotinator import visualize, pretty_print_raw
 from setup.structure import create_or_clear_summary_directory_for
 
 
@@ -17,10 +17,10 @@ from setup.structure import create_or_clear_summary_directory_for
 
 
 # redo apkdiff
-#aggregate_all_runs(dexsort=False, diffuse=False, apkdiff=True, nav=False, output_meta=False)
+# aggregate_all_runs(dexsort=False, diffuse=False, apkdiff=True, nav=False, output_meta=False)
 
 
-#pretty_print_raw("/home/chrissy/Code/reproducible-tests/data/summary/dex_sort/fixed_versions/7.30.2.json")
+# pretty_print_raw("/home/chrissy/Code/reproducible-tests/data/summary/dex_sort/fixed_versions/7.30.2.json")
 visualize()
-#test()
+# test()
 # run_all_tests([compare_dex_hashes, compare_first_dex_file_hash], with_metadata_list=False)

@@ -20,7 +20,7 @@ def pretty_print_raw(filepath):
 
 
 # matrices should be symmetrical, sanity check this before turning the plot into a triangle
-def is_matrix_symmetric(dataframe):
+def assert_symmetry(dataframe):
     array = dataframe.to_numpy()
     for x, y in np.ndindex(array.shape):
         assert (
@@ -28,41 +28,86 @@ def is_matrix_symmetric(dataframe):
         ), f"Symmetry broken for {x} <=> {y} was: {array[x, y]} and {array[y, x]}\n{dataframe}"
 
 
+# def create_multiindex(index, fixed_version):
+#     """
+#     hierarchy := "version"|"params"
+#     """
+#     # Sanity check if the version/parameters are really fixed
+#     hierarchy = []
+#     for tarfile in index:
+#         # print(tarfile)
+#         (version, _, _, dfs, ctime, reverse) = extract_parameters(tarfile)
+#         if not fixed_version:
+#             hierarchy.append((dfs, ctime, reverse))
+#         else:
+#             hierarchy.append(version)
+#     assert (
+#         len(set(hierarchy)) >= 1
+#     ), f"Unexpected {"parameters" if fixed_version else "versions"}: {hierarchy} for:\n{index}"
+#     # Now create hierarchical multiindex for each run
+#     # if it was a dfstest run, prepent the run nr. with a 't_'
+#     new_index = []
+#     for tarfile in index:
+#         (version, run, dfstest, dfs, ctime, reverse) = extract_parameters(tarfile)
+#         complete_run = f"t_{run}" if dfstest else run
+#         if not fixed_version:
+#             new_index.append((version, complete_run))
+#         else:
+#             if not dfs:
+#                 new_index.append(("no_dfs", complete_run))
+#             else:
+#                 new_index.append(
+#                     (
+#                         f"{'ctime' if ctime else 'alph'}_{'reversed' if reverse else 'sorted'}",
+#                         complete_run,
+#                     )
+#                 )
+#     names = ["version" if not fixed_version else "parameters", "run"]
+#     return pd.MultiIndex.from_tuples(new_index, names=names)
+
+
 def create_multiindex(index, fixed_version):
     """
-    hierarchy := "version"|"params"
+    Create a MultiIndex based on either fixed versions or parameters.
     """
-    # Sanity check if the version/parameters are really fixed
     hierarchy = []
+
+    # Extract version/parameter info for each tarfile
     for tarfile in index:
-        # print(tarfile)
-        (version, _, _, dfs, ctime, reverse) = extract_parameters(tarfile)
-        if not fixed_version:
-            hierarchy.append((dfs, ctime, reverse))
-        else:
+        (version, run, dfstest, dfs, ctime, reverse) = extract_parameters(tarfile)
+        if fixed_version:
             hierarchy.append(version)
+        else:
+            hierarchy.append((dfs, ctime, reverse))
+
+    # Ensure at least one unique hierarchy entry exists
     assert (
         len(set(hierarchy)) >= 1
-    ), f"Unexpected {"parameters" if fixed_version else "versions"}: {hierarchy} for:\n{index}"
-    # Now create hierarchical multiindex for each run
-    # if it was a dfstest run, prepent the run nr. with a 't_'
+    ), f"Unexpected {'parameters' if not fixed_version else 'versions'}: {hierarchy} for:\n{index}"
+
     new_index = []
+
+    # Construct the new index based on fixed_version flag
     for tarfile in index:
         (version, run, dfstest, dfs, ctime, reverse) = extract_parameters(tarfile)
         complete_run = f"t_{run}" if dfstest else run
-        if not fixed_version:
-            new_index.append((version, complete_run))
+
+        if fixed_version:
+            index_tuple = (
+                (
+                    "no_dfs"
+                    if not dfs
+                    else f"{'ctime' if ctime else 'alph'}_{'reversed' if reverse else 'sorted'}"
+                ),
+                complete_run,
+            )
         else:
-            if not dfs:
-                new_index.append(("no_dfs", complete_run))
-            else:
-                new_index.append(
-                    (
-                        f"{'ctime' if ctime else 'alph'}_{'reversed' if reverse else 'sorted'}",
-                        complete_run,
-                    )
-                )
+            index_tuple = (version, complete_run)
+
+        new_index.append(index_tuple)
+
     names = ["version" if not fixed_version else "parameters", "run"]
+
     return pd.MultiIndex.from_tuples(new_index, names=names)
 
 
@@ -219,22 +264,6 @@ def subfigures(test, fixed_version):
     plt.savefig(os.path.join(PLOT_ROOT, f"{test}_{version_or_params}"), dpi=300)
 
 
-def test():
-    # assuming you call this from the root of the repo
-    from pathlib import Path
-
-    path = Path("./data/summary/dex_sort/fixed_versions/7.30.2.json").resolve()
-    path2 = Path("./data/summary/dex_sort/fixed_versions/7.37.2.json").resolve()
-
-    # fig = plt.figure()
-    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(12, 5))
-    # ax = fig.add_subplot(1,1,1)
-    correlation_triangle(True, axes[0], path)
-    correlation_triangle(True, axes[1], path2, cbar_ax=axes[1])
-    plt.tight_layout()
-    plt.show()
-
-
 def correlation_triangle(fixed_version, ax, filepath, cbar_ax=None):
     df = generate_pd_frame(filepath, fixed_version)
     if df is not None:  # otherwise we skip the file
@@ -282,21 +311,25 @@ def correlation_triangle(fixed_version, ax, filepath, cbar_ax=None):
 
 
 def generate_pd_frame(file_path, fixed_version):
-    with open(os.path.join(file_path), "r") as f:
-        obj = json.loads(f.read())
-    if (
-        len(obj) == 0
-    ):  # Not all tests can always be run, e.g., we only have a single 34 run
+    # Read the JSON file directly into a DataFrame
+    try:
+        df = pd.read_json(file_path)
+    except ValueError as e:
+        print(f"Error reading {file_path}: {e}")
         return None
-    df = pd.DataFrame(data=obj)
+    # Return early if the data is empty
+    if df.empty:
+        # Not all tests can always be run, e.g., we only have a single 34 run
+        return None
+    df.fillna(2, inplace=True)
+    print(df)
     print(f"Working on {file_path}...")
     new_index = create_multiindex(df.index, fixed_version)
     new_column_labels = create_multiindex(df.columns, fixed_version)
     df = pd.DataFrame(df.to_numpy(), index=new_index, columns=new_column_labels)
     df.sort_index(axis=1, inplace=True)
     df.sort_index(inplace=True)
-    df = df.map(lambda x: 1 if x is True else (0 if x is False else 2))
-    is_matrix_symmetric(df)
+    assert_symmetry(df)
     return df
 
 

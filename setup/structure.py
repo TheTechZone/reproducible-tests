@@ -1,8 +1,8 @@
 import os
 import json
 import re
+from typing import Optional
 from plumbum import local
-
 
 
 # Constants
@@ -17,7 +17,15 @@ TARS_ROOT = os.path.join(BUILDS_ROOT, "tars")
 CURRENT_BUILD_PATH = os.path.join(BUILDS_ROOT, "Signal-Android")
 REPRODUCIBLE_TESTS_ROOT = os.path.join(BUILDS_ROOT, "reproducible-tests")
 DFS_ROOT_PATH = os.path.join(REPRODUCIBLE_TESTS_ROOT, "disorderfs_root")
-CB_AAB_PATH = os.path.join(CURRENT_BUILD_PATH, "app", "build", "outputs", "bundle", "playProdRelease", "Signal-Android-play-prod-release.aab")
+CB_AAB_PATH = os.path.join(
+    CURRENT_BUILD_PATH,
+    "app",
+    "build",
+    "outputs",
+    "bundle",
+    "playProdRelease",
+    "Signal-Android-play-prod-release.aab",
+)
 PLAYSTORE_APKS_ROOT = os.path.join(DATA_ROOT, "playstore-mirror")
 PLAYSTORE_UNIVERSAL_UNZIP_PATH = os.path.join(DATA_ROOT, "playstore-universal-unzipped")
 BUNDLETOOL_EXE = os.path.join(".", "bundletool")
@@ -31,7 +39,9 @@ def _playstore_apk_path(cvc):
 
 
 def universal_apk_path(cvc, relative=False):
-    path = os.path.join(_playstore_apk_path(cvc), f"org.thoughtcrime.securesms-{cvc}.apk")
+    path = os.path.join(
+        _playstore_apk_path(cvc), f"org.thoughtcrime.securesms-{cvc}.apk"
+    )
     if relative:
         # Assuming posix
         path = create_relpath(path)
@@ -40,6 +50,7 @@ def universal_apk_path(cvc, relative=False):
 
 _VERSION = "fixed_versions"
 _PARAMS = "fixed_parameters"
+
 
 def create_or_clear_summary_directory_for(testname, version=True, clear=True):
     """
@@ -66,36 +77,37 @@ def construct_summary_path(testname, key):
     else:
         filename = f"{key}.json"
     p = os.path.join(SUMMARY_ROOT, testname, fixed, filename)
-    #print(f"returning {p} for:\n{testname}, {key}, {tarfile}")
+    # print(f"returning {p} for:\n{testname}, {key}, {tarfile}")
     return p
-
 
 
 def turn_cvc_code_mapping_to_json():
     json_obj = {}
-    with open(os.path.join(PLAYSTORE_APKS_ROOT, "versioncode-tags-mapping.txt"), "r") as f:
+    with open(
+        os.path.join(PLAYSTORE_APKS_ROOT, "versioncode-tags-mapping.txt"), "r"
+    ) as f:
         lines = f.readlines()
         for line in lines:
             cvc = line.split(":")[0].strip()
             version = line.split(":")[-1].strip()
             json_obj[cvc] = version
-            json_obj[version] = cvc 
+            json_obj[version] = cvc
     with open(VERSION_CVC_FILE, "w") as f:
         f.writelines(json.dumps(json_obj))
 
 
 def create_relpath(abspath):
     # git rev-parse --show-toplevel
-        stdout = local["git"]["rev-parse", "--show-toplevel"]()
-        # Assuming posix
-        relpath = abspath.removeprefix(stdout.strip())
-        return relpath[1:]
+    stdout = local["git"]["rev-parse", "--show-toplevel"]()
+    # Assuming posix
+    relpath = abspath.removeprefix(stdout.strip())
+    return relpath[1:]
 
 
 # filename: one of the runs in data/build/tars
-def extract_version_and_run(filename):
+def extract_version_and_run(filename) -> tuple[Optional[str], Optional[str]]:
     # Define the regex pattern
-    pattern = r'v(\d+\.\d+\.\d+)(?:_)?(\d+)?'
+    pattern = r"v(\d+\.\d+\.\d+)(?:_)?(\d+)?"
     # Search for the pattern in the filename
     match = re.search(pattern, filename)
     if match:
@@ -103,12 +115,19 @@ def extract_version_and_run(filename):
         run = match.group(2) if match.group(2) else "01"  # If no run number, return 01
         return version, run
     else:
-        return None, None  # Return None if no match is found (TODO: Should this throw an error instead?)
-    
+        return (
+            None,
+            None,
+        )  # Return None if no match is found (TODO: Should this throw an error instead?)
 
-def extract_parameters(tar_filename):
+
+def extract_parameters(
+    tar_filename,
+) -> tuple[str, int, bool, bool, Optional[bool], Optional[bool]]:
     dfstest = True if "dfstest" in tar_filename else False
-    dfs = True if dfstest or "ctime" in tar_filename or "alph" in tar_filename else False
+    dfs = (
+        True if dfstest or "ctime" in tar_filename or "alph" in tar_filename else False
+    )
     if not dfs:
         ctime = None
         reverse = None
@@ -116,6 +135,6 @@ def extract_parameters(tar_filename):
         ctime = True if "ctime" in tar_filename else False
         reverse = True if "reversed" in tar_filename else False
     (version, run) = extract_version_and_run(tar_filename)
-    assert(version is not None)
+    assert version is not None
     run = run if run is not None else "01"
-    return (version, run , dfstest, dfs, ctime, reverse)
+    return (version, int(run), dfstest, dfs, ctime, reverse)
