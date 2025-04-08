@@ -101,7 +101,9 @@ def run_diffoscope(path1, path2, output_html, keep_original=False, extra_args=No
     # Run diffoscope
     result = subprocess.run(command, capture_output=True)
 
-    if 0 <= result.returncode < 2:
+    if result.returncode == 0:
+        print(f"The two files match: {path1} and  {path2}. No output file written.")
+    elif result.returncode == 1:
         # If --keep-original is specified, make a copy of the original diffoscope report
         dest = output_html
         if keep_original:
