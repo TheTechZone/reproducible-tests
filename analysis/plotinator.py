@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from setup.structure import SUMMARY_ROOT, PLOT_ROOT, extract_parameters
+from setup.structure import SUMMARY_ROOT, PLOT_ROOT, parameters_from_tar_filename
 
 from analysis.tests import COMPARE_TO_TESTNAME
 
@@ -37,7 +37,7 @@ def create_multiindex(index: pd.Index, fixed_version: bool) -> pd.MultiIndex:
 
     # Extract version/parameter info for each tarfile
     for tarfile in index:
-        (version, run, dfstest, dfs, ctime, reverse) = extract_parameters(tarfile)
+        (version, run, dfstest, dfs, ctime, reverse) = parameters_from_tar_filename(tarfile)
         if fixed_version:
             hierarchy.append(version)
         else:
@@ -52,7 +52,7 @@ def create_multiindex(index: pd.Index, fixed_version: bool) -> pd.MultiIndex:
 
     # Construct the new index based on fixed_version flag
     for tarfile in index:
-        (version, run, dfstest, dfs, ctime, reverse) = extract_parameters(tarfile)
+        (version, run, dfstest, dfs, ctime, reverse) = parameters_from_tar_filename(tarfile)
         complete_run = f"t_{run}" if dfstest else run
 
         if fixed_version:

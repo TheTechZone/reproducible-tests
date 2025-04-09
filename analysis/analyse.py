@@ -6,9 +6,9 @@ from setup.structure import (
     DATA_ROOT,
     TARS_ROOT,
     SUMMARY_ROOT,
-    extract_version_and_run,
-    extract_parameters,
-    construct_summary_path,
+    version_and_run_from_tar_filename,
+    parameters_from_tar_filename,
+    summary_path,
     create_or_clear_summary_directory_for,
 )
 from analysis.tests import (
@@ -134,8 +134,8 @@ def _compare_amongst_runs(
         for other in [file for file in to_compare if file not in tarfile]:
             (has_diff, diff) = compare(tarfile, other)
             if has_diff:
-                v_01, run_01 = extract_version_and_run(tarfile)
-                v_02, run_02 = extract_version_and_run(other)
+                v_01, run_01 = version_and_run_from_tar_filename(tarfile)
+                v_02, run_02 = version_and_run_from_tar_filename(other)
                 if (
                     mark_consistency
                 ):  # TODO: this is a confusing overload, unconfuse at some point
@@ -229,7 +229,7 @@ def check_for_same_version(
     print(f"checking version {version}...")
     # print(classified_runs)
     # Create/truncate summary file for idempotence
-    summary_file = construct_summary_path(COMPARE_TO_TESTNAME[compare], version)
+    summary_file = summary_path(COMPARE_TO_TESTNAME[compare], version)
     if not os.path.exists(summary_file):
         print(f"Creating {summary_file.split(SUMMARY_ROOT)[-1]}...")
         with open(summary_file, "w") as f:  # create and write empty dict
@@ -240,7 +240,7 @@ def check_for_same_version(
 def get_all_versions():
     versions = []
     for tarfile in os.listdir(TARS_ROOT):
-        v, _ = extract_version_and_run(tarfile)
+        v, _ = version_and_run_from_tar_filename(tarfile)
         versions.append(v)
     return list(set(versions))
 
@@ -322,7 +322,7 @@ def check_for_same_params(
             if v in tarfile:
                 classified_runs[v]["runs"].append(tarfile)
     print(f"checking the parameters: '{description}'...")
-    summary_file = construct_summary_path(COMPARE_TO_TESTNAME[compare], description)
+    summary_file = summary_path(COMPARE_TO_TESTNAME[compare], description)
     if not os.path.exists(summary_file):
         print(f"Creating {summary_file.split(SUMMARY_ROOT)[-1]}...")
         with open(summary_file, "w") as f:  # create and write empty dict

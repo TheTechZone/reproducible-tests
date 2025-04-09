@@ -8,7 +8,7 @@ from setup.structure import (
     BUNDLETOOL_EXE,
     DATA_ROOT,
     DFS_ROOT_PATH,
-    CURRENT_BUILD_PATH,
+    CB_PATH,
     CB_AAB_PATH,
     CB_APKS_PATH,
     CB_SPLITS_PATH,
@@ -18,7 +18,7 @@ from setup.structure import (
     TARS_ROOT,
     VERSION_CVC_FILE,
 )
-from setup.structure import universal_apk_path, create_relpath, extract_parameters
+from setup.structure import universal_apk_path, create_relpath, parameters_from_tar_filename
 
 
 # TODO: fill out with all the apks you want to compare, mapping from local -> playstore
@@ -56,7 +56,7 @@ def extract(filepath, dfs_test):
     if dfs_test:
         print("Normalising dfs-test hierarchy...")
         mv = local["mv"]
-        mv[os.path.join(DFS_ROOT_PATH, "Signal-Android"), CURRENT_BUILD_PATH]()
+        mv[os.path.join(DFS_ROOT_PATH, "Signal-Android"), CB_PATH]()
         local["rm"]["-r", REPRODUCIBLE_TESTS_ROOT]()
     os.chdir(cwd)
     _extract_apks()
@@ -64,10 +64,10 @@ def extract(filepath, dfs_test):
 
 # simply recursively clears the directory
 def _clear_untared_folder():
-    if os.path.exists(CURRENT_BUILD_PATH):
+    if os.path.exists(CB_PATH):
         print("Clearing current build...")
         rm = local["rm"]
-        rm["-r", CURRENT_BUILD_PATH]()
+        rm["-r", CB_PATH]()
 
 
 def _extract_apks():
@@ -103,7 +103,7 @@ def clear():
 
 
 def current_cvc():
-    build_gradle_kts_path = os.path.join(CURRENT_BUILD_PATH, "app", "build.gradle.kts")
+    build_gradle_kts_path = os.path.join(CB_PATH, "app", "build.gradle.kts")
     version_code_line = "val canonicalVersionCode ="
     get_version_code = (
         local["cat"][build_gradle_kts_path] | local["grep"][version_code_line]
@@ -159,7 +159,7 @@ def create_dex_sets(cvc):
     cvc_d["playstore"] = playstore_univ
     # Current Build
     root_rel_dexpath = os.path.join(
-        CURRENT_BUILD_PATH,
+        CB_PATH,
         "app",
         "build",
         "intermediates",
@@ -322,11 +322,11 @@ def copy_navigation_jsons(tarfile_name):
         local["rm"]["-r", copy_dir]()
     mkdir["-p", copy_dir]()
     file_mappings_path = os.path.join(
-        CURRENT_BUILD_PATH,
+        CB_PATH,
         "app/build/intermediates/incremental/generateSafeArgsPlayProdRelease/file_mappings.json",
     )
     navigation_path = os.path.join(
-        CURRENT_BUILD_PATH,
+        CB_PATH,
         "app/build/intermediates/navigation_json/playProdRelease/extractDeepLinksPlayProdRelease/navigation.json",
     )
     cp[file_mappings_path, copy_dir]()
@@ -343,12 +343,12 @@ def extract_output_metadata(tarfile):
     )
     if "v7.28" in tarfile:
         directory_path = os.path.join(
-            CURRENT_BUILD_PATH,
+            CB_PATH,
             "app/build/intermediates/processed_res/playProdRelease/processPlayProdReleaseResources/out",
         )
     else:
         directory_path = os.path.join(
-            CURRENT_BUILD_PATH,
+            CB_PATH,
             "app/build/intermediates/linked_resources_binary_format/playProdRelease/processPlayProdReleaseResources",
         )
     timeinfo = local["ls"]["-ltr", "--full-time", directory_path]()
@@ -369,7 +369,7 @@ def aggregate_all_runs(
         print(f"Pulling {create_relpath(tarpath)} with git lfs...")
         local["git"]["lfs", "pull", "--include", create_relpath(tarpath)]()
         # Extract run parameters from tarfile
-        (_, _, dfstest, _, _, _) = extract_parameters(tarfile)
+        (_, _, dfstest, _, _, _) = parameters_from_tar_filename(tarfile)
         # Extract the build to local folder
         print(f"Extracting {tarfile}...")
         extract(os.path.join(TARS_ROOT, tarfile), dfstest)

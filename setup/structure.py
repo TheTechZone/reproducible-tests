@@ -4,21 +4,28 @@ import re
 from typing import Optional
 from plumbum import local
 
+##
+# Utilities related to the directory structure of the repository
+##
+
 
 # Constants
 # Assumes that "." resolves to the directory of the analysis notebook
 COMPARATORS_PATH = os.path.abspath(os.path.join(".", "comparators"))
 DATA_ROOT = os.path.abspath(os.path.join(".", "data"))
+# The root of all the data related to the local builds
 BUILDS_ROOT = os.path.join(DATA_ROOT, "build")
 # CB: Current Build
 CB_APKS_PATH = os.path.join(BUILDS_ROOT, "apks")
 CB_SPLITS_PATH = os.path.join(CB_APKS_PATH, "splits")
 TARS_ROOT = os.path.join(BUILDS_ROOT, "tars")
-CURRENT_BUILD_PATH = os.path.join(BUILDS_ROOT, "Signal-Android")
+CB_PATH = os.path.join(BUILDS_ROOT, "Signal-Android")
+# local builds with a functional whitness (dfstest), have a differing directory structure that we normalise while extracting
 REPRODUCIBLE_TESTS_ROOT = os.path.join(BUILDS_ROOT, "reproducible-tests")
+# part of the dfstest directory structure
 DFS_ROOT_PATH = os.path.join(REPRODUCIBLE_TESTS_ROOT, "disorderfs_root")
 CB_AAB_PATH = os.path.join(
-    CURRENT_BUILD_PATH,
+    CB_PATH,
     "app",
     "build",
     "outputs",
@@ -30,6 +37,7 @@ PLAYSTORE_APKS_ROOT = os.path.join(DATA_ROOT, "playstore-mirror")
 PLAYSTORE_UNIVERSAL_UNZIP_PATH = os.path.join(DATA_ROOT, "playstore-universal-unzipped")
 BUNDLETOOL_EXE = os.path.join(".", "bundletool")
 VERSION_CVC_FILE = os.path.join(".", "version_code_tag_mappings.json")
+# Results after applying methods from analysis.tests to the aggregated data
 SUMMARY_ROOT = os.path.join(DATA_ROOT, "summary")
 PLOT_ROOT = os.path.join(DATA_ROOT, "plots")
 
@@ -69,7 +77,7 @@ def create_or_clear_summary_directory_for(testname, version=True, clear=True) ->
     mkdir["-p", subdir]()
 
 
-def construct_summary_path(testname, key) -> str:
+def summary_path(testname, key) -> str:
     # Which dimension is fixed?
     fixed = _PARAMS if "without" in key or "alph" in key or "ctime" in key else _VERSION
     if fixed == _PARAMS:
@@ -105,7 +113,19 @@ def create_relpath(abspath) -> str:
 
 
 # filename: one of the runs in data/build/tars
-def extract_version_and_run(filename) -> tuple[Optional[str], Optional[str]]:
+def version_and_run_from_tar_filename(filename) -> tuple[Optional[str], Optional[str]]:
+    """
+    Parses the version and run of the run packed into the tarfile:
+    (version, run)
+
+    # PRE:
+    Expects the version and run to be last in the filename in this order, separated by '_'
+    if there is no run, it assumes 1
+    Example: dfstest-Signal-android-ctime-sort_v1.2.3_05.tar.gz
+
+    # POST:
+    (None, None) if the tarfile is not in the expected format
+    """
     # Define the regex pattern
     pattern = r"v(\d+\.\d+\.\d+)(?:_)?(\d+)?"
     # Search for the pattern in the filename
@@ -121,9 +141,24 @@ def extract_version_and_run(filename) -> tuple[Optional[str], Optional[str]]:
         )  # Return None if no match is found (TODO: Should this throw an error instead?)
 
 
-def extract_parameters(
+def parameters_from_tar_filename(
     tar_filename,
 ) -> tuple[str, int, bool, bool, Optional[bool], Optional[bool]]:
+    """
+    Returns the parameters that were fixed during the run packed into the tarfile:
+    (version, run_nr, functional whitness present?, with disorderfs?, sorted by ctime? (or alphabetically), sort reversed?)
+    
+    # PRE:
+    Expects the version and run to be last in the filename in this order, separated by '_'
+    if there is no run, it assumes 1
+    searches for the substrings: 'dfstest', 'ctime', and 'reversed'
+    to determine the other parameters
+    Example: dfstest-Signal-android-ctime-sort_v1.2.3_05.tar.gz
+
+    # POST: 
+    (ctime or reverse) => dfs
+    not dfs => ctime == None and reverse == None
+    """
     dfstest = True if "dfstest" in tar_filename else False
     dfs = (
         True if dfstest or "ctime" in tar_filename or "alph" in tar_filename else False
@@ -134,7 +169,7 @@ def extract_parameters(
     else:
         ctime = True if "ctime" in tar_filename else False
         reverse = True if "reversed" in tar_filename else False
-    (version, run) = extract_version_and_run(tar_filename)
+    (version, run) = version_and_run_from_tar_filename(tar_filename)
     assert version is not None
     run = run if run is not None else "01"
     return (version, int(run), dfstest, dfs, ctime, reverse)
