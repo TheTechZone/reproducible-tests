@@ -8,9 +8,12 @@ from setup.structure import DATA_ROOT
 ###
 
 
-def differences(list1, list2):
+def differences(list1, list2) -> list:
     """
-    Compare two given list and return the differences in a human readable form for ad hoc printing
+    Compare two given list and return the differences in a human readable form 
+    ["differing_value_list1 -> differing_value_list2", ...]
+
+    PRE: len(list1) == len(list2)
     """
     assert len(list1) == len(list2), f"The two lists to compare had differing lengths!"
     differences = []
@@ -26,6 +29,10 @@ def differences(list1, list2):
 
 
 def get_metadata_list(tarfile):
+    """
+    reads output_metadata_mtimes.json from the data/res folder and returns all recorded output files
+    expects the format: {tarfile:{..., "output-metadata.json":{..., "elements":[{"outputFile":"value"}, {"outputFile":value}, ...], ...}, ...}, ...}
+    """
     with open(os.path.join(DATA_ROOT, "res", "output_metadata_mtimes.json"), "r") as f:
         obj = json.loads(f.read())
     metadata = json.loads(obj[tarfile]["output-metadata.json"])
