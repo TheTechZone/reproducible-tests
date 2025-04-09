@@ -75,7 +75,7 @@ def compare_metadata_list(tarfile1, tarfile2) -> tuple[bool, list]:
 # TODO: may be useful to add one in the future
 
 
-def get_dex_list(tarfile):
+def get_dex_list_for_local_build(tarfile):
     with open(os.path.join(DATA_ROOT, "res", "dex_sort.json"), "r") as f:
         obj = json.loads(f.read())
     return obj[tarfile]["local"]
@@ -90,8 +90,8 @@ def dict_pairs_to_string(dictionary):
 
 # Compare all dex hashes
 def compare_dex_hashes(tarfile1, tarfile2):
-    dex_list_1 = get_dex_list(tarfile1)
-    dex_list_2 = get_dex_list(tarfile2)
+    dex_list_1 = get_dex_list_for_local_build(tarfile1)
+    dex_list_2 = get_dex_list_for_local_build(tarfile2)
     # Create symmetric difference between the sets
     diff = set(dict_pairs_to_string(dex_list_1)).symmetric_difference(
         set(dict_pairs_to_string(dex_list_2))
@@ -108,8 +108,8 @@ def get_first_dex_hash(dex_list):
 # Because according to Aditz the first dex file matters more!
 # Only checks classes.dex
 def compare_first_dex_file_hash(tarfile1, tarfile2):
-    dex_hash_1 = get_first_dex_hash(get_dex_list(tarfile1))
-    dex_hash_2 = get_first_dex_hash(get_dex_list(tarfile2))
+    dex_hash_1 = get_first_dex_hash(get_dex_list_for_local_build(tarfile1))
+    dex_hash_2 = get_first_dex_hash(get_dex_list_for_local_build(tarfile2))
     equal = dex_hash_1 == dex_hash_2
     return equal, [] if equal else [f"{dex_hash_1}->{dex_hash_2}"]
 
