@@ -31,9 +31,9 @@
 # Tests
 
 # A:
-{tarfile:{"blub":[], "output-metadata.json":{"file":"meow", "elements":[{"type":"file", "outputFile":"myFile.meep"}}}
+{"tarfile.tar.gz":{"blub":[], "output-metadata.json":{"file":"meow", "elements":[{"type":"file", "outputFile":"myFile.meep"}}}
 # B:
-{tarfile:{"blub":[], "output-metadata.json":{"file":"meow", "elements":[{"type":"file", "outputFile":"myFile.meep"}, {"attributes":[], "outputFile":"myFile.grump"}]}}}
+{"unrelated":{"blub":[], "output-metadata.json":{"file":"meow", "elements":[{"type":"file", "outputFile":"myFile.meep"}, {"attributes":[], "outputFile":"myFile.grump"}]}}}
 # C:
 {"signal-android_v7.30.2.tar.gz": {"mtimes": "total 181264\n-rw-r--r-- 1 chrissy chrissy 37119637 2025-03-17 11:29:56.116420298 +0000 linked-resources-binary-format-playProdUniversalRelease.ap_\n-rw-r--r-- 1 chrissy chrissy 37119637 2025-03-17 11:30:04.424390207 +0000 linked-resources-binary-format-playProdX86_64Release.ap_\n-rw-r--r-- 1 chrissy chrissy 37119637 2025-03-17 11:30:05.252387208 +0000 linked-resources-binary-format-playProdArm64-v8aRelease.ap_\n-rw-r--r-- 1 chrissy chrissy 37119637 2025-03-17 11:30:05.516386251 +0000 linked-resources-binary-format-playProdX86Release.ap_\n-rw-r--r-- 1 chrissy chrissy 37119637 2025-03-17 11:30:05.892384890 +0000 linked-resources-binary-format-playProdArmeabi-v7aRelease.ap_\n-rw-r--r-- 1 chrissy chrissy     1728 2025-03-17 11:30:06.376383137 +0000 output-metadata.json\n", "output-metadata.json": "{\n  \"version\": 3,\n  \"artifactType\": {\n    \"type\": \"LINKED_RESOURCES_BINARY_FORMAT\",\n    \"kind\": \"Directory\"\n  },\n  \"applicationId\": \"org.thoughtcrime.securesms\",\n  \"variantName\": \"playProdRelease\",\n  \"elements\": [\n    {\n      \"type\": \"UNIVERSAL\",\n      \"filters\": [],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdUniversalRelease.ap_\"\n    },\n    {\n      \"type\": \"ONE_OF_MANY\",\n      \"filters\": [\n        {\n          \"filterType\": \"ABI\",\n          \"value\": \"x86_64\"\n        }\n      ],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdX86_64Release.ap_\"\n    },\n    {\n      \"type\": \"ONE_OF_MANY\",\n      \"filters\": [\n        {\n          \"filterType\": \"ABI\",\n          \"value\": \"arm64-v8a\"\n        }\n      ],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdArm64-v8aRelease.ap_\"\n    },\n    {\n      \"type\": \"ONE_OF_MANY\",\n      \"filters\": [\n        {\n          \"filterType\": \"ABI\",\n          \"value\": \"x86\"\n        }\n      ],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdX86Release.ap_\"\n    },\n    {\n      \"type\": \"ONE_OF_MANY\",\n      \"filters\": [\n        {\n          \"filterType\": \"ABI\",\n          \"value\": \"armeabi-v7a\"\n        }\n      ],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdArmeabi-v7aRelease.ap_\"\n    }\n  ],\n  \"elementType\": \"File\"\n}"}}
 
@@ -46,6 +46,57 @@
 ["myfile.meep", "myfile.grump"]
 # C:
 ["linked-resources-binary-format-playProdUniversalRelease.ap_", "linked-resources-binary-format-playProdX86_64Release.ap_", "linked-resources-binary-format-playProdArm64-v8aRelease.ap_", "linked-resources-binary-format-playProdX86Release.ap_", "linked-resources-binary-format-playProdArmeabi-v7aRelease.ap_"]
+
+
+###
+# get_mtimes_list
+###
+
+# Tests
+
+# A:
+{"signal-android_v7.30.2.tar.gz": {"mtimes": "total 181264\n-rw-r--r-- 1 chrissy chrissy 37119637 2025-03-17 11:29:56.116420298 +0000 linked-resources-binary-format-playProdUniversalRelease.ap_\n-rw-r--r-- 1 chrissy chrissy 37119637 2025-03-17 11:30:04.424390207 +0000 linked-resources-binary-format-playProdX86_64Release.ap_\n-rw-r--r-- 1 chrissy chrissy 37119637 2025-03-17 11:30:05.252387208 +0000 linked-resources-binary-format-playProdArm64-v8aRelease.ap_\n-rw-r--r-- 1 chrissy chrissy 37119637 2025-03-17 11:30:05.516386251 +0000 linked-resources-binary-format-playProdX86Release.ap_\n-rw-r--r-- 1 chrissy chrissy 37119637 2025-03-17 11:30:05.892384890 +0000 linked-resources-binary-format-playProdArmeabi-v7aRelease.ap_\n-rw-r--r-- 1 chrissy chrissy     1728 2025-03-17 11:30:06.376383137 +0000 output-metadata.json\n", "output-metadata.json": "{\n  \"version\": 3,\n  \"artifactType\": {\n    \"type\": \"LINKED_RESOURCES_BINARY_FORMAT\",\n    \"kind\": \"Directory\"\n  },\n  \"applicationId\": \"org.thoughtcrime.securesms\",\n  \"variantName\": \"playProdRelease\",\n  \"elements\": [\n    {\n      \"type\": \"UNIVERSAL\",\n      \"filters\": [],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdUniversalRelease.ap_\"\n    },\n    {\n      \"type\": \"ONE_OF_MANY\",\n      \"filters\": [\n        {\n          \"filterType\": \"ABI\",\n          \"value\": \"x86_64\"\n        }\n      ],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdX86_64Release.ap_\"\n    },\n    {\n      \"type\": \"ONE_OF_MANY\",\n      \"filters\": [\n        {\n          \"filterType\": \"ABI\",\n          \"value\": \"arm64-v8a\"\n        }\n      ],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdArm64-v8aRelease.ap_\"\n    },\n    {\n      \"type\": \"ONE_OF_MANY\",\n      \"filters\": [\n        {\n          \"filterType\": \"ABI\",\n          \"value\": \"x86\"\n        }\n      ],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdX86Release.ap_\"\n    },\n    {\n      \"type\": \"ONE_OF_MANY\",\n      \"filters\": [\n        {\n          \"filterType\": \"ABI\",\n          \"value\": \"armeabi-v7a\"\n        }\n      ],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdArmeabi-v7aRelease.ap_\"\n    }\n  ],\n  \"elementType\": \"File\"\n}"}}
+# B:
+{"tarfile.tar.gz":{"blub":[], "output-metadata.json":{"file":"meow", "elements":[{"type":"file", "outputFile":"myFile.meep"}, "mtimes":"blubblub"}}
+# C:
+{"signal-android_v7.30.2.tar.gz": {"output-metadata.json": "{\n  \"version\": 3,\n  \"artifactType\": {\n    \"type\": \"LINKED_RESOURCES_BINARY_FORMAT\",\n    \"kind\": \"Directory\"\n  },\n  \"applicationId\": \"org.thoughtcrime.securesms\",\n  \"variantName\": \"playProdRelease\",\n  \"elements\": [\n    {\n      \"type\": \"UNIVERSAL\",\n      \"filters\": [],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdUniversalRelease.ap_\"\n    },\n    {\n      \"type\": \"ONE_OF_MANY\",\n      \"filters\": [\n        {\n          \"filterType\": \"ABI\",\n          \"value\": \"x86_64\"\n        }\n      ],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdX86_64Release.ap_\"\n    },\n    {\n      \"type\": \"ONE_OF_MANY\",\n      \"filters\": [\n        {\n          \"filterType\": \"ABI\",\n          \"value\": \"arm64-v8a\"\n        }\n      ],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdArm64-v8aRelease.ap_\"\n    },\n    {\n      \"type\": \"ONE_OF_MANY\",\n      \"filters\": [\n        {\n          \"filterType\": \"ABI\",\n          \"value\": \"x86\"\n        }\n      ],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdX86Release.ap_\"\n    },\n    {\n      \"type\": \"ONE_OF_MANY\",\n      \"filters\": [\n        {\n          \"filterType\": \"ABI\",\n          \"value\": \"armeabi-v7a\"\n        }\n      ],\n      \"attributes\": [],\n      \"versionCode\": 150400,\n      \"versionName\": \"7.30.2\",\n      \"outputFile\": \"linked-resources-binary-format-playProdArmeabi-v7aRelease.ap_\"\n    }\n  ],\n  \"elementType\": \"File\"\n}"}}
+# D:
+{"unrelated": {"mtimes": "not in list +0000 output-metadata.json\n +0000       propperly stripped         \n empty +0000"}}
+# E:
+# F:
+
+# Expected
+
+# A:
+["linked-resources-binary-format-playProdUniversalRelease.ap_", "linked-resources-binary-format-playProdX86_64Release.ap_", "linked-resources-binary-format-playProdArm64-v8aRelease.ap_", "linked-resources-binary-format-playProdX86Release.ap_", "linked-resources-binary-format-playProdArmeabi-v7aRelease.ap_"]
+# B:
+[]
+# C:
+[]
+# D:
+["propperly stripped", ""]
+
+###
+# example
+###
+
+# Tests
+
+# A:
+# B:
+# C:
+# D:
+# E:
+# F:
+
+# Expected
+
+# A:
+# B:
+# C:
+# D:
+# E:
+# F:
 
 
 

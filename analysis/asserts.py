@@ -8,7 +8,7 @@ from setup.structure import DATA_ROOT
 ###
 
 
-def differences(list1, list2) -> list:
+def _differences(list1, list2) -> list:
     """
     Compare two given list and return the differences in a human readable form
     ["differing_value_list1 -> differing_value_list2", ...]
@@ -28,7 +28,7 @@ def differences(list1, list2) -> list:
 ###
 
 
-def get_metadata_list(tarfile):
+def _get_metadata_list(tarfile):
     """
     reads output_metadata_mtimes.json from the data/res folder and returns all recorded output files
     expects the format: {tarfile:{..., "output-metadata.json":{..., "elements":[{"outputFile":"value"}, {"outputFile":value}, ...], ...}, ...}, ...}
@@ -42,7 +42,11 @@ def get_metadata_list(tarfile):
     return metadata_list
 
 
-def get_mtimes_list(tarfile):
+def _get_mtimes_list(tarfile):
+    """
+        parses the file order stored in "mtimes" of the output_metadata_mtimes.json dict
+        and returns them as a list.
+    """
     with open(os.path.join(DATA_ROOT, "res", "output_metadata_mtimes.json"), "r") as f:
         obj = json.loads(f.read())
     mtime_sort = obj[tarfile]["mtimes"]
@@ -57,8 +61,12 @@ def get_mtimes_list(tarfile):
 
 # Test for internal consistency
 def is_metadata_to_dirorder_consistent(tarfile):
+    """
+        for the same tarfile, compares the aggregated mtimes list and the metadata list
+        True if they are consistent.
+    """
     # True if the files are consistent amongst each other (dirorder is equivalent to outputfile)
-    diff = differences(get_mtimes_list(tarfile), get_metadata_list(tarfile))
+    diff = _differences(_get_mtimes_list(tarfile), _get_metadata_list(tarfile))
     if len(diff) > 0:
         print(f"Metadata inconsistency in: {tarfile}")
         print(diff)
@@ -68,9 +76,14 @@ def is_metadata_to_dirorder_consistent(tarfile):
 
 # Test between runs
 def compare_metadata_list(tarfile1, tarfile2) -> tuple[bool, list]:
-    list1 = get_metadata_list(tarfile1)
-    list2 = get_metadata_list(tarfile2)
-    diff = differences(list1, list2)
+    """
+        for two runs denoted by tarfile1 & tarfile2
+        check if the metadata lists are equal
+        returns: equal, differences
+    """
+    list1 = _get_metadata_list(tarfile1)
+    list2 = _get_metadata_list(tarfile2)
+    diff = _differences(list1, list2)
     return len(diff) > 0, diff
 
 
