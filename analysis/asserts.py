@@ -7,7 +7,7 @@ from typing import Optional
 ###
 
 
-def differences(list1: list[str], list2: list[str]) -> list[str]:
+def _differences(list1: list[str], list2: list[str]) -> list[str]:
     """
     Compare two given list and return the differences in a human readable form
     ["differing_value_list1 -> differing_value_list2", ...]
@@ -27,7 +27,7 @@ def differences(list1: list[str], list2: list[str]) -> list[str]:
 ###
 
 
-def get_metadata_list(tarfile):
+def _get_metadata_list(tarfile):
     """
     reads output_metadata_mtimes.json from the data/res folder and returns all recorded output files
     expects the format: {tarfile:{..., "output-metadata.json":{..., "elements":[{"outputFile":"value"}, {"outputFile":value}, ...], ...}, ...}, ...}
@@ -44,7 +44,7 @@ def get_metadata_list(tarfile):
     return metadata_list
 
 
-def get_mtimes_list(tarfile: str) -> list[str]:
+def _get_mtimes_list(tarfile: str) -> list[str]:
     """
         parses the file order stored in "mtimes" of the output_metadata_mtimes.json dict
         and returns them as a list.
@@ -71,7 +71,7 @@ def is_metadata_to_dirorder_consistent(tarfile: str) -> bool:
     Returns:
         `True` if the files are consistent amongst each other (dirorder is equivalent to outputfile)
     """
-    diff = differences(get_mtimes_list(tarfile), get_metadata_list(tarfile))
+    diff = _differences(_get_mtimes_list(tarfile), _get_metadata_list(tarfile))
     if has_diffs := len(diff) > 0:
         print(f"Metadata inconsistency in: {tarfile}")
         print(diff)
@@ -85,9 +85,9 @@ def compare_metadata_list(tarfile1, tarfile2) -> tuple[bool, list]:
         check if the metadata lists are equal
         returns: equal, differences
     """
-    list1 = get_metadata_list(tarfile1)
-    list2 = get_metadata_list(tarfile2)
-    diff = differences(list1, list2)
+    list1 = _get_metadata_list(tarfile1)
+    list2 = _get_metadata_list(tarfile2)
+    diff = _differences(list1, list2)
     return len(diff) > 0, diff
 
 

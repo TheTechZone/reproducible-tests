@@ -6,7 +6,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import json
 from pathlib import Path
-from analysis.asserts import differences, get_metadata_list
+from analysis.asserts import _differences, _get_metadata_list
 
 
 @pytest.mark.parametrize(
@@ -27,7 +27,7 @@ from analysis.asserts import differences, get_metadata_list
     ],
 )
 def test_differences(list1, list2, expected_result):
-    result = differences(list1, list2)
+    result = _differences(list1, list2)
     assert result == expected_result
 
 
@@ -133,5 +133,5 @@ def test_get_metadata_list(
     monkeypatch.setattr(analysis.asserts, "DATA_ROOT", tmp_path)
 
     # Run the actual test
-    result = get_metadata_list(tarfile_name)
+    result = _get_metadata_list(tarfile_name)
     assert result == expected
