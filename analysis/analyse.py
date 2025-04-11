@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import json
 from typing import Mapping, Union, Optional
 from collections.abc import Callable
@@ -77,17 +77,24 @@ def run_all_tests(tests, with_metadata_list=True):
 ###
 
 
-def print_with_params(version, file, sorting_criteria=None, direction=None):
-    with open(os.path.join(DATA_ROOT, "res", file), "r") as f:
-        data = json.loads(f.read())
+def print_with_params(
+    version: str,
+    file: str,
+    sorting_criteria: Optional[str] = None,
+    direction: Optional[str] = None,
+):
+    file_path = DATA_ROOT / "res" / file
 
-    for key in data.keys():
+    with file_path.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    for key, value in data.items():
         if (
             version in key
-            and (sorting_criteria and sorting_criteria in key)
-            and (direction and direction in key)
+            and (sorting_criteria is None or sorting_criteria in key)
+            and (direction is None or direction in key)
         ):
-            print(f"{key}:{json.dumps(data[key], indent=4, sort_keys=True)}")
+            print(f"{key}: {json.dumps(value, indent=4, sort_keys=True)}")
 
 
 # E.g., used to filter out runs that were not internally consistent for the metadata list
@@ -95,10 +102,13 @@ def print_with_params(version, file, sorting_criteria=None, direction=None):
 def assemble_consistent_tarfile_list(consistency_check: Callable[[str], bool]):
     """makes sure that multiple runs with the same parameters are consistent amongst each other"""
     consistent_runs = []
-    for tarfile in os.listdir(TARS_ROOT):
-        if consistency_check(tarfile):
-            consistent_runs.append(tarfile)
-    return consistent_runs
+    tarfiles_dir = Path(TARS_ROOT)
+
+    for tarfile in tarfiles_dir.iterdir():
+        if consistency_check(
+            tarfile.name
+        ):  # tarfile is now a Path object, use .name to get the filename
+            consistent_runs.append(tarfile.name)
 
 
 def _compare_amongst_runs(
@@ -230,17 +240,17 @@ def check_for_same_version(
     print(f"checking version {version}...")
     # print(classified_runs)
     # Create/truncate summary file for idempotence
-    summary_file = summary_path(COMPARE_TO_TESTNAME[compare], version)
-    if not os.path.exists(summary_file):
-        print(f"Creating {summary_file.split(SUMMARY_ROOT)[-1]}...")
-        with open(summary_file, "w") as f:  # create and write empty dict
-            f.write("{}")
+    summary_file = Path(summary_path(COMPARE_TO_TESTNAME[compare], version))
+    if not summary_file.exists():
+        print(f"Creating {summary_file.relative_to(SUMMARY_ROOT)}...")
+        summary_file.write_text("{}")
+
     check_consistency_of_classified_runs(classified_runs, compare, summary_file)
 
 
 def get_all_versions() -> list[str]:
     versions = []
-    for tarfile in os.listdir(TARS_ROOT):
+    for tarfile in TARS_ROOT.iterdir():
         v, _ = version_and_run_from_tar_filename(tarfile)
         versions.append(v)
     return list(set(versions))
@@ -263,7 +273,7 @@ def _get_all_tarfiles_with_params(
         List[str]: A list of tarfile names matching the given parameters.
     """
     files = []
-    for tarfile in os.listdir(TARS_ROOT):
+    for tarfile in get_all_tarfiles():
         if dfs:
             if alph and "alph" in tarfile:
                 if reverse and "reverse" in tarfile:
@@ -297,7 +307,8 @@ def _get_all_tarfiles_with_params(
 
 
 def get_all_tarfiles() -> list[str]:
-    return os.listdir(TARS_ROOT)
+    tarfiles_dir = Path(TARS_ROOT)
+    return [tarfile.name for tarfile in tarfiles_dir.iterdir()]
 
 
 def description_from_params(
@@ -373,9 +384,10 @@ def check_for_same_params(
             if v in tarfile:
                 classified_runs[v]["runs"].append(tarfile)
     print(f"checking the parameters: '{description}'...")
-    summary_file = summary_path(COMPARE_TO_TESTNAME[compare], description)
-    if not os.path.exists(summary_file):
-        print(f"Creating {summary_file.split(SUMMARY_ROOT)[-1]}...")
-        with open(summary_file, "w") as f:  # create and write empty dict
-            f.write("{}")
+    summary_file = Path(summary_path(COMPARE_TO_TESTNAME[compare], description))
+
+    if not summary_file.exists():
+        print(f"Creating {summary_file.relative_to(SUMMARY_ROOT)}...")
+        summary_file.write_text("{}")
+
     check_consistency_of_classified_runs(classified_runs, compare, summary_file)
