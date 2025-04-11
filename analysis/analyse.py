@@ -1,6 +1,6 @@
 import os
 import json
-from typing import Mapping, Union
+from typing import Mapping, Union, Optional
 from collections.abc import Callable
 from setup.structure import (
     DATA_ROOT,
@@ -20,7 +20,7 @@ from analysis.tests import (
 )
 
 
-def run_tests(tarfiles, compare):
+def run_tests(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
     """
     Currently this takes the same set of files for between and within version comparisons. May want to separate that
     for some of the tests (e.g., metadata consistency)
@@ -237,7 +237,7 @@ def check_for_same_version(
     check_consistency_of_classified_runs(classified_runs, compare, summary_file)
 
 
-def get_all_versions():
+def get_all_versions() -> list[str]:
     versions = []
     for tarfile in os.listdir(TARS_ROOT):
         v, _ = version_and_run_from_tar_filename(tarfile)
@@ -245,7 +245,22 @@ def get_all_versions():
     return list(set(versions))
 
 
-def _get_all_tarfiles_with_params(dfs, alph=None, ctime=None, reverse=None):
+def _get_all_tarfiles_with_params(
+    dfs: bool, alph: Optional[bool], ctime: Optional[bool], reverse: Optional[bool]
+) -> list[str]:
+    """
+    Returns a filtered list of tarfile names from the TARS_ROOT directory
+    based on specified parameter flags.
+
+    Parameters:
+        dfs: filter runs done with disorderfs based on the optional ('alph', 'ctime', and 'reverse') flags.
+        alph: include tarfiles with contents sorted alphabetically.
+        ctime: include tarfiles with contents sorted by ctime.
+        reverse: include the files sorted by alph/ctime in reverse order
+
+    Returns:
+        List[str]: A list of tarfile names matching the given parameters.
+    """
     files = []
     for tarfile in os.listdir(TARS_ROOT):
         if dfs:
@@ -268,9 +283,19 @@ def _get_all_tarfiles_with_params(dfs, alph=None, ctime=None, reverse=None):
             ):
                 files.append(tarfile)
     return files
+    # todo: replace with this :)
+    # for tarfile in os.listdir(TARS_ROOT):
+    #     if dfs:
+    #         if alph and "alph" in tarfile or ctime and "ctime" in tarfile:
+    #             if (reverse and "reverse" in tarfile) or (not reverse and "sort" in tarfile):
+    #                 files.append(tarfile)
+    #     else:
+    #         if all(key not in tarfile for key in ("alph", "ctime", "sort", "reverse")):
+    #             files.append(tarfile)
+    # return files
 
 
-def get_all_tarfiles():
+def get_all_tarfiles() -> list[str]:
     return os.listdir(TARS_ROOT)
 
 

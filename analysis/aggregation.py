@@ -1,5 +1,6 @@
 import os
 import json
+from typing import Optional
 from plumbum import local
 from collections import defaultdict
 from setup.structure import (
@@ -18,7 +19,11 @@ from setup.structure import (
     TARS_ROOT,
     VERSION_CVC_FILE,
 )
-from setup.structure import universal_apk_path, create_relpath, parameters_from_tar_filename
+from setup.structure import (
+    universal_apk_path,
+    create_relpath,
+    parameters_from_tar_filename,
+)
 
 
 # TODO: fill out with all the apks you want to compare, mapping from local -> playstore
@@ -31,22 +36,30 @@ APK_COMPARE_MAP = {
 }
 
 
-def get_version(cvc):
+def get_version(cvc: str) -> Optional[str]:
+    """
+    Get the human readable, sematic version for a version code
+    """
     with open(VERSION_CVC_FILE, "r") as f:
         v_c = json.loads(f.read())
-    return v_c[cvc]
+    return v_c.get(cvc, None)
 
 
-def get_cvc(version):
+def get_cvc(version: str) -> Optional[str]:
+    """
+    Get the cannocial version code for a known semantic version (git tag)
+    """
     if version[0] == "v":
         version = version[1:]
     with open(VERSION_CVC_FILE, "r") as f:
         v_c = json.loads(f.read())
-    return v_c[version]
+    return v_c.get(version, None)
 
 
-# if dfs_test=True correct folder structure to root at Signal-Android and not dfs_root, ignoring test
-def extract(filepath, dfs_test):
+def extract(filepath, dfs_test) -> None:
+    """
+    if `dfs_test=True` correct folder structure to root at Signal-Android and not dfs_root, ignoring test
+    """
     cwd = os.getcwd()
     tar = local["tar"]
     os.chdir(BUILDS_ROOT)
@@ -62,15 +75,19 @@ def extract(filepath, dfs_test):
     _extract_apks()
 
 
-# simply recursively clears the directory
-def _clear_untared_folder():
+def _clear_untared_folder() -> None:
+    """
+    recursively clears the codabase directory
+    """
     if os.path.exists(CB_PATH):
         print("Clearing current build...")
         rm = local["rm"]
         rm["-r", CB_PATH]()
+    else:
+        print(f"Path {CB_PATH} does not exist. Skipping...")
 
 
-def _extract_apks():
+def _extract_apks() -> None:
     bundletool = local[BUNDLETOOL_EXE]
     if not os.path.exists(CB_AAB_PATH):
         print(f"{CB_AAB_PATH} \ndoes not exist!!")
@@ -91,24 +108,28 @@ def _extract_apks():
     os.chdir(cwd)
 
 
-def _clear_current_apks():
+def _clear_current_apks() -> None:
     print("Clearing APKs from previous run...")
     local["rm"]["-r", CB_APKS_PATH]()
     local["mkdir"][CB_APKS_PATH]()
 
 
-def clear():
+def clear() -> None:
     _clear_untared_folder()
     _clear_current_apks()
 
 
-def current_cvc():
+def current_cvc() -> str:
+    """
+    get the cannocial version code from the build.gradle.kts
+    """
     build_gradle_kts_path = os.path.join(CB_PATH, "app", "build.gradle.kts")
     version_code_line = "val canonicalVersionCode ="
     get_version_code = (
         local["cat"][build_gradle_kts_path] | local["grep"][version_code_line]
     )
     stdout = get_version_code()
+    # todo: It currently assumes hotfix version is 0 :/
     return f"{stdout.split(version_code_line)[-1].strip()}00"
 
 
@@ -190,8 +211,12 @@ def create_dex_sets(cvc):
     return cvc_d
 
 
-# Compares current base.apk with the coresponding playstore equivalent
-def create_diffuse_record():
+def create_diffuse_record() -> str:
+    """
+    Compares current base.apk with the coresponding playstore equivalent using `diffuse`_.
+
+    .. _diffuse: https://github.com/JakeWharton/diffuse
+    """
     print("Running diffuse on the master APK...")
     # TODO: clean up duplicate code
     cvc = current_cvc()
@@ -357,10 +382,28 @@ def extract_output_metadata(tarfile):
     _update_aggregation_result("output_metadata_mtimes.json", tarfile, data)
 
 
-# Iterates through the data/tars folder and aggregates the results one run at a time
 def aggregate_all_runs(
-    dexsort=True, diffuse=True, apkdiff=True, nav=True, output_meta=True
+    dexsort: bool = True,
+    diffuse: bool = True,
+    apkdiff: bool = True,
+    nav: bool = True,
+    output_meta: bool = True,
 ):
+    """
+    Iterates through the data/tars folder and aggregates the comparison results one run at a time
+
+    Parameters:
+        dexsort (bool): runs the dex file sort comparison and updates `dex_sort.json`.
+        diffuse (bool): runs the diffuse analysis and updates `diffuse.json`.
+        apkdiff (bool): performs APK diff comparisons.
+        nav (bool): copies navigation-related JSON metadata for each run.
+        output_meta (bool): extracts and stores general output metadata for each run.
+
+    Side Effects:
+        - Reads from and writes to disk (JSON files, extracted folders).
+        - Interacts with Git LFS to fetch archived test data.
+        - Prints status information to standard output.
+    """
     # Update lfs refs
     local["git"]["lfs", "checkout"]()
     for tarfile in os.listdir(TARS_ROOT):  # meep hard
