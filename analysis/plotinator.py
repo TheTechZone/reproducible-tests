@@ -1,7 +1,6 @@
 import os
 from typing import Optional
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
 from matplotlib.cm import ScalarMappable
 import numpy as np

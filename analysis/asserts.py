@@ -1,14 +1,14 @@
 import os
 import json
 from setup.structure import DATA_ROOT
-
+from typing import Optional
 
 ###
 # General utility
 ###
 
 
-def differences(list1, list2) -> list:
+def differences(list1: list[str], list2: list[str]) -> list[str]:
     """
     Compare two given list and return the differences in a human readable form
     ["differing_value_list1 -> differing_value_list2", ...]
@@ -28,7 +28,7 @@ def differences(list1, list2) -> list:
 ###
 
 
-def get_metadata_list(tarfile):
+def get_metadata_list(tarfile: str) -> list[str]:
     """
     reads output_metadata_mtimes.json from the data/res folder and returns all recorded output files
     expects the format: {tarfile:{..., "output-metadata.json":{..., "elements":[{"outputFile":"value"}, {"outputFile":value}, ...], ...}, ...}, ...}
@@ -42,7 +42,7 @@ def get_metadata_list(tarfile):
     return metadata_list
 
 
-def get_mtimes_list(tarfile):
+def get_mtimes_list(tarfile: str) -> list[str]:
     with open(os.path.join(DATA_ROOT, "res", "output_metadata_mtimes.json"), "r") as f:
         obj = json.loads(f.read())
     mtime_sort = obj[tarfile]["mtimes"]
@@ -55,19 +55,21 @@ def get_mtimes_list(tarfile):
     return mtime_list
 
 
-# Test for internal consistency
-def is_metadata_to_dirorder_consistent(tarfile):
-    # True if the files are consistent amongst each other (dirorder is equivalent to outputfile)
+def is_metadata_to_dirorder_consistent(tarfile: str) -> bool:
+    """
+    Test for internal consistency
+
+    Returns:
+        `True` if the files are consistent amongst each other (dirorder is equivalent to outputfile)
+    """
     diff = differences(get_mtimes_list(tarfile), get_metadata_list(tarfile))
-    if len(diff) > 0:
+    if has_diffs := len(diff) > 0:
         print(f"Metadata inconsistency in: {tarfile}")
         print(diff)
-        return False
-    return True
+    return has_diffs
 
 
-# Test between runs
-def compare_metadata_list(tarfile1, tarfile2) -> tuple[bool, list]:
+def compare_metadata_list(tarfile1: str, tarfile2: str) -> tuple[bool, list]:
     list1 = get_metadata_list(tarfile1)
     list2 = get_metadata_list(tarfile2)
     diff = differences(list1, list2)
@@ -82,13 +84,13 @@ def compare_metadata_list(tarfile1, tarfile2) -> tuple[bool, list]:
 # TODO: may be useful to add one in the future
 
 
-def get_dex_list_for_local_build(tarfile):
+def get_dex_list_for_local_build(tarfile) -> dict:
     with open(os.path.join(DATA_ROOT, "res", "dex_sort.json"), "r") as f:
         obj = json.loads(f.read())
     return obj[tarfile]["local"]
 
 
-def dict_pairs_to_string(dictionary):
+def dict_pairs_to_string(dictionary: dict) -> list[str]:
     res = []
     for k in dictionary.keys():
         res.append(f"{k}:{dictionary[k]}")
@@ -96,7 +98,7 @@ def dict_pairs_to_string(dictionary):
 
 
 # Compare all dex hashes
-def compare_dex_hashes(tarfile1, tarfile2):
+def compare_dex_hashes(tarfile1: str, tarfile2: str) -> tuple[bool, set[str]]:
     dex_list_1 = get_dex_list_for_local_build(tarfile1)
     dex_list_2 = get_dex_list_for_local_build(tarfile2)
     # Create symmetric difference between the sets
@@ -106,7 +108,7 @@ def compare_dex_hashes(tarfile1, tarfile2):
     return len(diff) > 0, diff
 
 
-def get_first_dex_hash(dex_list):
+def get_first_dex_hash(dex_list: dict[str, dict]) -> Optional[str]:
     for k in dex_list.keys():
         if dex_list[k] == "classes.dex":
             return k
@@ -114,7 +116,7 @@ def get_first_dex_hash(dex_list):
 
 # Because according to Aditz the first dex file matters more!
 # Only checks classes.dex
-def compare_first_dex_file_hash(tarfile1, tarfile2):
+def compare_first_dex_file_hash(tarfile1: str, tarfile2: str) -> tuple[bool, list[str]]:
     dex_hash_1 = get_first_dex_hash(get_dex_list_for_local_build(tarfile1))
     dex_hash_2 = get_first_dex_hash(get_dex_list_for_local_build(tarfile2))
     equal = dex_hash_1 == dex_hash_2
