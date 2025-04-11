@@ -1,59 +1,66 @@
-import os
 import json
 import re
+import subprocess
+import shutil
+from pathlib import Path
 from typing import Optional
-from plumbum import local
 
 ##
 # Utilities related to the directory structure of the repository
 ##
 
+def get_git_root() -> Path:
+    """
+    Returns the absolute path to the root of the Git repository.
+    """
+    try:
+        root = subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
+        return Path(root).resolve()
+    except subprocess.CalledProcessError:
+        raise RuntimeError("Not inside a Git repository.")
+
 
 # Constants
 # Assumes that "." resolves to the directory of the analysis notebook
-COMPARATORS_PATH = os.path.abspath(os.path.join(".", "comparators"))
-DATA_ROOT = os.path.abspath(os.path.join(".", "data"))
+ROOT = get_git_root()
+
+COMPARATORS_PATH = ROOT / "comparators"
+DATA_ROOT = ROOT /  "data"
+
 # The root of all the data related to the local builds
-BUILDS_ROOT = os.path.join(DATA_ROOT, "build")
+BUILDS_ROOT = DATA_ROOT / "build"
 # CB: Current Build
-CB_APKS_PATH = os.path.join(BUILDS_ROOT, "apks")
-CB_SPLITS_PATH = os.path.join(CB_APKS_PATH, "splits")
-TARS_ROOT = os.path.join(BUILDS_ROOT, "tars")
-CB_PATH = os.path.join(BUILDS_ROOT, "Signal-Android")
+CB_APKS_PATH = BUILDS_ROOT / "apks"
+CB_SPLITS_PATH = CB_APKS_PATH / "splits"
+TARS_ROOT = BUILDS_ROOT / "tars"
+CB_PATH = BUILDS_ROOT / "Signal-Android"
 # local builds with a functional whitness (dfstest), have a differing directory structure that we normalise while extracting
-REPRODUCIBLE_TESTS_ROOT = os.path.join(BUILDS_ROOT, "reproducible-tests")
+REPRODUCIBLE_TESTS_ROOT = BUILDS_ROOT / "reproducible-tests"
 # part of the dfstest directory structure
-DFS_ROOT_PATH = os.path.join(REPRODUCIBLE_TESTS_ROOT, "disorderfs_root")
-CB_AAB_PATH = os.path.join(
-    CB_PATH,
-    "app",
-    "build",
-    "outputs",
-    "bundle",
-    "playProdRelease",
-    "Signal-Android-play-prod-release.aab",
+DFS_ROOT_PATH = REPRODUCIBLE_TESTS_ROOT / "disorderfs_root"
+CB_AAB_PATH = (
+    CB_PATH / "app" / "build" / "outputs" / "bundle" / "playProdRelease" / "Signal-Android-play-prod-release.aab"
 )
-PLAYSTORE_APKS_ROOT = os.path.join(DATA_ROOT, "playstore-mirror")
-PLAYSTORE_UNIVERSAL_UNZIP_PATH = os.path.join(DATA_ROOT, "playstore-universal-unzipped")
-BUNDLETOOL_EXE = os.path.join(".", "bundletool")
-VERSION_CVC_FILE = os.path.join(".", "version_code_tag_mappings.json")
+
+PLAYSTORE_APKS_ROOT = DATA_ROOT / "playstore-mirror"
+PLAYSTORE_UNIVERSAL_UNZIP_PATH = DATA_ROOT / "playstore-universal-unzipped"
+BUNDLETOOL_EXE = ROOT / "bundletool"
+VERSION_CVC_FILE = ROOT / "version_code_tag_mappings.json"
 # Results after applying methods from analysis.asserts to the aggregated data
-SUMMARY_ROOT = os.path.join(DATA_ROOT, "summary")
-PLOT_ROOT = os.path.join(DATA_ROOT, "plots")
+SUMMARY_ROOT = DATA_ROOT / "summary"
+PLOT_ROOT = DATA_ROOT / "plots"
 
 
 def _playstore_apk_path(cvc) -> str:
-    return os.path.join(PLAYSTORE_APKS_ROOT, cvc)
+    return PLAYSTORE_APKS_ROOT / cvc
 
 
 def universal_apk_path(cvc, relative=False) -> str:
-    path = os.path.join(
-        _playstore_apk_path(cvc), f"org.thoughtcrime.securesms-{cvc}.apk"
-    )
+    path = Path(_playstore_apk_path(cvc)) / f"org.thoughtcrime.securesms-{cvc}.apk"
     if relative:
         # Assuming posix
         path = create_relpath(path)
-    return path
+    return str(path)
 
 
 _VERSION = "fixed_versions"
@@ -66,50 +73,64 @@ def create_or_clear_summary_directory_for(testname, version=True, clear=True) ->
     if !clear and the dir exists function does nothing
     """
     # Check main folder
-    main_dir = os.path.join(SUMMARY_ROOT, testname)
-    mkdir = local["mkdir"]
-    if not os.path.exists(main_dir):
-        mkdir[main_dir]()
-    subdir = os.path.join(main_dir, _VERSION if version else _PARAMS)
-    if os.path.exists(subdir):
-        # Idempotence
-        local["rm"]["-r", subdir]()
-    mkdir["-p", subdir]()
+    main_dir = SUMMARY_ROOT /  testname
+    subdir = main_dir / (_VERSION if version else _PARAMS)
+
+    # Create main directory if it doesn't exist
+    main_dir.mkdir(parents=True, exist_ok=True)
+
+    if subdir.exists():
+        if clear:
+            shutil.rmtree(subdir)
+        else:
+            return
+
+    subdir.mkdir(parents=True, exist_ok=True)
 
 
 def summary_path(testname, key) -> str:
     # Which dimension is fixed?
-    fixed = _PARAMS if "without" in key or "alph" in key or "ctime" in key else _VERSION
-    if fixed == _PARAMS:
-        filename = f'{"_".join(key.split(" "))}.json'
-    else:
-        filename = f"{key}.json"
-    p = os.path.join(SUMMARY_ROOT, testname, fixed, filename)
-    # print(f"returning {p} for:\n{testname}, {key}, {tarfile}")
-    return p
+    fixed = _PARAMS if any(word in key for word in ("without", "alph", "ctime")) else _VERSION
+
+    # Format filename
+    filename = f'{"_".join(key.split(" "))}.json' if fixed == _PARAMS else f"{key}.json"
+
+    path = SUMMARY_ROOT / testname / fixed / filename
+    return str(path)
 
 
 def turn_cvc_code_mapping_to_json() -> None:
+    """
+        Reads a colon-separated version code mapping file and converts it to a JSON format.
+
+        Each line in the source file is expected to be in the format:
+            <version_code>: <version_name>
+
+        Both directions (code → name, and name → code) are stored in the resulting JSON.
+
+        Output is written to VERSION_CVC_FILE.
+    """
     json_obj = {}
-    with open(
-        os.path.join(PLAYSTORE_APKS_ROOT, "versioncode-tags-mapping.txt"), "r"
-    ) as f:
-        lines = f.readlines()
-        for line in lines:
-            cvc = line.split(":")[0].strip()
-            version = line.split(":")[-1].strip()
+
+    mapping_file = PLAYSTORE_APKS_ROOT / "versioncode-tags-mapping.txt"
+
+    with mapping_file.open("r", encoding="utf-8") as f:
+        for line in f:
+            parts = line.strip().split(":")
+            if len(parts) != 2:
+                continue  # skip malformed lines
+            cvc, version = parts[0].strip(), parts[1].strip()
             json_obj[cvc] = version
             json_obj[version] = cvc
-    with open(VERSION_CVC_FILE, "w") as f:
-        f.writelines(json.dumps(json_obj))
+
+    with VERSION_CVC_FILE.open("w", encoding="utf-8") as f:
+        json.dump(json_obj, f, indent=2)
 
 
 def create_relpath(abspath) -> str:
-    # git rev-parse --show-toplevel
-    stdout = local["git"]["rev-parse", "--show-toplevel"]()
-    # Assuming posix
-    relpath = abspath.removeprefix(stdout.strip())
-    return relpath[1:]
+    git_root = ROOT.resolve()
+    abspath = Path(abspath).resolve()
+    return str(abspath.relative_to(git_root))
 
 
 # filename: one of the runs in data/build/tars
