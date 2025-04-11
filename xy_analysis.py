@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from analysis.aggregation import aggregate_all_runs
 from analysis.analyse import run_all_tests
-from analysis.tests import (
+from analysis.asserts import (
     compare_dex_hashes,
     compare_first_dex_file_hash,
     compare_metadata_list,

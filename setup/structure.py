@@ -37,7 +37,7 @@ PLAYSTORE_APKS_ROOT = os.path.join(DATA_ROOT, "playstore-mirror")
 PLAYSTORE_UNIVERSAL_UNZIP_PATH = os.path.join(DATA_ROOT, "playstore-universal-unzipped")
 BUNDLETOOL_EXE = os.path.join(".", "bundletool")
 VERSION_CVC_FILE = os.path.join(".", "version_code_tag_mappings.json")
-# Results after applying methods from analysis.tests to the aggregated data
+# Results after applying methods from analysis.asserts to the aggregated data
 SUMMARY_ROOT = os.path.join(DATA_ROOT, "summary")
 PLOT_ROOT = os.path.join(DATA_ROOT, "plots")
 
@@ -147,7 +147,7 @@ def parameters_from_tar_filename(
     """
     Returns the parameters that were fixed during the run packed into the tarfile:
     (version, run_nr, functional whitness present?, with disorderfs?, sorted by ctime? (or alphabetically), sort reversed?)
-    
+
     # PRE:
     Expects the version and run to be last in the filename in this order, separated by '_'
     if there is no run, it assumes 1
@@ -155,7 +155,7 @@ def parameters_from_tar_filename(
     to determine the other parameters
     Example: dfstest-Signal-android-ctime-sort_v1.2.3_05.tar.gz
 
-    # POST: 
+    # POST:
     (ctime or reverse) => dfs
     not dfs => ctime == None and reverse == None
     """

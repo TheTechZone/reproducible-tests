@@ -2,14 +2,15 @@ import os
 from typing import Optional
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
+from matplotlib.cm import ScalarMappable
 import numpy as np
 import pandas as pd
 import seaborn as sns
 
 from setup.structure import SUMMARY_ROOT, PLOT_ROOT, parameters_from_tar_filename
 
-from analysis.tests import COMPARE_TO_TESTNAME
+from analysis.asserts import COMPARE_TO_TESTNAME
 
 
 def assert_symmetry(df: pd.DataFrame) -> None:
@@ -209,10 +210,10 @@ def subfigures(test, fixed_version: bool):
     colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]
     cmap = LinearSegmentedColormap.from_list("Custom", colors, len(colors))
     bounds = [0, 1, 2, 3]
-    norm = mpl.colors.BoundaryNorm(bounds, 4)
+    norm = BoundaryNorm(bounds, 4)
 
     cbar = fig.colorbar(
-        mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+        ScalarMappable(norm=norm, cmap=cmap),
         ax=axes,
         orientation="vertical",
         ticks=[0.5, 1.5, 2.5],

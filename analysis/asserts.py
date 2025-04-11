@@ -15,7 +15,7 @@ def differences(list1, list2) -> list:
 
     PRE: len(list1) == len(list2)
     """
-    assert len(list1) == len(list2), f"The two lists to compare had differing lengths!"
+    assert len(list1) == len(list2), "The two lists to compare had differing lengths!"
     differences = []
     for i, value in enumerate(list1):
         if value != list2[i]:

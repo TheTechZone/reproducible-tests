@@ -11,7 +11,7 @@ from setup.structure import (
     summary_path,
     create_or_clear_summary_directory_for,
 )
-from analysis.tests import (
+from analysis.asserts import (
     COMPARE_TO_TESTNAME,
     compare_dex_hashes,
     compare_first_dex_file_hash,
@@ -179,13 +179,12 @@ def check_consistency_of_classified_runs(
     summary_file=None,
 ) -> None:
     for key in classified_runs.keys():
-        runs: Optional[list[str]] = classified_runs[key].get("runs", [])
-        num_runs = len(runs)
-        if num_runs < 2:
+        runs = len(classified_runs[key]["runs"])
+        if runs < 2:
             print(f"Only one run was {key}")
             classified_runs[key]["consistent"] = True
         else:
-            print(f"There were {num_runs} {key} runs")
+            print(f"There were {runs} {key} runs")
             # check internal consistency
             # Writing down the result each time no matter if internal test or not
             _compare_amongst_runs(classified_runs, key, compare, summary_file)
