@@ -134,7 +134,7 @@ def create_relpath(abspath) -> str:
 
 
 # filename: one of the runs in data/build/tars
-def version_and_run_from_tar_filename(filename) -> tuple[Optional[str], Optional[str]]:
+def version_and_run_from_tar_filename(filename) -> tuple[Optional[str], Optional[int]]:
     """
     Parses the version and run of the run packed into the tarfile:
     (version, run)
@@ -154,7 +154,7 @@ def version_and_run_from_tar_filename(filename) -> tuple[Optional[str], Optional
     if match:
         version = match.group(1)
         run = match.group(2) if match.group(2) else "01"  # If no run number, return 01
-        return version, run
+        return version, int(run)
     else:
         return (
             None,
