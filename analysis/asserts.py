@@ -1,4 +1,3 @@
-import os
 import json
 from setup.structure import DATA_ROOT
 from typing import Optional
@@ -33,8 +32,11 @@ def get_metadata_list(tarfile: str) -> list[str]:
     reads output_metadata_mtimes.json from the data/res folder and returns all recorded output files
     expects the format: {tarfile:{..., "output-metadata.json":{..., "elements":[{"outputFile":"value"}, {"outputFile":value}, ...], ...}, ...}, ...}
     """
-    with open(os.path.join(DATA_ROOT, "res", "output_metadata_mtimes.json"), "r") as f:
-        obj = json.loads(f.read())
+    metadata_file_path = DATA_ROOT / "res" / "output_metadata_mtimes.json"
+
+    with metadata_file_path.open("r") as f:
+        obj = json.load(f)
+
     metadata = json.loads(obj[tarfile]["output-metadata.json"])
     metadata_list = []
     for element in metadata["elements"]:
@@ -43,8 +45,11 @@ def get_metadata_list(tarfile: str) -> list[str]:
 
 
 def get_mtimes_list(tarfile: str) -> list[str]:
-    with open(os.path.join(DATA_ROOT, "res", "output_metadata_mtimes.json"), "r") as f:
-        obj = json.loads(f.read())
+    metadata_file_path = DATA_ROOT / "res" / "output_metadata_mtimes.json"
+
+    with metadata_file_path.open("r") as f:
+        obj = json.load(f)
+
     mtime_sort = obj[tarfile]["mtimes"]
     mtime_list = []
     for line in mtime_sort.split("\n"):
@@ -85,8 +90,9 @@ def compare_metadata_list(tarfile1: str, tarfile2: str) -> tuple[bool, list]:
 
 
 def get_dex_list_for_local_build(tarfile) -> dict:
-    with open(os.path.join(DATA_ROOT, "res", "dex_sort.json"), "r") as f:
-        obj = json.loads(f.read())
+    dex_sort_file_path = DATA_ROOT / "res" / "dex_sort.json"
+    with dex_sort_file_path.open("r") as f:
+        obj = json.load(f)
     return obj[tarfile]["local"]
 
 
