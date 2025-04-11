@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import json
 from typing import Optional
 from plumbum import local
@@ -56,22 +57,24 @@ def get_cvc(version: str) -> Optional[str]:
     return v_c.get(version, None)
 
 
-def extract(filepath, dfs_test) -> None:
+def extract(filepath: str, dfs_test: bool) -> None:
     """
     if `dfs_test=True` correct folder structure to root at Signal-Android and not dfs_root, ignoring test
     """
-    cwd = os.getcwd()
+    cwd = Path.cwd()  # Get the current working directory using pathlib
     tar = local["tar"]
-    os.chdir(BUILDS_ROOT)
+    os.chdir(str(BUILDS_ROOT))  # Convert Path to string for os.chdir
     _clear_untared_folder()
+
     print(f"Extracting {filepath} ...")
     tar["-xzf", filepath]()
     if dfs_test:
         print("Normalising dfs-test hierarchy...")
         mv = local["mv"]
-        mv[os.path.join(DFS_ROOT_PATH, "Signal-Android"), CB_PATH]()
-        local["rm"]["-r", REPRODUCIBLE_TESTS_ROOT]()
-    os.chdir(cwd)
+        mv[str(DFS_ROOT_PATH / "Signal-Android"), str(CB_PATH)]()
+        local["rm"]["-r", str(REPRODUCIBLE_TESTS_ROOT)]()
+
+    os.chdir(str(cwd))
     _extract_apks()
 
 
@@ -79,29 +82,33 @@ def _clear_untared_folder() -> None:
     """
     recursively clears the codabase directory
     """
-    if os.path.exists(CB_PATH):
+    if CB_PATH.exists():
         print("Clearing current build...")
         rm = local["rm"]
-        rm["-r", CB_PATH]()
+        rm["-r", str(CB_PATH)]()
     else:
         print(f"Path {CB_PATH} does not exist. Skipping...")
 
 
 def _extract_apks() -> None:
-    bundletool = local[BUNDLETOOL_EXE]
-    if not os.path.exists(CB_AAB_PATH):
+    bundletool = local[str(BUNDLETOOL_EXE)]
+    if not CB_AAB_PATH.exists():
         print(f"{CB_AAB_PATH} \ndoes not exist!!")
         exit(1)
-    cwd = os.getcwd()
-    if not os.path.exists(CB_SPLITS_PATH):
-        local["mkdir"]["-p", CB_SPLITS_PATH]()
+
+    cwd = Path.cwd()
+    if not CB_SPLITS_PATH.exists():
+        # local["mkdir"]["-p", CB_SPLITS_PATH]()
+        CB_SPLITS_PATH.mkdir(
+            parents=True
+        )  # Create the splits directory if it doesn't exist
     else:
         _clear_current_apks()
     os.chdir(BUILDS_ROOT)
     print("Extracting APKs from bundle...")
     bundletool[
         "build-apks",
-        f"--bundle={CB_AAB_PATH}",
+        f"--bundle={str(CB_AAB_PATH)}",
         "--output-format=DIRECTORY",
         "--output=apks",
     ]()
@@ -121,119 +128,165 @@ def clear() -> None:
 
 def current_cvc() -> str:
     """
-    get the cannocial version code from the build.gradle.kts
+    Get the canonical version code from the build.gradle.kts file.
     """
-    build_gradle_kts_path = os.path.join(CB_PATH, "app", "build.gradle.kts")
+    build_gradle_kts_path = Path(CB_PATH) / "app" / "build.gradle.kts"
     version_code_line = "val canonicalVersionCode ="
+
     get_version_code = (
-        local["cat"][build_gradle_kts_path] | local["grep"][version_code_line]
+        local["cat"][str(build_gradle_kts_path)] | local["grep"][version_code_line]
     )
+
     stdout = get_version_code()
-    # todo: It currently assumes hotfix version is 0 :/
-    return f"{stdout.split(version_code_line)[-1].strip()}00"
+    canonical_version_code = f"{stdout.split(version_code_line)[-1].strip()}00"  # Assuming hotfix version is 0
+
+    # Extract the current hotfix version and format it as a 2-digit string
+    hotfix_version_line = "val currentHotfixVersion ="
+    get_hotfix_version = (
+        local["cat"][str(build_gradle_kts_path)] | local["grep"][hotfix_version_line]
+    )
+    stdout = get_hotfix_version()
+    hotfix_version = stdout.split(hotfix_version_line)[-1].strip()
+    current_hotfix_version = f"{int(hotfix_version):02d}" if hotfix_version else "00"
+
+    # Assumes hotfix version is 0
+    return f"{canonical_version_code}{current_hotfix_version}"
 
 
 # Only look at universal
-def _unzip_playstore_apk(cvc):
+def _unzip_playstore_apk(cvc: str) -> None:
     print(f"Going to unzip {cvc}...")
+
+    # Use pathlib to define the paths
+    unzip_path = PLAYSTORE_UNIVERSAL_UNZIP_PATH
+    universal_apk = universal_apk_path(cvc)
+
     # Create the directory if necessary
-    if os.path.exists(PLAYSTORE_UNIVERSAL_UNZIP_PATH):
-        # Idempotence
+    if unzip_path.exists():
+        # Idempotence: Clearing the unzip directory for the given cvc
         print(f"Clearing universal zip directory for {cvc}...")
-        local["rm"]["-r", PLAYSTORE_UNIVERSAL_UNZIP_PATH]()
-    local["mkdir"][PLAYSTORE_UNIVERSAL_UNZIP_PATH]()
-    # TODO: Dedublicate code
+        local["rm"]["-r", str(unzip_path)]()
+
+    unzip_path.mkdir(parents=True, exist_ok=True)
+
+    # TODO: Deduplicate code
     # Pull apk with git lfs
-    print(f"Pulling {universal_apk_path(cvc, True)} with git lfs...")
-    lfs = local["git"]["lfs", "pull", f"--include={universal_apk_path(cvc, True)}"]
+    print(f"Pulling {universal_apk} with git lfs...")
+    lfs = local["git"]["lfs", "pull", f"--include={universal_apk}"]
     rt, stdout, stderr = lfs.run()
-    # print(rt, stdout, stderr)
-    local["unzip"]["-d", PLAYSTORE_UNIVERSAL_UNZIP_PATH, universal_apk_path(cvc)]()
+
+    # Unzip the file to the specified directory
+    local["unzip"]["-d", str(unzip_path), str(universal_apk)]()
+
     print(f"Successfully unzipped universal-{cvc}!")
 
 
 def _update_aggregation_result(file, key, value, log=True):
     if log:
         print(f"Updating {file}...")
-    filepath = os.path.join(DATA_ROOT, "res", file)
+
+    # Use pathlib to construct the filepath
+    filepath = Path(DATA_ROOT) / "res" / file
+    # Read the current summary from the file
     with open(filepath, "r") as f:
-        summary = json.loads(f.read())
+        summary = json.load(f)
+    # Update the summary with the new key-value pair
     summary[key] = value
+
+    # Write the updated summary back to the file
     with open(filepath, "w") as f:
-        f.write(json.dumps(summary))
+        json.dump(summary, f)
 
 
-def create_dex_sets(cvc):
+def create_dex_sets(cvc: str) -> dict:
     print("Creating dex comparison sets...")
     # format {cvc:{differences:{}, playstore:{md5:classesX.dex}, local_build:{md5:classesX.dex}},...}
     cvc_d = {}
+
     # Playstore
     _unzip_playstore_apk(cvc)
     shasum = local["sha256sum"]
-    current_dir = os.getcwd()
-    os.chdir(PLAYSTORE_UNIVERSAL_UNZIP_PATH)
+    current_dir = Path.cwd()  # Get the current directory using pathlib
     playstore_univ = {}
-    for file in os.listdir("."):
-        if ".dex" in file:
-            sha = shasum[file]().split(" ")[0].strip()
-            playstore_univ[sha] = file
+
+    playstore_path = Path(
+        PLAYSTORE_UNIVERSAL_UNZIP_PATH
+    )  # Define the playstore path using pathlib
+    os.chdir(playstore_path)
+
+    for file in playstore_path.iterdir():
+        if file.suffix == ".dex":  # Check if the file is a dex file
+            sha = shasum[str(file)]().split(" ")[0].strip()
+            playstore_univ[sha] = file.name  # Use file.name to get the file's name
     cvc_d["playstore"] = playstore_univ
+
     # Current Build
-    root_rel_dexpath = os.path.join(
-        CB_PATH,
-        "app",
-        "build",
-        "intermediates",
-        "dex",
-        "playProdRelease",
-        "minifyPlayProdReleaseWithR8",
+    root_rel_dexpath = (
+        Path(CB_PATH)
+        / "app"
+        / "build"
+        / "intermediates"
+        / "dex"
+        / "playProdRelease"
+        / "minifyPlayProdReleaseWithR8"
     )
     os.chdir(current_dir)
     os.chdir(root_rel_dexpath)
+
     local_build = {}
-    for file in os.listdir("."):
-        if ".dex" in file:
-            sha = shasum[file]().split(" ")[0].strip()
-            local_build[sha] = file
+    for file in root_rel_dexpath.iterdir():
+        if file.suffix == ".dex":  # Check if the file is a dex file
+            sha = shasum[str(file)]().split(" ")[0].strip()
+            local_build[sha] = file.name  # Use file.name to get the file's name
     cvc_d["local"] = local_build
-    # Create the symmetric difference between the shasets
+
+    # Create the symmetric difference between the sha sets
     symmetric_difference = set(playstore_univ.keys()).symmetric_difference(
         set(local_build.keys())
     )
     sym_difference_map = {}
     for sha in symmetric_difference:
-        if sha in playstore_univ.keys():
+        if sha in playstore_univ:
             sym_difference_map[sha] = f"playstore->{playstore_univ[sha]}"
-        elif sha in local_build.keys():
+        elif sha in local_build:
             sym_difference_map[sha] = f"local->{local_build[sha]}"
     cvc_d["differing_dexes"] = sym_difference_map
+
     os.chdir(current_dir)
     return cvc_d
 
 
-def create_diffuse_record() -> str:
+def create_diffuse_record() -> Optional[str]:
     """
-    Compares current base.apk with the coresponding playstore equivalent using `diffuse`_.
+    Compares current base.apk with the corresponding playstore equivalent using `diffuse`_.
 
     .. _diffuse: https://github.com/JakeWharton/diffuse
     """
-    print("Running diffuse on the master APK...")
-    # TODO: clean up duplicate code
+    print("Running diffuse on the base-master APK...")
+
+    # Get the current version code (cvc)
     cvc = current_cvc()
-    playstore_apk_path = os.path.join(
-        PLAYSTORE_APKS_ROOT,
-        current_cvc(),
-        f"{APK_COMPARE_MAP['base-master.apk']}{cvc}.apk",
+
+    # Build the path to the playstore APK using pathlib
+    playstore_apk_path = (
+        Path(PLAYSTORE_APKS_ROOT)
+        / cvc
+        / f"{APK_COMPARE_MAP['base-master.apk']}{cvc}.apk"
     )
+
     # Pull the APK you want to compare with git-lfs
-    local["git"]["lfs", "pull", "--include", playstore_apk_path]()
-    # Diffuse
+    local["git"]["lfs", "pull", "--include", str(playstore_apk_path)]()
+
+    # Run the diffuse command using sudo
     sudo = local["sudo"]
     diffuse_res = sudo[
         local["tools/diffuse/bin/diffuse"][
-            "diff", os.path.join(CB_SPLITS_PATH, "base-master.apk"), playstore_apk_path
+            "diff",
+            str(Path(CB_SPLITS_PATH) / "base-master.apk"),
+            str(playstore_apk_path),
         ]
     ]()
+
     return diffuse_res
 
 
@@ -241,44 +294,52 @@ def create_diffuse_record() -> str:
 # apk_compare is the key to the dict, representing the part of the apk name without the prefixing: org.thoughtcrime.securesms-
 # returns {apkdiff:{'match':<Boolean>, 'mismatched_files':[<filename>,...]}, diffuse:<string>}
 # where APKdiff's "first" is the local build and "second" is the playstore APK
-def create_apkdiff_record(local_apk_filename):
+def create_apkdiff_record(local_apk_filename) -> dict:
     cvc = current_cvc()
-    # construct paths TODO: factor out, also used in create_diffuse_records, but meow meow was too tired so copy pasta
-    local_apk_path = os.path.join(CB_SPLITS_PATH, local_apk_filename)
-    playstore_apk_path = os.path.join(
-        PLAYSTORE_APKS_ROOT, cvc, f"{APK_COMPARE_MAP[local_apk_filename]}{cvc}.apk"
+
+    # Construct paths using pathlib
+    local_apk_path = Path(CB_SPLITS_PATH) / local_apk_filename
+    playstore_apk_path = (
+        Path(PLAYSTORE_APKS_ROOT)
+        / cvc
+        / f"{APK_COMPARE_MAP[local_apk_filename]}{cvc}.apk"
     )
+
     # Pull the APK you want to compare with git-lfs
-    local["git"]["lfs", "pull", "--include", create_relpath(playstore_apk_path)]()
-    # APKdiff
-    # clear out "mismatches" folder
-    if os.path.isdir("mismatches"):
-        # Idempotence
-        local["rm"]["-r", "mismatches"]()
+    local["git"]["lfs", "pull", "--include", create_relpath(str(playstore_apk_path))]()
+
+    # Clear out "mismatches" folder (Idempotent)
+    mismatches_dir = Path("mismatches")
+    if mismatches_dir.exists() and mismatches_dir.is_dir():
+        local["rm"]["-r", str(mismatches_dir)]()
     else:
         print(f"Did not find a 'mismatches' folder in {os.getcwd()}")
-    local["mkdir"]["mismatches"]()
+    mismatches_dir.mkdir(parents=True, exist_ok=True)
+
     apkdiff_res = {}
+
     # APKdiff will return 1 if the match fails. We don't want plumbum to crash the script and accept all retcodes.
     (_, stdout, _) = local["python3"][
-        "./apkdiff.py", local_apk_path, playstore_apk_path
+        "./apkdiff.py", str(local_apk_path), str(playstore_apk_path)
     ].run(retcode=None)
-    if "APKs don't match" in stdout:
-        match = False
-    else:
-        match = True
+
+    # Determine if the APKs match
+    match = "APKs don't match" not in stdout
     apkdiff_res["match"] = match
+
     mismatched_files = []
+
     if not match:
-        for dirpath, _, filenames in os.walk("mismatches"):
+        for dirpath, _, filenames in os.walk(mismatches_dir):
             for filename in filenames:
-                item = os.path.join(dirpath, filename)
+                item = str(Path(dirpath) / filename)
                 item = (
                     item.replace("first", "local")
                     if "first" in item
                     else item.replace("second", "playstore")
                 )
                 mismatched_files.append(item)
+
     apkdiff_res["mismatched_files"] = mismatched_files
     return apkdiff_res
 
@@ -305,57 +366,100 @@ def record_all_apkdiff_comparisons(tarfile_name):
     print("Updated apkdiff aggregations!")
 
 
-def run_comparator_on_apkdiff_mismatches():
-    mismatches_path = os.path.join("mismatches")
+def run_comparator_on_apkdiff_mismatches() -> dict:
+    mismatches_path = Path("mismatches")
     result = defaultdict(dict)
-    axml = local[os.path.join(COMPARATORS_PATH, "axml_compare.py")]
-    arsc = local[os.path.join(COMPARATORS_PATH, "arsc_compare.py")]
+
+    # Use Path for comparators as well
+    axml = local[str(COMPARATORS_PATH / "axml_compare.py")]
+    arsc = local[str(COMPARATORS_PATH / "arsc_compare.py")]
+
     # local, playstore
-    local_mismatches_dir = os.path.join(mismatches_path, "first")
-    # call comparatinator
-    for dirpath, _, filenames in os.walk(local_mismatches_dir):
-        for filename in filenames:
-            local_item = os.path.join(dirpath, filename)
-            playstore_item = os.path.join(dirpath.replace("first", "second"), filename)
-            if ".xml" in filename:
-                (_, stdout, _) = axml[local_item, playstore_item].run()
-                result["axml"][filename] = stdout
-            if ".arsc" in filename:
-                (retcode, stdout, _) = arsc[local_item, playstore_item].run()
+    local_mismatches_dir = mismatches_path / "first"
+
+    # Call comparators
+    for local_item_path in local_mismatches_dir.rglob("*"):
+        # Ensure only files are processed
+        if local_item_path.is_file():
+            playstore_item_path = (
+                mismatches_path
+                / "second"
+                / local_item_path.relative_to(local_mismatches_dir)
+            )
+
+            if local_item_path.suffix == ".xml":
+                (_, stdout, _) = axml[
+                    str(local_item_path), str(playstore_item_path)
+                ].run()
+                result["axml"][local_item_path.name] = stdout
+
+            elif local_item_path.suffix == ".arsc":
+                # ARSC comparison for local->playstore
+                retcode, stdout, _ = arsc[
+                    str(local_item_path), str(playstore_item_path)
+                ].run()
                 if retcode != 1:
-                    result["arsc"][f"{filename}|local->playstore"] = stdout
-                    (retcode, stdout, _) = arsc[playstore_item, local_item].run()
-                    result["arsc"][f"{filename}|playstore->local"] = stdout
+                    result["arsc"][f"{local_item_path.name}|local->playstore"] = stdout
+
+                    # ARSC comparison for playstore->local
+                    retcode, stdout, _ = arsc[
+                        str(playstore_item_path), str(local_item_path)
+                    ].run()
+                    result["arsc"][f"{local_item_path.name}|playstore->local"] = stdout
                 else:
-                    # Record two failures
-                    result["arsc"][f"{filename}|local->playstore"] = "Failure"
-                    result["arsc"][f"{filename}|playstore->local"] = "Failure"
+                    # Record failure
+                    result["arsc"][
+                        f"{local_item_path.name}|local->playstore"
+                    ] = "Failure"
+                    result["arsc"][
+                        f"{local_item_path.name}|playstore->local"
+                    ] = "Failure"
+
     return result
 
 
 def copy_navigation_jsons(tarfile_name):
     # create recursive folder structure
-    root = os.path.join(DATA_ROOT, "res", "files")
-    copy_dir = os.path.join(root, tarfile_name)
+    root = Path(DATA_ROOT) / "res" / "files"
+    copy_dir = root / tarfile_name
     mkdir = local["mkdir"]
     cp = local["cp"]
-    if not os.path.exists(root):
-        mkdir[root]()
-    # idempotence
-    if os.path.exists(copy_dir):
+
+    # Ensure the root directory exists
+    if not root.exists():
+        mkdir[str(root)]()
+
+    # Idempotence: Remove and recreate the copy_dir if it already exists
+    if copy_dir.exists():
         print(f"Clearing {copy_dir}...")
-        local["rm"]["-r", copy_dir]()
-    mkdir["-p", copy_dir]()
-    file_mappings_path = os.path.join(
-        CB_PATH,
-        "app/build/intermediates/incremental/generateSafeArgsPlayProdRelease/file_mappings.json",
+        local["rm"]["-r", str(copy_dir)]()
+
+    mkdir["-p", str(copy_dir)]()
+
+    file_mappings_path = (
+        CB_PATH
+        / "app"
+        / "build"
+        / "intermediates"
+        / "incremental"
+        / "generateSafeArgsPlayProdRelease"
+        / "file_mappings.json"
     )
-    navigation_path = os.path.join(
-        CB_PATH,
-        "app/build/intermediates/navigation_json/playProdRelease/extractDeepLinksPlayProdRelease/navigation.json",
+    navigation_path = (
+        CB_PATH
+        / "app"
+        / "build"
+        / "intermediates"
+        / "navigation_json"
+        / "playProdRelease"
+        / "extractDeepLinksPlayProdRelease"
+        / "navigation.json"
     )
-    cp[file_mappings_path, copy_dir]()
-    cp[navigation_path, copy_dir]()
+
+    # Copy the files to the target directory
+    cp[str(file_mappings_path), str(copy_dir)]()
+    cp[str(navigation_path), str(copy_dir)]()
+
     print("Successfully saved file_mappings.json and navigation.json")
 
 
@@ -366,19 +470,38 @@ def extract_output_metadata(tarfile):
     print(
         f"Extracting contents of output-metadata.json and corresponding mtimes for {tarfile}..."
     )
+
+    # Define the directory path based on the version
     if "v7.28" in tarfile:
-        directory_path = os.path.join(
-            CB_PATH,
-            "app/build/intermediates/processed_res/playProdRelease/processPlayProdReleaseResources/out",
+        directory_path = (
+            Path(CB_PATH)
+            / "app"
+            / "build"
+            / "intermediates"
+            / "processed_res"
+            / "playProdRelease"
+            / "processPlayProdReleaseResources"
+            / "out"
         )
     else:
-        directory_path = os.path.join(
-            CB_PATH,
-            "app/build/intermediates/linked_resources_binary_format/playProdRelease/processPlayProdReleaseResources",
+        directory_path = (
+            Path(CB_PATH)
+            / "app"
+            / "build"
+            / "intermediates"
+            / "linked_resources_binary_format"
+            / "playProdRelease"
+            / "processPlayProdReleaseResources"
         )
-    timeinfo = local["ls"]["-ltr", "--full-time", directory_path]()
-    filecontents = local["cat"][os.path.join(directory_path, "output-metadata.json")]()
+
+    # Get the file modification times and contents
+    timeinfo = local["ls"]["-ltr", "--full-time", str(directory_path)]()
+    filecontents = local["cat"][str(directory_path / "output-metadata.json")]()
+
+    # Prepare the data to update
     data = {"mtimes": timeinfo, "output-metadata.json": filecontents}
+
+    # Update the aggregation result
     _update_aggregation_result("output_metadata_mtimes.json", tarfile, data)
 
 
@@ -406,26 +529,30 @@ def aggregate_all_runs(
     """
     # Update lfs refs
     local["git"]["lfs", "checkout"]()
-    for tarfile in os.listdir(TARS_ROOT):  # meep hard
-        print(f"\nAnalysing {tarfile}...")
-        tarpath = os.path.join(TARS_ROOT, tarfile)
-        print(f"Pulling {create_relpath(tarpath)} with git lfs...")
-        local["git"]["lfs", "pull", "--include", create_relpath(tarpath)]()
-        # Extract run parameters from tarfile
-        (_, _, dfstest, _, _, _) = parameters_from_tar_filename(tarfile)
-        # Extract the build to local folder
-        print(f"Extracting {tarfile}...")
-        extract(os.path.join(TARS_ROOT, tarfile), dfstest)
-        id = tarfile
-        if dexsort:  # Dex sort test
-            dex_set = create_dex_sets(current_cvc())
-            _update_aggregation_result("dex_sort.json", id, dex_set)
-        if diffuse:  # diffuse
-            diffuse_record = create_diffuse_record()
-            _update_aggregation_result("diffuse.json", id, diffuse_record)
-        if apkdiff:  # apkdiff
-            record_all_apkdiff_comparisons(tarfile)
-        if nav:
-            copy_navigation_jsons(tarfile)
-        if output_meta:
-            extract_output_metadata(tarfile)
+    for tarfile in TARS_ROOT.iterdir():  # meep hard
+        if tarfile.is_file():  # Ensure we only process files
+            print(f"\nAnalysing {tarfile.name}...")
+            relpath = create_relpath(tarfile)
+            print(f"Pulling {relpath} with git lfs...")
+            local["git"]["lfs", "pull", "--include", relpath]()
+            # Extract run parameters from tarfile
+            (_, _, dfstest, _, _, _) = parameters_from_tar_filename(tarfile)
+
+            # Extract the build to the local folder
+            print(f"Extracting {tarfile.name}...")
+            extract(str(tarfile), dfstest)
+
+            # Use the tarfile name as the ID
+            tar_id = tarfile.name
+            if dexsort:  # Dex sort test
+                dex_set = create_dex_sets(current_cvc())
+                _update_aggregation_result("dex_sort.json", tar_id, dex_set)
+            if diffuse:  # diffuse
+                diffuse_record = create_diffuse_record()
+                _update_aggregation_result("diffuse.json", tar_id, diffuse_record)
+            if apkdiff:  # apkdiff
+                record_all_apkdiff_comparisons(tarfile)
+            if nav:
+                copy_navigation_jsons(tarfile)
+            if output_meta:
+                extract_output_metadata(tarfile)

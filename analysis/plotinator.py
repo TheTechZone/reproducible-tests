@@ -1,7 +1,6 @@
-import os
-from typing import Optional
+from pathlib import Path
+from typing import Optional, Union
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
 from matplotlib.cm import ScalarMappable
 import numpy as np
@@ -78,17 +77,20 @@ def create_multiindex(index: pd.Index, fixed_version: bool) -> pd.MultiIndex:
     return pd.MultiIndex.from_tuples(new_index, names=names)
 
 
-def nr_of_subplots(root) -> int:
-    return len(os.listdir(root))
+def nr_of_subplots(root: Path) -> int:
+    return len(list(root.iterdir()))
 
 
 def subfigures(test, fixed_version: bool):
     # root of the files?
-    root = os.path.join(
-        SUMMARY_ROOT, test, "fixed_versions" if fixed_version else "fixed_parameters"
+    root = (
+        SUMMARY_ROOT
+        / test
+        / ("fixed_versions" if fixed_version else "fixed_parameters")
     )
+
     # Organisation of subplots?
-    nr_of_plots = int(nr_of_subplots(root))
+    nr_of_plots = nr_of_subplots(root)
     nr_x = int(nr_of_plots / 2)
     # nr_x = 2
     # nr_y = 3
@@ -97,10 +99,12 @@ def subfigures(test, fixed_version: bool):
     fig, axes = plt.subplots(nrows=nr_x, ncols=nr_y, figsize=(22, 7))
     # Create title from filepath
     print(root)
-    version_or_params = root.split("/")[-1].replace(".json", "")
+    version_or_params = root.name.replace(".json", "")
     fig.suptitle(f"{test} for {version_or_params.replace("_", " ")}")
     # Create all plots
-    all_files = os.listdir(root)
+    all_files = list(root.iterdir())
+    # print(all_files)
+    # return
     i = 0
     plot_idx = 1
 
@@ -110,24 +114,21 @@ def subfigures(test, fixed_version: bool):
         for y in range(nr_y):
             if i < len(all_files):
                 print(f"x:{x}, y:{y}")
+                file_path = all_files[i]
                 # ax = fig.add_subplot(nr_x, nr_y, plot_idx)
-                success = correlation_triangle(
-                    fixed_version, axes[x, y], os.path.join(root, all_files[i])
-                )
+                success = correlation_triangle(fixed_version, axes[x, y], file_path)
                 while not success:
                     i = i + 1
-                    success = correlation_triangle(
-                        fixed_version, axes[x, y], os.path.join(root, all_files[i])
-                    )
+                    file_path = all_files[i]
+                    success = correlation_triangle(fixed_version, axes[x, y], file_path)
                 # Set title:
-                axes[x, y].set_title(
-                    all_files[i].replace(".json", "").replace("_", " ")
-                )
+                title = file_path.stem.replace("_", " ")
+                axes[x, y].set_title(title)
                 # Record the successful plot
                 successful_plots.append(
                     {
                         "ax": axes[x, y],
-                        "title": all_files[i].replace(".json", "").replace("_", " "),
+                        "title": title,
                         "position": (x, y),
                     }
                 )
@@ -177,7 +178,7 @@ def subfigures(test, fixed_version: bool):
                 # Get the old plot's content and transfer it
                 # This is a simplified approach - in reality, you may need to
                 # re-run correlation_triangle with the new axes
-                old_ax = plot["ax"]
+                # old_ax = plot["ax"]
                 new_ax = new_axes[new_x, new_y]
 
                 # Transfer the title
@@ -185,10 +186,9 @@ def subfigures(test, fixed_version: bool):
 
                 # Re-run correlation_triangle with the new axis
                 # old_pos = plot['position']
-                file_name = plot["title"].replace(" ", "_") + ".json"
-                correlation_triangle(
-                    fixed_version, new_ax, os.path.join(root, file_name)
-                )
+                # file_name = plot["title"].replace(" ", "_") + ".json"
+                filename = plot["title"].replace(" ", "_") + ".json"
+                correlation_triangle(fixed_version, new_ax, root / filename)
 
             # Set the title on the new figure
             new_fig.suptitle(f"{test} for {version_or_params.replace('_', ' ')}")
@@ -221,10 +221,10 @@ def subfigures(test, fixed_version: bool):
     )
     cbar.set_ticklabels(["match", "inconsistent", "n/a"])
 
-    plt.savefig(os.path.join(PLOT_ROOT, f"{test}_{version_or_params}"), dpi=300)
+    plt.savefig(PLOT_ROOT / f"{test}_{version_or_params}", dpi=300)
 
 
-def correlation_triangle(fixed_version, ax, filepath: str):
+def correlation_triangle(fixed_version, ax, filepath: Path):
     df = generate_pd_frame(filepath, fixed_version)
     if df is not None:  # otherwise we skip the file
         mask = np.triu(np.ones_like(df, dtype=bool))
@@ -252,18 +252,23 @@ def correlation_triangle(fixed_version, ax, filepath: str):
                 ax.get_yticklabels(), rotation=0, ha="right", rotation_mode="anchor"
             )  # to fix some inconsistency with the rotation angles
     else:
-        print(f"Skipped {filepath}...")
+        print(f"Skipped {filepath}")
         return False
     return True
 
 
-def generate_pd_frame(file_path: str, fixed_version: bool) -> Optional[pd.DataFrame]:
+def generate_pd_frame(
+    file_path: Union[str, Path], fixed_version: bool
+) -> Optional[pd.DataFrame]:
     # Read the JSON file directly into a DataFrame
+    file_path = Path(file_path)
+
     try:
         df = pd.read_json(file_path)
     except ValueError as e:
         print(f"Error reading {file_path}: {e}")
         return None
+    # print(df)
     # Return early if the data is empty
     if df.empty:
         # Not all tests can always be run, e.g., we only have a single 34 run
