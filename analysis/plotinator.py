@@ -1,5 +1,4 @@
 import os
-import json
 from typing import Optional
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -37,7 +36,9 @@ def create_multiindex(index: pd.Index, fixed_version: bool) -> pd.MultiIndex:
 
     # Extract version/parameter info for each tarfile
     for tarfile in index:
-        (version, run, dfstest, dfs, ctime, reverse) = parameters_from_tar_filename(tarfile)
+        (version, run, dfstest, dfs, ctime, reverse) = parameters_from_tar_filename(
+            tarfile
+        )
         if fixed_version:
             hierarchy.append(version)
         else:
@@ -52,7 +53,9 @@ def create_multiindex(index: pd.Index, fixed_version: bool) -> pd.MultiIndex:
 
     # Construct the new index based on fixed_version flag
     for tarfile in index:
-        (version, run, dfstest, dfs, ctime, reverse) = parameters_from_tar_filename(tarfile)
+        (version, run, dfstest, dfs, ctime, reverse) = parameters_from_tar_filename(
+            tarfile
+        )
         complete_run = f"t_{run}" if dfstest else run
 
         if fixed_version:
@@ -78,7 +81,7 @@ def nr_of_subplots(root) -> int:
     return len(os.listdir(root))
 
 
-def subfigures(test, fixed_version):
+def subfigures(test, fixed_version: bool):
     # root of the files?
     root = os.path.join(
         SUMMARY_ROOT, test, "fixed_versions" if fixed_version else "fixed_parameters"

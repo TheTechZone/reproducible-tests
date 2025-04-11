@@ -10,7 +10,7 @@ from setup.structure import DATA_ROOT
 
 def differences(list1, list2) -> list:
     """
-    Compare two given list and return the differences in a human readable form 
+    Compare two given list and return the differences in a human readable form
     ["differing_value_list1 -> differing_value_list2", ...]
 
     PRE: len(list1) == len(list2)

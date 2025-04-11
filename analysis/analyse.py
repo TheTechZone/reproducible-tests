@@ -157,6 +157,7 @@ def _compare_amongst_runs(
                 print(f"MISSMATCH: {run_01} <=> {run_02}!")
             if record_result:
                 # print(f"Recording result of {COMPARE_TO_TESTNAME[compare]} between {tarfile} and {other}")
+                assert summary_file is not None  # to please the typecheckr
                 with open(summary_file, "r") as f:
                     obj = json.loads(f.read())
                 # create internal dicts if they do not yet exist
@@ -173,17 +174,18 @@ def _compare_amongst_runs(
 
 
 def check_consistency_of_classified_runs(
-    classified_runs: Mapping[str, Mapping[str, Union[bool, list]]],
+    classified_runs: dict[str, dict[str, Union[bool, list]]],
     compare: Callable[[str, str], tuple[bool, list]],
     summary_file=None,
-):
+) -> None:
     for key in classified_runs.keys():
-        runs = len(classified_runs[key]["runs"])
-        if runs < 2:
+        runs: Optional[list[str]] = classified_runs[key].get("runs", [])
+        num_runs = len(runs)
+        if num_runs < 2:
             print(f"Only one run was {key}")
             classified_runs[key]["consistent"] = True
         else:
-            print(f"There were {runs} {key} runs")
+            print(f"There were {num_runs} {key} runs")
             # check internal consistency
             # Writing down the result each time no matter if internal test or not
             _compare_amongst_runs(classified_runs, key, compare, summary_file)
@@ -194,7 +196,7 @@ def check_consistency_of_classified_runs(
 
 def check_for_same_version(
     version, tarfiles, compare: Callable[[str, str], tuple[bool, list]]
-):
+) -> None:
     versioned_tarfiles = [file for file in tarfiles if version in file]
     # print(versioned_tarfiles)
     alphabetical = []
@@ -299,7 +301,19 @@ def get_all_tarfiles() -> list[str]:
     return os.listdir(TARS_ROOT)
 
 
-def description_from_params(dfs, alph, ctime, reverse) -> str:
+def description_from_params(
+    dfs: bool,
+    alph: Optional[bool] = False,
+    ctime: Optional[bool] = False,
+    reverse: Optional[bool] = False,
+) -> str:
+    """
+    Parameters:
+        dfs: file was created with disorderfs
+        alph: disorderfs was sorting alphabetically
+        ctime: disorderfs was sorting by ctime.
+        reverse: disorderfs was sorting in reverse order
+    """
     description = ""
     if dfs:
         # Sanity checks
@@ -322,15 +336,28 @@ def description_from_params(dfs, alph, ctime, reverse) -> str:
 
 
 def check_for_same_params(
-    tarfiles,
+    tarfiles: Optional[list[str]],
     compare: Callable[[str, str], tuple[bool, list]],
-    dfs=False,
-    alph=False,
-    ctime=False,
-    reverse=False,
-):
+    dfs: bool = False,
+    alph: bool = False,
+    ctime: bool = False,
+    reverse: bool = False,
+) -> None:
     """
-    if dfs == False, the other parameters are not considered
+    Checks whether a group of test runs (tarfiles) with the same parameters
+        produce consistent comparison results across different versions.
+    The comparison results are written to a summary file determined by the comparison
+        method and parameter description
+
+    Parameters:
+        tarfiles (Optional[list[str]]): A list of tarfile names to check. If `None`, all
+            matching tarfiles based on the given parameters are included.
+        compare (Callable[[str, str], tuple[bool, list]]): A comparison function that
+            takes two file paths and returns a tuple (is_equal, details).
+        dfs: Whether to consider disorderfs-based runs. If `dfs` is False, the other sorting flags (`alph`, `ctime`, `reverse`) are ignored.
+        alph: Whether to include runs with alphabetical sorting (requires `dfs`=True). Mutually exclusive with `ctime`.
+        ctime: Whether to include runs with ctime sorting (requires `dfs`=True). Mutually exclusive with `alph`.
+        reverse: Whether to include reverse-sorted runs (requires `dfs`=True).
     """
     versions = get_all_versions()
     # create description string
