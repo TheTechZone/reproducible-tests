@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+# Function to print usage
+print_usage() {
+    echo "Usage: $0 [--html] [--no-cov]"
+    echo ""
+    echo "Options:"
+    echo "  --html       Generate HTML coverage report in 'cov_html/' directory"
+    echo "  --no-cov     Run tests without coverage"
+    echo "  -h, --help   Show this help message"
+}
+
+# Defaults
+GENERATE_HTML=false
+ENABLE_COV=true
+
+# Parse arguments
+for arg in "$@"; do
+    case $arg in
+        --html)
+            GENERATE_HTML=true
+            ;;
+        --no-cov)
+            ENABLE_COV=false
+            ;;
+        -h|--help)
+            print_usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $arg"
+            print_usage
+            exit 1
+            ;;
+    esac
+done
+
+# Build pytest command
+CMD="pytest"
+
+if [ "$ENABLE_COV" = true ]; then
+    CMD="$CMD --cov=analysis --cov=setup"
+    if [ "$GENERATE_HTML" = true ]; then
+        CMD="$CMD --cov-report html:cov_html"
+    fi
+fi
+
+# Always test the test/ directory
+CMD="$CMD test/"
+
+# Run the command
+echo "Running: $CMD"
+eval $CMD
+
