@@ -44,7 +44,7 @@ def _get_metadata_list(tarfile):
     return metadata_list
 
 
-def _get_mtimes_list(tarfile: str) -> list[str]:
+def _get_mtimes_list (tarfile: str) -> list[str]:
     """
         parses the file order stored in "mtimes" of the output_metadata_mtimes.json dict
         and returns them as a list.
