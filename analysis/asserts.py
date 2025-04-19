@@ -99,14 +99,14 @@ def compare_metadata_list(tarfile1, tarfile2) -> tuple[bool, list]:
 # TODO: may be useful to add one in the future
 
 
-def get_dex_list_for_local_build(tarfile) -> dict:
+def _dex_list_for_local_build(tarfile) -> dict:
     dex_sort_file_path = DATA_ROOT / "res" / "dex_sort.json"
     with dex_sort_file_path.open("r") as f:
         obj = json.load(f)
     return obj[tarfile]["local"]
 
 
-def dict_pairs_to_string(dictionary: dict) -> list[str]:
+def _dict_pairs_to_string(dictionary: dict) -> list[str]:
     res = []
     for k in dictionary.keys():
         res.append(f"{k}:{dictionary[k]}")
@@ -115,16 +115,16 @@ def dict_pairs_to_string(dictionary: dict) -> list[str]:
 
 # Compare all dex hashes
 def compare_dex_hashes(tarfile1: str, tarfile2: str) -> tuple[bool, set[str]]:
-    dex_list_1 = get_dex_list_for_local_build(tarfile1)
-    dex_list_2 = get_dex_list_for_local_build(tarfile2)
+    dex_list_1 = _dex_list_for_local_build(tarfile1)
+    dex_list_2 = _dex_list_for_local_build(tarfile2)
     # Create symmetric difference between the sets
-    diff = set(dict_pairs_to_string(dex_list_1)).symmetric_difference(
-        set(dict_pairs_to_string(dex_list_2))
+    diff = set(_dict_pairs_to_string(dex_list_1)).symmetric_difference(
+        set(_dict_pairs_to_string(dex_list_2))
     )
     return len(diff) > 0, diff
 
 
-def get_first_dex_hash(dex_list: dict[str, dict]) -> Optional[str]:
+def _first_dex_hash(dex_list: dict[str, dict]) -> Optional[str]:
     for k in dex_list.keys():
         if dex_list[k] == "classes.dex":
             return k
@@ -133,8 +133,8 @@ def get_first_dex_hash(dex_list: dict[str, dict]) -> Optional[str]:
 # Because according to Aditz the first dex file matters more!
 # Only checks classes.dex
 def compare_first_dex_file_hash(tarfile1: str, tarfile2: str) -> tuple[bool, list[str]]:
-    dex_hash_1 = get_first_dex_hash(get_dex_list_for_local_build(tarfile1))
-    dex_hash_2 = get_first_dex_hash(get_dex_list_for_local_build(tarfile2))
+    dex_hash_1 = _first_dex_hash(_dex_list_for_local_build(tarfile1))
+    dex_hash_2 = _first_dex_hash(_dex_list_for_local_build(tarfile2))
     equal = dex_hash_1 == dex_hash_2
     return equal, [] if equal else [f"{dex_hash_1}->{dex_hash_2}"]
 
