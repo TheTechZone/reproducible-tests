@@ -116,10 +116,7 @@ def test_parameters_from_tar_filename(filename, expected):
         # D:
         (
             "dfstest-alph-reversed_v9.8.7",
-            (
-                "9.8.7",
-                1,
-            ),  # Ensure that the version output here is fixed to match the expected one
+            ("9.8.7", 1),
         ),
         # E:
         (

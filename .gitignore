@@ -15,6 +15,9 @@ disorderfs/
 *__pycache__*
 .vscode/
 
+.coverage
+cov_html/
+
 mismatches
 sort
 sort_reverse
