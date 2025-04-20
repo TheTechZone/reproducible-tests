@@ -6,7 +6,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import json
 from pathlib import Path
-from analysis.asserts import _differences, _get_metadata_list
+from analysis.checks import _differences, _get_metadata_list
 
 
 @pytest.mark.parametrize(
@@ -128,9 +128,9 @@ def test_get_metadata_list(
         json.dump(file_contents, f)
 
     # Patch DATA_ROOT inside your module
-    import analysis.asserts  # again, replace with your real module
+    import analysis.checks  # again, replace with your real module
 
-    monkeypatch.setattr(analysis.asserts, "DATA_ROOT", tmp_path)
+    monkeypatch.setattr(analysis.checks, "DATA_ROOT", tmp_path)
 
     # Run the actual test
     result = _get_metadata_list(tarfile_name)

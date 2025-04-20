@@ -132,7 +132,7 @@ def _first_dex_hash(dex_list: dict[str, dict]) -> Optional[str]:
 
 # Because according to Aditz the first dex file matters more!
 # Only checks classes.dex
-def compare_first_dex_file_hash(tarfile1: str, tarfile2: str) -> tuple[bool, list[str]]:
+def compare_first_dex_hash(tarfile1: str, tarfile2: str) -> tuple[bool, list[str]]:
     dex_hash_1 = _first_dex_hash(_dex_list_for_local_build(tarfile1))
     dex_hash_2 = _first_dex_hash(_dex_list_for_local_build(tarfile2))
     equal = dex_hash_1 == dex_hash_2
@@ -143,8 +143,8 @@ def compare_first_dex_file_hash(tarfile1: str, tarfile2: str) -> tuple[bool, lis
 # Define a name for each toplevel test, this will be used when updating the 'summary' results of this test
 ####
 ## TODO: Refine these names
-COMPARE_TO_TESTNAME = {
+COMPARE_TO_CHECK_NAME = {
     compare_metadata_list: "metadata_list",
     compare_dex_hashes: "dex_sort",
-    compare_first_dex_file_hash: "does_first_dexfile_match",
+    compare_first_dex_hash: "does_first_dexfile_match",
 }

@@ -11,10 +11,10 @@ from setup.structure import (
     summary_path,
     create_or_clear_summary_directory_for,
 )
-from analysis.asserts import (
-    COMPARE_TO_TESTNAME,
+from analysis.checks import (
+    COMPARE_TO_CHECK_NAME,
     compare_dex_hashes,
-    compare_first_dex_file_hash,
+    compare_first_dex_hash,
     compare_metadata_list,
     is_metadata_to_dirorder_consistent,
 )
@@ -25,12 +25,12 @@ def run_tests(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
     Currently this takes the same set of files for between and within version comparisons. May want to separate that
     for some of the tests (e.g., metadata consistency)
     """
-    create_or_clear_summary_directory_for(COMPARE_TO_TESTNAME[compare], version=True)
+    create_or_clear_summary_directory_for(COMPARE_TO_CHECK_NAME[compare], version=True)
     versions = get_all_versions()
     for v in versions:
         check_for_same_version(v, tarfiles, compare)
         print()
-    create_or_clear_summary_directory_for(COMPARE_TO_TESTNAME[compare], version=False)
+    create_or_clear_summary_directory_for(COMPARE_TO_CHECK_NAME[compare], version=False)
     check_for_same_params(None, compare, dfs=False)
     print()
     # Enumerate the 4 parameter combinations
@@ -48,13 +48,19 @@ def run_tests(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
 
 
 ###
-# Run all the tests
+# Run all the checks on the data
 ###
 
 
-def run_all_tests(tests, with_metadata_list=True):
-    for test in tests:
-        run_tests(get_all_tarfiles(), test)
+def run_all_checks(checks: list[Callable[[str, str]]], with_metadata_list=True):
+    """
+        Executes all the passed tests on all the available tared builds.
+        tests: contains all the handles to checks that should be applied
+        PRE: compare_metadata_list not in tests
+    """
+
+    for check in checks:
+        run_tests(get_all_tarfiles(), check)
     if with_metadata_list:
         tarfiles = assemble_consistent_tarfile_list(is_metadata_to_dirorder_consistent)
         run_tests(tarfiles, compare_metadata_list)
@@ -183,7 +189,7 @@ def _compare_amongst_runs(
                     f.write(json.dumps(obj))
 
 
-def check_consistency_of_classified_runs(
+def are_classified_runs_consistent(
     classified_runs: dict[str, dict[str, Union[bool, list]]],
     compare: Callable[[str, str], tuple[bool, list]],
     summary_file=None,
@@ -240,12 +246,12 @@ def check_for_same_version(
     print(f"checking version {version}...")
     # print(classified_runs)
     # Create/truncate summary file for idempotence
-    summary_file = Path(summary_path(COMPARE_TO_TESTNAME[compare], version))
+    summary_file = Path(summary_path(COMPARE_TO_CHECK_NAME[compare], version))
     if not summary_file.exists():
         print(f"Creating {summary_file.relative_to(SUMMARY_ROOT)}...")
         summary_file.write_text("{}")
 
-    check_consistency_of_classified_runs(classified_runs, compare, summary_file)
+    are_classified_runs_consistent(classified_runs, compare, summary_file)
 
 
 def get_all_versions() -> list[str]:
@@ -384,10 +390,10 @@ def check_for_same_params(
             if v in tarfile:
                 classified_runs[v]["runs"].append(tarfile)
     print(f"checking the parameters: '{description}'...")
-    summary_file = Path(summary_path(COMPARE_TO_TESTNAME[compare], description))
+    summary_file = Path(summary_path(COMPARE_TO_CHECK_NAME[compare], description))
 
     if not summary_file.exists():
         print(f"Creating {summary_file.relative_to(SUMMARY_ROOT)}...")
         summary_file.write_text("{}")
 
-    check_consistency_of_classified_runs(classified_runs, compare, summary_file)
+    are_classified_runs_consistent(classified_runs, compare, summary_file)

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 from analysis.aggregation import aggregate_all_runs
-from analysis.analyse import run_all_tests
-from analysis.asserts import (
+from analysis.analyse import run_all_checks
+from analysis.checks import (
     compare_dex_hashes,
-    compare_first_dex_file_hash,
+    compare_first_dex_hash,
     compare_metadata_list,
     is_metadata_to_dirorder_consistent,
 )

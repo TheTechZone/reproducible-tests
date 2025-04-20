@@ -9,7 +9,7 @@ import seaborn as sns
 
 from setup.structure import SUMMARY_ROOT, PLOT_ROOT, parameters_from_tar_filename
 
-from analysis.asserts import COMPARE_TO_TESTNAME
+from analysis.checks import COMPARE_TO_CHECK_NAME
 
 
 def assert_symmetry(df: pd.DataFrame) -> None:
@@ -286,8 +286,8 @@ def generate_pd_frame(
 
 
 def visualize() -> None:
-    for key in COMPARE_TO_TESTNAME.keys():
-        test = COMPARE_TO_TESTNAME[key]
+    for key in COMPARE_TO_CHECK_NAME.keys():
+        test = COMPARE_TO_CHECK_NAME[key]
         print(test)
         for fixed_version in [True, False]:
             subfigures(test, fixed_version)
