@@ -20,13 +20,16 @@ from analysis.checks import (
 )
 
 
-def run_tests(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
+def run_checks(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
     """
-    Currently this takes the same set of files for between and within version comparisons. May want to separate that
-    for some of the tests (e.g., metadata consistency)
+    Clears any previous data in the summary directory of that specific check,
+    then runs the check for all versions and for all parameters.
+
+    Note: Currently this takes the same set of files for between and within version comparisons. May want to separate that
+    for some of the checks (e.g., metadata consistency)
     """
     create_or_clear_summary_directory_for(COMPARE_TO_CHECK_NAME[compare], version=True)
-    versions = get_all_versions()
+    versions = all_versions()
     for v in versions:
         check_for_same_version(v, tarfiles, compare)
         print()
@@ -52,7 +55,7 @@ def run_tests(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
 ###
 
 
-def run_all_checks(checks: list[Callable[[str, str]]], with_metadata_list=True):
+def run_all_checks(checks: list[Callable[[str, str], tuple[bool, list]]], with_metadata_list=True):
     """
         Executes all the passed tests on all the available tared builds.
         tests: contains all the handles to checks that should be applied
@@ -60,10 +63,10 @@ def run_all_checks(checks: list[Callable[[str, str]]], with_metadata_list=True):
     """
 
     for check in checks:
-        run_tests(get_all_tarfiles(), check)
+        run_checks(get_all_tarfiles(), check)
     if with_metadata_list:
         tarfiles = assemble_consistent_tarfile_list(is_metadata_to_dirorder_consistent)
-        run_tests(tarfiles, compare_metadata_list)
+        run_checks(tarfiles, compare_metadata_list)
 
 
 ###
@@ -81,6 +84,12 @@ def run_all_checks(checks: list[Callable[[str, str]]], with_metadata_list=True):
 # classified_runs = {"v7.30.4":{"consistent":True, "runs":["signal-android-ctime-reversed_v7.30.4_01.tar.gz",...]}...}
 # classified_runs = {"ctime reverse sorted":{"consistent":True, "runs":["signal-android-ctime-reversed_v7.30.4_01.tar.gz",...]}...}
 ###
+
+class SortedRuns:
+
+    def __init__(self, consistent: bool, runs: list[str]):
+        self.consistent = consistent
+        self.runs = runs
 
 
 def print_with_params(
@@ -136,26 +145,27 @@ def _compare_amongst_runs(
         to_compare = []
         # compare the first run of each set marked consistent with each other
         for k in classified_runs.keys():
-            if classified_runs[k]["consistent"]:
-                if len(classified_runs[k]["runs"]) > 0:
+            if classified_runs[k].consistent:
+                if len(classified_runs[k].runs) > 0:
                     # Only comparing consistent runs against one another
-                    to_compare.append(classified_runs[k]["runs"][0])
+                    to_compare.append(classified_runs[k].runs[0])
         # print(f"classified_runs:\n{classified_runs}")
         # print(f"compared to:\n{to_compare}")
     else:
-        to_compare = classified_runs[key]["runs"]
+        to_compare = classified_runs[key].runs
         mark_consistency = True
     mid = int(len(to_compare) / 2)
     for tarfile in to_compare[0:mid]:
         for other in [file for file in to_compare if file not in tarfile]:
-            (has_diff, diff) = compare(tarfile, other)
+            # Second parameter, diff, could be printed for runs of interest here
+            (has_diff, _) = compare(tarfile, other)
             if has_diff:
                 v_01, run_01 = version_and_run_from_tar_filename(tarfile)
                 v_02, run_02 = version_and_run_from_tar_filename(other)
                 if (
                     mark_consistency
                 ):  # TODO: this is a confusing overload, unconfuse at some point
-                    classified_runs[key]["consistent"] = False
+                    classified_runs[key].consistent = False
                     if "dfstest" in tarfile:
                         run_01 = f"{v_01}_{run_01}_dfstest"
                     else:
@@ -190,17 +200,17 @@ def _compare_amongst_runs(
 
 
 def are_classified_runs_consistent(
-    classified_runs: dict[str, dict[str, Union[bool, list]]],
+    classified_runs: dict[str, SortedRuns],
     compare: Callable[[str, str], tuple[bool, list]],
     summary_file=None,
 ) -> None:
     for key in classified_runs.keys():
-        runs = len(classified_runs[key]["runs"])
-        if runs < 2:
+        no_runs = len(classified_runs[key].runs)
+        if no_runs < 2:
             print(f"Only one run was {key}")
-            classified_runs[key]["consistent"] = True
+            classified_runs[key].consistent = True
         else:
-            print(f"There were {runs} {key} runs")
+            print(f"There were {no_runs} {key} runs")
             # check internal consistency
             # Writing down the result each time no matter if internal test or not
             _compare_amongst_runs(classified_runs, key, compare, summary_file)
@@ -225,23 +235,15 @@ def check_for_same_version(
     ]
     # create dictionary for internal consistency check between repeats of different runs:
     classified_runs = {
-        "alphabetically sorted": {
-            "consistent": True,
-            "runs": [file for file in alphabetical if "sort" in file],
+        "alphabetically sorted": {SortedRuns(True, [file for file in alphabetical if "sort" in file])
         },
-        "alphabetically reverse sorted": {
-            "consistent": True,
-            "runs": [file for file in alphabetical if "reverse" in file],
+        "alphabetically reverse sorted": {SortedRuns(True, [file for file in alphabetical if "reverse" in file])
         },
-        "ctime sorted": {
-            "consistent": True,
-            "runs": [file for file in ctime if "sort" in file],
+        "ctime sorted": {SortedRuns(True, [file for file in ctime if "sort" in file])
         },
-        "ctime reverse sorted": {
-            "consistent": True,
-            "runs": [file for file in ctime if "reverse" in file],
+        "ctime reverse sorted": {SortedRuns(True, [file for file in ctime if "reverse" in file])
         },
-        "without disorderfs": {"consistent": True, "runs": vanilla},
+        "without disorderfs": {SortedRuns(True, vanilla)}
     }
     print(f"checking version {version}...")
     # print(classified_runs)
@@ -254,7 +256,7 @@ def check_for_same_version(
     are_classified_runs_consistent(classified_runs, compare, summary_file)
 
 
-def get_all_versions() -> list[str]:
+def all_versions() -> list[str]:
     versions = []
     for tarfile in TARS_ROOT.iterdir():
         v, _ = version_and_run_from_tar_filename(tarfile)
@@ -375,7 +377,7 @@ def check_for_same_params(
         ctime: Whether to include runs with ctime sorting (requires `dfs`=True). Mutually exclusive with `alph`.
         reverse: Whether to include reverse-sorted runs (requires `dfs`=True).
     """
-    versions = get_all_versions()
+    versions = all_versions()
     # create description string
     description = description_from_params(dfs, alph, ctime, reverse)
     appropriate_tars = _get_all_tarfiles_with_params(dfs, alph, ctime, reverse)
@@ -385,10 +387,10 @@ def check_for_same_params(
         relevant_files = [file for file in tarfiles if file in appropriate_tars]
     classified_runs = {}
     for v in versions:
-        classified_runs[v] = {"consistent": True, "runs": []}
+        classified_runs[v] = SortedRuns(True,[])
         for tarfile in relevant_files:
             if v in tarfile:
-                classified_runs[v]["runs"].append(tarfile)
+                classified_runs[v].runs.append(tarfile)
     print(f"checking the parameters: '{description}'...")
     summary_file = Path(summary_path(COMPARE_TO_CHECK_NAME[compare], description))
 

@@ -22,17 +22,22 @@
 
 
 ###
-# example
+# run_checks
 ###
 
 # Tests
 
+def dummy_check(tarfile):
+    return true, [tarfile]
+
+COMPARE_TO_CHECK_NAME = {
+    dummy_check: "dummy_check"
+}
+
+
+
 # A:
-# B:
-# C:
-# D:
-# E:
-# F:
+
 
 # Expected
 
