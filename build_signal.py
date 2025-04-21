@@ -504,10 +504,9 @@ class SignalBuilder:
             return  # Nothing to stash
 
         target_dir = mismatches_dir / suffix
-        counter = 1
-        while target_dir.exists():
-            target_dir = mismatches_dir / f"{suffix}_{counter}"
-            counter += 1
+        if target_dir.exists():
+            print(f"{target_dir} exists already. Files will be overwriten")
+            shutil.rmtree(str(target_dir))
 
         target_dir.mkdir(parents=True)
 
@@ -543,7 +542,6 @@ class SignalBuilder:
             shutil.rmtree("mismatches")
 
         print("\nRunning APK comparisons:")
-        print("-" * 50)
         all_match = True
 
         # Compare APKs with matching names
@@ -577,28 +575,28 @@ class SignalBuilder:
     def build(self, version):
         """Run the complete build process."""
         try:
-            # if self.purge:
-            #     self.cleanup()
-            #     print("Successfully ran clean without building anything.")
-            #     sys.exit(0)
+            if self.purge:
+                self.cleanup()
+                print("Successfully ran clean without building anything.")
+                sys.exit(0)
 
-            # self.setup_directories()
-            # self.clone_signal(version)
-            # if self.debug:
-            #     patcher = PatchManager("./Signal-Android")
-            #     patcher.apply_patch("./patches/gradle-deps.patch")
-            #     print("\nPatched Signal.")
-            # if self.dfs:
-            #     self.create_overlay_filesystem(self.dfs)
-            # self.build_docker_image()
+            self.setup_directories()
+            self.clone_signal(version)
+            if self.debug:
+                patcher = PatchManager("./Signal-Android")
+                patcher.apply_patch("./patches/gradle-deps.patch")
+                print("\nPatched Signal.")
+            if self.dfs:
+                self.create_overlay_filesystem(self.dfs)
+            self.build_docker_image()
 
-            # self.build_signal()
-            # self.copy_bundle()
-            # if self.aab_only:
-            #     print(
-            #         "--aab-only is enabled: Not extracking app bundle or performing comparison."
-            #     )
-            #     sys.exit(0)
+            self.build_signal()
+            self.copy_bundle()
+            if self.aab_only:
+                print(
+                    "--aab-only is enabled: Not extracking app bundle or performing comparison."
+                )
+                sys.exit(0)
 
             self.check_adb_devices()
             self.generate_apks()
@@ -611,8 +609,7 @@ class SignalBuilder:
 
             print("\nBuild completed successfully!")
             print("APKs are located in:")
-            if not self.aab_only:
-                print(f"  Device APKs: {self.device_apks_dir}")
+            print(f"  Device APKs: {self.device_apks_dir}")
             print(f"  Built APKs:  {self.built_apks_dir}")
 
         except Exception as e:

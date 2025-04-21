@@ -194,13 +194,3 @@ def get_package_manager() -> PackageManager:
         )
     else:
         raise UnsupportedPlatformError(f"Unsupported distribution: {release}")
-
-
-def main():
-    try:
-        pm = get_package_manager()
-        print(pm)
-        pm.update()
-        print(pm.is_installed("lolcat"))
-    except UnsupportedPlatformError as e:
-        print(e)
