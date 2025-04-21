@@ -8,6 +8,7 @@ from setup.pm import (
     UnsupportedPlatformError,
     get_package_manager,
     get_os_release,
+    ExecResult
 )
 
 
@@ -166,12 +167,17 @@ def test_apt_update(mock_local, mock_execute):
 def test_apt_is_installed(mock_local, mock_execute):
     mock_cmd = MagicMock()
     mock_local.__getitem__.return_value = mock_cmd
-    mock_execute.return_value.retcode = 0
+
+    # Create a mock result that looks like an ExecResult
+    mock_result = MagicMock(spec=ExecResult)
+    mock_result.retcode = 0
+    mock_result.stdout = "curl is already the newest version"
+    mock_result.stderr = None
+    mock_execute.return_value = mock_result
 
     pm = AptPackageManager()
     result = pm.is_installed("curl")
     assert result is True
-
 
 # --- DNF PACKAGE MANAGER --------------------------------------------------
 
@@ -237,9 +243,12 @@ def test_dnf_is_installed(mock_local, mock_execute):
     mock_cmd = MagicMock()
     mock_local.__getitem__.return_value = mock_cmd
 
-    mock_execute.return_value.retcode = 0
-    mock_execute.return_value.stderr = None
-    mock_execute.return_value.stdout = "nano 1.2.3"
+    mock_result = MagicMock(spec=ExecResult)
+    mock_result.retcode = 0
+    mock_result.stderr = None
+    mock_result.stdout = "nano 1.2.3"
+    mock_execute.return_value = mock_result
+
 
     pm = DnfPackageManager()
     assert pm.is_installed("nano") is True
