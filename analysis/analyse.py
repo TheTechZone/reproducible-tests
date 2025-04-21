@@ -235,18 +235,14 @@ def check_for_same_version(
     ]
     # create dictionary for internal consistency check between repeats of different runs:
     classified_runs = {
-        "alphabetically sorted": {SortedRuns(True, [file for file in alphabetical if "sort" in file])
-        },
-        "alphabetically reverse sorted": {SortedRuns(True, [file for file in alphabetical if "reverse" in file])
-        },
-        "ctime sorted": {SortedRuns(True, [file for file in ctime if "sort" in file])
-        },
-        "ctime reverse sorted": {SortedRuns(True, [file for file in ctime if "reverse" in file])
-        },
-        "without disorderfs": {SortedRuns(True, vanilla)}
+        "alphabetically sorted": SortedRuns(True, [file for file in alphabetical if "sort" in file]),
+        "alphabetically reverse sorted": SortedRuns(True, [file for file in alphabetical if "reverse" in file]),
+        "ctime sorted": SortedRuns(True, [file for file in ctime if "sort" in file]),
+        "ctime reverse sorted": SortedRuns(True, [file for file in ctime if "reverse" in file]),
+        "without disorderfs": SortedRuns(True, vanilla)
     }
     print(f"checking version {version}...")
-    # print(classified_runs)
+    #print(classified_runs)
     # Create/truncate summary file for idempotence
     summary_file = Path(summary_path(COMPARE_TO_CHECK_NAME[compare], version))
     if not summary_file.exists():
