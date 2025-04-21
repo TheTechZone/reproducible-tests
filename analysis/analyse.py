@@ -336,6 +336,8 @@ def _get_all_tarfiles_with_params(
                     not reverse and "sort" in tarfile
                 ):
                     files.append(tarfile)
+                else:
+                    ignored.append(tarfile)
             else:
                 ignored.append(tarfile)
         else:
@@ -343,9 +345,9 @@ def _get_all_tarfiles_with_params(
                 files.append(tarfile)
             else:
                 ignored.append(tarfile)
-    assert (
-        files + ignored == get_all_tarfiles()
-    ), f"Some filenames were malformed!\n {set(get_all_tarfiles()) - set(files) - set(ignored)}"
+    assert set(files + ignored) == set(
+        get_all_tarfiles()
+    ), f"Some filenames were malformed!\ndfs{dfs},alph:{alph}, ctime:{ctime}, reverse: {reverse}\n {set(get_all_tarfiles()) - set(files) - set(ignored)}"
     return files
 
 
