@@ -17,7 +17,9 @@ from analysis.checks import (
 )
 
 
-def run_checks(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
+def run_checks(
+    tarfiles: list[str], compare: Callable[[str, str], tuple[bool, list]]
+) -> None:
     """
     Clears any previous data in the summary directory of that specific check (created from check name, See analyse::COMPARE_TO_CHECK_NAME),
     then runs the check for all versions and for all combinations of parameters.
@@ -35,17 +37,16 @@ def run_checks(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
     check_for_same_params(None, compare, dfs=False)
     print()
     # Enumerate the 4 parameter combinations
-    check_for_same_params(
-        None, compare, dfs=True, alph=True, ctime=False, reverse=False
-    )
-    print()
-    check_for_same_params(None, compare, dfs=True, alph=True, ctime=False, reverse=True)
-    print()
-    check_for_same_params(
-        None, compare, dfs=True, alph=False, ctime=True, reverse=False
-    )
-    print()
-    check_for_same_params(None, compare, dfs=True, alph=False, ctime=True, reverse=True)
+    param_combinations = [
+        {"dfs": True, "alph": True, "ctime": False, "reverse": False},
+        {"dfs": True, "alph": True, "ctime": False, "reverse": True},
+        {"dfs": True, "alph": False, "ctime": True, "reverse": False},
+        {"dfs": True, "alph": False, "ctime": True, "reverse": True},
+    ]
+
+    for params in param_combinations:
+        check_for_same_params(None, compare, **params)
+        print()
 
 
 ###
@@ -55,11 +56,11 @@ def run_checks(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
 
 def run_all_checks(
     checks: list[Callable[[str, str], tuple[bool, list]]], with_metadata_list=True
-):
+) -> None:
     """
-        Executes all the checks on all the available tared builds.
-        checks: contains all the handles to checks that should be applied
-        PRE: compare_metadata_list not in checks
+    Executes all the checks on all the available tared builds.
+    checks: contains all the handles to checks that should be applied
+    PRE: compare_metadata_list not in checks
     """
 
     for check in checks:
@@ -79,10 +80,9 @@ def run_all_checks(
 ###
 
 
-
 class SortedRuns:
     """
-    Helper class to devide runs into distinct 'classes' 
+    Helper class to devide runs into distinct 'classes'
     (currently by version or parameter combination)
     Attributes:
         consistent: Denotes if the runs are consistent amongst each other for the current check
@@ -101,7 +101,7 @@ def print_with_params(
     direction: Optional[str] = None,
 ):
     """
-    Convenience method to pretty print the contents of a result json file 
+    Convenience method to pretty print the contents of a result json file
     for a specified version and optionally filtered by parameters.
 
     PRE:
@@ -124,7 +124,9 @@ def print_with_params(
 
 # E.g., used to filter out runs that were not internally consistent for the metadata list
 # Or could be used to filter out runs that did not match something we want to match in their playstore equivalent
-def assemble_consistent_tarfile_list(consistency_check: Callable[[str], bool]):
+def assemble_consistent_tarfile_list(
+    consistency_check: Callable[[str], bool]
+) -> list[str]:
     """
     assembles a list of tarfiles that are consistent amongst themselves relative to the provided check
     (if multiple runs for the same version and parameters are present)
@@ -138,6 +140,8 @@ def assemble_consistent_tarfile_list(consistency_check: Callable[[str], bool]):
             tarfile.name
         ):  # tarfile is now a Path object, use .name to get the filename
             consistent_runs.append(tarfile.name)
+
+    return consistent_runs
 
 
 def _compare_amongst_runs(
@@ -181,9 +185,7 @@ def _compare_amongst_runs(
             if has_diff:
                 v_01, run_01 = version_and_run_from_tar_filename(tarfile)
                 v_02, run_02 = version_and_run_from_tar_filename(other)
-                if (
-                    mark_consistency
-                ):  
+                if mark_consistency:
                     assert key
                     classified_runs[key].consistent = False
                     if "dfstest" in tarfile:
@@ -250,7 +252,7 @@ def are_classified_runs_consistent(
 
 
 def check_for_same_version(
-    version, tarfiles, compare: Callable[[str, str], tuple[bool, list]]
+    version: str, tarfiles: list[str], compare: Callable[[str, str], tuple[bool, list]]
 ) -> None:
     """
     Sorts any runs with the provided version into their existing distinct parameter combinations.
