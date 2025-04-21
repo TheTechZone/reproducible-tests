@@ -55,12 +55,11 @@ def run_checks(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
 # Run all the checks on the data
 ###
 
-
 def run_all_checks(checks: list[Callable[[str, str], tuple[bool, list]]], with_metadata_list=True):
     """
-        Executes all the passed tests on all the available tared builds.
-        tests: contains all the handles to checks that should be applied
-        PRE: compare_metadata_list not in tests
+        Executes all the checks on all the available tared builds.
+        checks: contains all the handles to checks that should be applied
+        PRE: compare_metadata_list not in checks
     """
 
     for check in checks:
@@ -72,21 +71,22 @@ def run_all_checks(checks: list[Callable[[str, str], tuple[bool, list]]], with_m
 
 ###
 # The analysis makes use of the 'classified_runs' structure
-# a dict of dicts where the first key is the description of the set of runs that
-# follows in the next dict (e.g., version, or which parameters were active)
-# the next dict is keyed by the opposite key
-# the innermost strucure is as follows (basically a named tuple implemented as a dict):
-# TODO: may want to make this a tuple instead
-# DATA := {"consistent":boolean, "runs":list[str]}
-# where the consistent flag indicates internal consistency between runs (if applicable)
-# and "runs" contain all tarfiles which are grouped by the same fixed parameters & version
+# a dict of SortedRuns the  key is the description of the classification
 #
 # Examples:
-# classified_runs = {"v7.30.4":{"consistent":True, "runs":["signal-android-ctime-reversed_v7.30.4_01.tar.gz",...]}...}
-# classified_runs = {"ctime reverse sorted":{"consistent":True, "runs":["signal-android-ctime-reversed_v7.30.4_01.tar.gz",...]}...}
+# classified_runs = {"v7.30.4":SortedRuns(...), "v7.28.4":SortedRuns(...), ...}
+# classified_runs = {"ctime reverse sorted":SortedRuns(...), "alphabetically sorted":SortedRuns(...), ...}
 ###
 
+
 class SortedRuns:
+    """
+    Helper class to devide runs into distinct 'classes' 
+    (currently by version or parameter combination)
+    Attributes:
+        consistent: Denotes if the runs are consistent amongst each other for the current check
+        runs: All the tarfiles that belong to this 'class' of run.
+    """
 
     def __init__(self, consistent: bool, runs: list[str]):
         self.consistent = consistent
