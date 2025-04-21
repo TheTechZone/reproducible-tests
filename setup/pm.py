@@ -3,7 +3,7 @@ from abc import abstractmethod, ABCMeta
 
 from plumbum import local, CommandNotFound
 
-from setup.shell import execute
+from setup.shell import ExecResult, execute
 
 
 class UnsupportedPlatformError(Exception):
@@ -95,10 +95,12 @@ class AptPackageManager(PackageManager):
 
     def is_installed(self, package_name) -> bool:
         result = execute(self.dpkg_query["-l", package_name], log=True, retcodes=(0, 1))
+        assert isinstance(result, ExecResult)
         return result.retcode == 0
 
     def search(self, package_name) -> str:
         result = execute(self.cache["search", package_name], log=True, retcodes=(0, 1))
+        assert isinstance(result, ExecResult)
         return result.stdout  # TODO: do something useful with it
 
     def install_libfuse(self) -> None:
@@ -137,6 +139,7 @@ class DnfPackageManager(PackageManager):
 
     def search(self, package_name) -> str:
         result = execute(self.package_manager["list", package_name], log=True)
+        assert isinstance(result, ExecResult)
         return result.stdout
 
     def is_installed(self, package_name) -> bool:
@@ -145,6 +148,7 @@ class DnfPackageManager(PackageManager):
             log=True,
             retcodes=(0, 1),
         )
+        assert isinstance(result, ExecResult)
         stdout = result.stdout
         return (
             result.retcode == 0

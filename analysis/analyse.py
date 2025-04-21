@@ -22,7 +22,7 @@ def run_checks(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
     Clears any previous data in the summary directory of that specific check (created from check name, See analyse::COMPARE_TO_CHECK_NAME),
     then runs the check for all versions and for all combinations of parameters.
 
-    (Might be superfluous, doing this at another level rn.): 
+    (Might be superfluous, doing this at another level rn.):
     Note: Currently this takes the same set of files for between and within version comparisons. May want to separate that
     for some of the checks (e.g., metadata consistency)
     """
@@ -129,7 +129,7 @@ def assemble_consistent_tarfile_list(consistency_check: Callable[[str], bool]):
 
 def _compare_amongst_runs(
     classified_runs: dict[str, SortedRuns],
-    key: str,
+    key: Optional[str],
     compare: Callable[[str, str], tuple[bool, list]],
     summary_file: Optional[str] = None,
 ):
@@ -166,6 +166,7 @@ def _compare_amongst_runs(
                 if (
                     mark_consistency
                 ):  # TODO: this is a confusing overload, unconfuse at some point
+                    assert key
                     classified_runs[key].consistent = False
                     if "dfstest" in tarfile:
                         run_01 = f"{v_01}_{run_01}_dfstest"
@@ -283,12 +284,14 @@ def _get_all_tarfiles_with_params(
     Returns:
         List[str]: A list of tarfile names matching the given parameters.
     """
-    files = []
-    ignored = []
+    files: list[str] = []
+    ignored: list[str] = []
     for tarfile in get_all_tarfiles():
         if dfs:
             if alph and "alph" in tarfile or ctime and "ctime" in tarfile:
-                if (reverse and "reverse" in tarfile) or (not reverse and "sort" in tarfile):
+                if (reverse and "reverse" in tarfile) or (
+                    not reverse and "sort" in tarfile
+                ):
                     files.append(tarfile)
             else:
                 ignored.append(tarfile)
@@ -297,7 +300,9 @@ def _get_all_tarfiles_with_params(
                 files.append(tarfile)
             else:
                 ignored.append(tarfile)
-    assert files + ignored == get_all_tarfiles(), f"Some filenames were malformed!\n {get_all_tarfiles() - files - ignored}"
+    assert (
+        files + ignored == get_all_tarfiles()
+    ), f"Some filenames were malformed!\n {set(get_all_tarfiles()) - set(files) - set(ignored)}"
     return files
 
 
