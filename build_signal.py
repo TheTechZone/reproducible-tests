@@ -197,6 +197,8 @@ class SignalBuilder:
             # Stream output in real-time
             output = []
             while True:
+                if not process.stdout:
+                    break
                 line = process.stdout.readline()
                 if not line and process.poll() is not None:
                     break

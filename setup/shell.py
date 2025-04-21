@@ -8,13 +8,13 @@ from typing import Optional
 from plumbum.cmd import sudo
 
 run_command_counter = 0
-from plumbum.commands.base import ConcreteCommand
+from plumbum.commands.base import BaseCommand
 
 ExecResult = namedtuple("ExecResult", ["retcode", "stdout", "stderr"])
 
 
 def execute(
-    cmd: ConcreteCommand,
+    cmd: BaseCommand,
     retcodes: Optional[tuple[int, ...]] = None,
     as_sudo=False,
     log=False,
@@ -116,9 +116,12 @@ class ColorHandler(logging.StreamHandler):
 
     def __init__(self, stream: logging.StreamHandler):
         super().__init__()
+        assert stream.formatter is not None, "stream formatter should not be none"
         self.formatter = stream.formatter
 
     def emit(self, record):
+        assert self.formatter is not None, "stream formatter should not be none"
+
         # Don't use white for any logging, to help distinguish from user print statements
         level_color_map = {
             logging.DEBUG: self.GRAY8,

@@ -1,20 +1,17 @@
 from pathlib import Path
 import json
-from typing import Mapping, Union, Optional
+from typing import Optional
 from collections.abc import Callable
 from setup.structure import (
     DATA_ROOT,
     TARS_ROOT,
     SUMMARY_ROOT,
     version_and_run_from_tar_filename,
-    parameters_from_tar_filename,
     summary_path,
     create_or_clear_summary_directory_for,
 )
 from analysis.checks import (
     COMPARE_TO_CHECK_NAME,
-    compare_dex_hashes,
-    compare_first_dex_hash,
     compare_metadata_list,
     is_metadata_to_dirorder_consistent,
 )
@@ -56,11 +53,13 @@ def run_checks(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
 ###
 
 
-def run_all_checks(checks: list[Callable[[str, str], tuple[bool, list]]], with_metadata_list=True):
+def run_all_checks(
+    checks: list[Callable[[str, str], tuple[bool, list]]], with_metadata_list=True
+):
     """
-        Executes all the passed tests on all the available tared builds.
-        tests: contains all the handles to checks that should be applied
-        PRE: compare_metadata_list not in tests
+    Executes all the passed tests on all the available tared builds.
+    tests: contains all the handles to checks that should be applied
+    PRE: compare_metadata_list not in tests
     """
 
     for check in checks:
@@ -85,6 +84,7 @@ def run_all_checks(checks: list[Callable[[str, str], tuple[bool, list]]], with_m
 # classified_runs = {"v7.30.4":{"consistent":True, "runs":["signal-android-ctime-reversed_v7.30.4_01.tar.gz",...]}...}
 # classified_runs = {"ctime reverse sorted":{"consistent":True, "runs":["signal-android-ctime-reversed_v7.30.4_01.tar.gz",...]}...}
 ###
+
 
 class SortedRuns:
 
@@ -236,14 +236,20 @@ def check_for_same_version(
     ]
     # create dictionary for internal consistency check between repeats of different runs:
     classified_runs = {
-        "alphabetically sorted": SortedRuns(True, [file for file in alphabetical if "sort" in file]),
-        "alphabetically reverse sorted": SortedRuns(True, [file for file in alphabetical if "reverse" in file]),
+        "alphabetically sorted": SortedRuns(
+            True, [file for file in alphabetical if "sort" in file]
+        ),
+        "alphabetically reverse sorted": SortedRuns(
+            True, [file for file in alphabetical if "reverse" in file]
+        ),
         "ctime sorted": SortedRuns(True, [file for file in ctime if "sort" in file]),
-        "ctime reverse sorted": SortedRuns(True, [file for file in ctime if "reverse" in file]),
-        "without disorderfs": SortedRuns(True, vanilla)
+        "ctime reverse sorted": SortedRuns(
+            True, [file for file in ctime if "reverse" in file]
+        ),
+        "without disorderfs": SortedRuns(True, vanilla),
     }
     print(f"checking version {version}...")
-    #print(classified_runs)
+    # print(classified_runs)
     # Create/truncate summary file for idempotence
     summary_file = Path(summary_path(COMPARE_TO_CHECK_NAME[compare], version))
     if not summary_file.exists():
@@ -368,7 +374,7 @@ def check_for_same_params(
         relevant_files = [file for file in tarfiles if file in appropriate_tars]
     classified_runs = {}
     for v in versions:
-        classified_runs[v] = SortedRuns(True,[])
+        classified_runs[v] = SortedRuns(True, [])
         for tarfile in relevant_files:
             if v in tarfile:
                 classified_runs[v].runs.append(tarfile)
