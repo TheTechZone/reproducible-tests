@@ -22,9 +22,10 @@ from analysis.checks import (
 
 def run_checks(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
     """
-    Clears any previous data in the summary directory of that specific check,
-    then runs the check for all versions and for all parameters.
+    Clears any previous data in the summary directory of that specific check (created from check name, See analyse::COMPARE_TO_CHECK_NAME),
+    then runs the check for all versions and for all combinations of parameters.
 
+    (Might be superfluous, doing this at another level rn.): 
     Note: Currently this takes the same set of files for between and within version comparisons. May want to separate that
     for some of the checks (e.g., metadata consistency)
     """
@@ -127,14 +128,14 @@ def assemble_consistent_tarfile_list(consistency_check: Callable[[str], bool]):
 
 
 def _compare_amongst_runs(
-    classified_runs,
-    key,
+    classified_runs: dict[str, SortedRuns],
+    key: str,
     compare: Callable[[str, str], tuple[bool, list]],
-    summary_file=None,
+    summary_file: Optional[str] = None,
 ):
     """
     if key is given, method checks for internal consistency between multiple runs
-    contained in this object,
+    contained in the individual SortedRun Objects,
     Otherwise we check pairwise for each run that was classified as internally consistent,
     and record the result
     """
@@ -277,37 +278,21 @@ def _get_all_tarfiles_with_params(
         List[str]: A list of tarfile names matching the given parameters.
     """
     files = []
+    ignored = []
     for tarfile in get_all_tarfiles():
         if dfs:
-            if alph and "alph" in tarfile:
-                if reverse and "reverse" in tarfile:
+            if alph and "alph" in tarfile or ctime and "ctime" in tarfile:
+                if (reverse and "reverse" in tarfile) or (not reverse and "sort" in tarfile):
                     files.append(tarfile)
-                elif not reverse and "sort" in tarfile:
-                    files.append(tarfile)
-            elif ctime and "ctime" in tarfile:
-                if reverse and "reverse" in tarfile:
-                    files.append(tarfile)
-                elif not reverse and "sort" in tarfile:
-                    files.append(tarfile)
+            else:
+                ignored.append(tarfile)
         else:
-            if (
-                "alph" not in tarfile
-                and "ctime" not in tarfile
-                and "sort" not in tarfile
-                and "reverse" not in tarfile
-            ):
+            if all(key not in tarfile for key in ("alph", "ctime", "sort", "reverse")):
                 files.append(tarfile)
+            else:
+                ignored.append(tarfile)
+    assert files + ignored == get_all_tarfiles(), f"Some filenames were malformed!\n {get_all_tarfiles() - files - ignored}"
     return files
-    # todo: replace with this :)
-    # for tarfile in os.listdir(TARS_ROOT):
-    #     if dfs:
-    #         if alph and "alph" in tarfile or ctime and "ctime" in tarfile:
-    #             if (reverse and "reverse" in tarfile) or (not reverse and "sort" in tarfile):
-    #                 files.append(tarfile)
-    #     else:
-    #         if all(key not in tarfile for key in ("alph", "ctime", "sort", "reverse")):
-    #             files.append(tarfile)
-    # return files
 
 
 def get_all_tarfiles() -> list[str]:
