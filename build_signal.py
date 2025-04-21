@@ -5,7 +5,7 @@ import subprocess
 import sys
 import shutil
 import argparse
-import contextlib
+from typing import Optional, Union
 from setup.shell import execute
 from plumbum import local
 from pathlib import Path
@@ -21,7 +21,7 @@ class PatchManager:
         """
         self.working_directory = Path(working_directory).resolve()
 
-    def apply_patch(self, patch_file: str) -> bool:
+    def apply_patch(self, patch_file: Union[str, Path]) -> bool:
         """
         Apply a git patch file to the working directory.
 
@@ -158,21 +158,26 @@ class PatchManager:
 
 class SignalBuilder:
     def __init__(self, args):
-        self.script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
+        self.script_dir = Path(__file__).resolve().parent
         self.reproducible_apks_dir = self.script_dir / "reproducible-signal"
+        print(self.reproducible_apks_dir)
         self.device_apks_dir = self.reproducible_apks_dir / "apks-from-device"
         self.built_apks_dir = self.reproducible_apks_dir / "apks-i-built"
+        self.dfs: Optional[str] = args.dfs  # None, "chaos", "sort", ""sort_reversed"
+        self.dfs_mount_dir = None
         # Will be overwritten if dfs is defined
         self.disorderfs_root_dir = self.script_dir / "disorderfs_root"
-        self.signal_repo_dir = self.disorderfs_root_dir / "Signal-Android"
-        self.dfs = args.dfs  # None, "chaos", "sort", ""sort_reversed"
-        self.dfs_mount_dir = None
+        self.signal_repo_dir = (
+            self.disorderfs_root_dir / "Signal-Android"
+            if args.dfs
+            else self.script_dir / "Signal-Android"
+        )
         self.clean = args.clean
         self.purge = args.purge
         self.debug = args.debug
         self.aab_only = args.aab_only
 
-    def run_command(self, cmd, cwd=None, check=True, shell=False):
+    def run_command(self, cmd: list[str], cwd=None, check=True, shell=False):
         """Run a command and stream output in real-time."""
         try:
             # Print the command being run
@@ -278,7 +283,7 @@ class SignalBuilder:
         er = execute(chain, retcodes=(0, 1), log=True)
         return er.stdout.strip()
 
-    def clone_signal(self, version):
+    def clone_signal(self, version: str) -> None:
         """Clone Signal repository at specific version."""
         if not version.startswith("v"):
             version = f"v{version}"
@@ -297,10 +302,10 @@ class SignalBuilder:
                 version,
                 "https://github.com/signalapp/Signal-Android.git",
             ],
-            cwd=self.disorderfs_root_dir,
+            cwd=self.disorderfs_root_dir if self.dfs else self.script_dir,
         )
 
-    def build_docker_image(self):
+    def build_docker_image(self) -> None:
         """Build the Signal Android Docker image."""
         print("Building Docker image...")
         self.run_command(
@@ -379,7 +384,7 @@ class SignalBuilder:
         bundletool_path = self.script_dir / "bundletool"
         if not bundletool_path.exists():
             print(
-                "Error: bundletool not found. Please run download_bundletool.py first."
+                "Error: bundletool not found. Please run 00_download_bundletool.py first."
             )
             sys.exit(1)
 
@@ -395,9 +400,6 @@ class SignalBuilder:
             cwd=self.built_apks_dir,
         )
 
-    def cleanup(self):
-        """Clean up unnecessary files."""
-        print("Cleaning up...")
         apks_dir = self.built_apks_dir / "apks"
         if apks_dir.exists():
             # Move APK files to parent directory
@@ -409,6 +411,9 @@ class SignalBuilder:
             # Remove the apks directory
             shutil.rmtree(apks_dir)
 
+    def cleanup(self):
+        """Clean up unnecessary files."""
+        print("Cleaning up...")
         # Remove the bundle file
         bundle_file = self.built_apks_dir / "bundle.aab"
         if bundle_file.exists():
@@ -473,7 +478,7 @@ class SignalBuilder:
             size = os.path.getsize(apk)
             print(f"  {apk.name} ({size:,} bytes)")
 
-    def setup_apkdiff(self, dest=None):
+    def setup_apkdiff(self):
         """Copy apkdiff.py from Signal repo and make it executable."""
         print("\nSetting up apkdiff.py...")
         apkdiff_src = self.signal_repo_dir / "reproducible-builds/apkdiff/apkdiff.py"
@@ -489,6 +494,28 @@ class SignalBuilder:
         shutil.copy2(apkdiff_src, apkdiff_dest)
         os.chmod(apkdiff_dest, 0o755)
         return apkdiff_dest
+
+    def stash_mismatches(self, suffix: str):
+        mismatches_dir = Path("mismatches")
+        first = mismatches_dir / "first"
+        second = mismatches_dir / "second"
+
+        if not (first.exists() or second.exists()):
+            return  # Nothing to stash
+
+        target_dir = mismatches_dir / suffix
+        if target_dir.exists():
+            print(f"{target_dir} exists already. Files will be overwriten")
+            shutil.rmtree(str(target_dir))
+
+        target_dir.mkdir(parents=True)
+
+        # Move only first/ and second/
+        for subdir in [first, second]:
+            if subdir.exists() and subdir.is_dir():
+                shutil.move(str(subdir), str(target_dir / subdir.name))
+
+        print(f"Moved mismatch results to: {target_dir}")
 
     def compare_apks(self):
         """Compare APKs using apkdiff.py."""
@@ -511,8 +538,10 @@ class SignalBuilder:
         # Copy apkdiff.py from Signal repo
         apkdiff_path = self.setup_apkdiff()
 
+        if Path("mismatches").exists():
+            shutil.rmtree("mismatches")
+
         print("\nRunning APK comparisons:")
-        print("-" * 50)
         all_match = True
 
         # Compare APKs with matching names
@@ -529,6 +558,7 @@ class SignalBuilder:
             )
             if result.returncode != 0:
                 all_match = False
+                self.stash_mismatches(f"{built_apk.stem}")
 
         if all_match:
             print("\nSuccess! All APKs match! 🎉")
@@ -547,7 +577,7 @@ class SignalBuilder:
         try:
             if self.purge:
                 self.cleanup()
-                print(f"Successfully ran clean without building anything.")
+                print("Successfully ran clean without building anything.")
                 sys.exit(0)
 
             self.setup_directories()
@@ -560,14 +590,6 @@ class SignalBuilder:
                 self.create_overlay_filesystem(self.dfs)
             self.build_docker_image()
 
-            # todo: junk from xy
-            # # start docker
-            # execute(
-            #     local["systemctl"]["start", "docker"], as_sudo=True
-            # )  # quoi? this shouldn't be in the build script either way...
-            # # print("Finished building docker image, quittin early!")
-            # # exit(0)
-
             self.build_signal()
             self.copy_bundle()
             if self.aab_only:
@@ -576,20 +598,18 @@ class SignalBuilder:
                 )
                 sys.exit(0)
 
-            if not version:
-                self.check_adb_devices()
+            self.check_adb_devices()
             self.generate_apks()
             if self.clean:
                 self.cleanup()
-            if not version:
-                self.pull_device_apks()
-                self.print_apk_summary()
-                self.compare_apks()
+
+            self.pull_device_apks()
+            self.print_apk_summary()
+            self.compare_apks()
 
             print("\nBuild completed successfully!")
-            print(f"APKs are located in:")
-            if not version:
-                print(f"  Device APKs: {self.device_apks_dir}")
+            print("APKs are located in:")
+            print(f"  Device APKs: {self.device_apks_dir}")
             print(f"  Built APKs:  {self.built_apks_dir}")
 
         except Exception as e:
@@ -597,7 +617,10 @@ class SignalBuilder:
             sys.exit(1)
 
 
-def get_installed_version():
+def get_installed_version() -> Optional[str]:
+    """
+    Attempt to get signal version via adb.
+    """
     try:
         result = subprocess.run(
             ["adb", "shell", "dumpsys", "package", "org.thoughtcrime.securesms"],
@@ -637,7 +660,7 @@ if __name__ == "__main__":
         action="store",
         default=None,
         help="Provide the version you want to "
-        "reproducably build. If this is not provided, the"
+        "reproducibly build. If this is not provided, the"
         "program attempts to pull an APK from a phone"
         "connected via. adb.",
     )
