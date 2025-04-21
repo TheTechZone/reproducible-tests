@@ -1,20 +1,17 @@
 from pathlib import Path
 import json
-from typing import Mapping, Union, Optional
+from typing import Optional
 from collections.abc import Callable
 from setup.structure import (
     DATA_ROOT,
     TARS_ROOT,
     SUMMARY_ROOT,
     version_and_run_from_tar_filename,
-    parameters_from_tar_filename,
     summary_path,
     create_or_clear_summary_directory_for,
 )
 from analysis.checks import (
     COMPARE_TO_CHECK_NAME,
-    compare_dex_hashes,
-    compare_first_dex_hash,
     compare_metadata_list,
     is_metadata_to_dirorder_consistent,
 )
@@ -25,7 +22,7 @@ def run_checks(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
     Clears any previous data in the summary directory of that specific check (created from check name, See analyse::COMPARE_TO_CHECK_NAME),
     then runs the check for all versions and for all combinations of parameters.
 
-    (Might be superfluous, doing this at another level rn.): 
+    (Might be superfluous, doing this at another level rn.):
     Note: Currently this takes the same set of files for between and within version comparisons. May want to separate that
     for some of the checks (e.g., metadata consistency)
     """
@@ -55,7 +52,10 @@ def run_checks(tarfiles, compare: Callable[[str, str], tuple[bool, list]]):
 # Run all the checks on the data
 ###
 
-def run_all_checks(checks: list[Callable[[str, str], tuple[bool, list]]], with_metadata_list=True):
+
+def run_all_checks(
+    checks: list[Callable[[str, str], tuple[bool, list]]], with_metadata_list=True
+):
     """
         Executes all the checks on all the available tared builds.
         checks: contains all the handles to checks that should be applied
@@ -77,6 +77,7 @@ def run_all_checks(checks: list[Callable[[str, str], tuple[bool, list]]], with_m
 # classified_runs = {"v7.30.4":SortedRuns(...), "v7.28.4":SortedRuns(...), ...}
 # classified_runs = {"ctime reverse sorted":SortedRuns(...), "alphabetically sorted":SortedRuns(...), ...}
 ###
+
 
 
 class SortedRuns:
@@ -141,7 +142,7 @@ def assemble_consistent_tarfile_list(consistency_check: Callable[[str], bool]):
 
 def _compare_amongst_runs(
     classified_runs: dict[str, SortedRuns],
-    key: str,
+    key: Optional[str],
     compare: Callable[[str, str], tuple[bool, list]],
     summary_file: Optional[str] = None,
 ):
@@ -183,6 +184,7 @@ def _compare_amongst_runs(
                 if (
                     mark_consistency
                 ):  
+                    assert key
                     classified_runs[key].consistent = False
                     if "dfstest" in tarfile:
                         run_01 = f"{v_01}_{run_01}_dfstest"
@@ -273,14 +275,20 @@ def check_for_same_version(
     ]
     # create dictionary for internal consistency check between repeats of different runs:
     classified_runs = {
-        "alphabetically sorted": SortedRuns(True, [file for file in alphabetical if "sort" in file]),
-        "alphabetically reverse sorted": SortedRuns(True, [file for file in alphabetical if "reverse" in file]),
+        "alphabetically sorted": SortedRuns(
+            True, [file for file in alphabetical if "sort" in file]
+        ),
+        "alphabetically reverse sorted": SortedRuns(
+            True, [file for file in alphabetical if "reverse" in file]
+        ),
         "ctime sorted": SortedRuns(True, [file for file in ctime if "sort" in file]),
-        "ctime reverse sorted": SortedRuns(True, [file for file in ctime if "reverse" in file]),
-        "without disorderfs": SortedRuns(True, vanilla)
+        "ctime reverse sorted": SortedRuns(
+            True, [file for file in ctime if "reverse" in file]
+        ),
+        "without disorderfs": SortedRuns(True, vanilla),
     }
     print(f"checking version {version}...")
-    #print(classified_runs)
+    # print(classified_runs)
     # Create/truncate summary file for idempotence
     summary_file = Path(summary_path(COMPARE_TO_CHECK_NAME[compare], version))
     if not summary_file.exists():
@@ -317,12 +325,14 @@ def _get_all_tarfiles_with_params(
     Returns:
         List[str]: A list of tarfile names matching the given parameters.
     """
-    files = []
-    ignored = []
+    files: list[str] = []
+    ignored: list[str] = []
     for tarfile in get_all_tarfiles():
         if dfs:
             if alph and "alph" in tarfile or ctime and "ctime" in tarfile:
-                if (reverse and "reverse" in tarfile) or (not reverse and "sort" in tarfile):
+                if (reverse and "reverse" in tarfile) or (
+                    not reverse and "sort" in tarfile
+                ):
                     files.append(tarfile)
             else:
                 ignored.append(tarfile)
@@ -331,7 +341,9 @@ def _get_all_tarfiles_with_params(
                 files.append(tarfile)
             else:
                 ignored.append(tarfile)
-    assert files + ignored == get_all_tarfiles(), f"Some filenames were malformed!\n {get_all_tarfiles() - files - ignored}"
+    assert (
+        files + ignored == get_all_tarfiles()
+    ), f"Some filenames were malformed!\n {set(get_all_tarfiles()) - set(files) - set(ignored)}"
     return files
 
 
@@ -408,7 +420,7 @@ def check_for_same_params(
         relevant_files = [file for file in tarfiles if file in appropriate_tars]
     classified_runs = {}
     for v in versions:
-        classified_runs[v] = SortedRuns(True,[])
+        classified_runs[v] = SortedRuns(True, [])
         for tarfile in relevant_files:
             if v in tarfile:
                 classified_runs[v].runs.append(tarfile)

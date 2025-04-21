@@ -44,10 +44,10 @@ def _get_metadata_list(tarfile):
     return metadata_list
 
 
-def _get_mtimes_list (tarfile: str) -> list[str]:
+def _get_mtimes_list(tarfile: str) -> list[str]:
     """
-        parses the file order stored in "mtimes" of the output_metadata_mtimes.json dict
-        and returns them as a list.
+    parses the file order stored in "mtimes" of the output_metadata_mtimes.json dict
+    and returns them as a list.
     """
     metadata_file_path = DATA_ROOT / "res" / "output_metadata_mtimes.json"
 
@@ -67,7 +67,7 @@ def _get_mtimes_list (tarfile: str) -> list[str]:
 def is_metadata_to_dirorder_consistent(tarfile: str) -> bool:
     """
     Test for internal consistency between files parsed from the mtimes output and the metadata list
-        
+
     Returns:
         `True` if the files are consistent amongst each other (dirorder is equivalent to outputfile)
     """
@@ -81,9 +81,9 @@ def is_metadata_to_dirorder_consistent(tarfile: str) -> bool:
 # Test between runs
 def compare_metadata_list(tarfile1, tarfile2) -> tuple[bool, list]:
     """
-        for two runs denoted by tarfile1 & tarfile2
-        check if the metadata lists are equal
-        returns: equal, differences
+    for two runs denoted by tarfile1 & tarfile2
+    check if the metadata lists are equal
+    returns: equal, differences
     """
     list1 = _get_metadata_list(tarfile1)
     list2 = _get_metadata_list(tarfile2)

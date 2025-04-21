@@ -4,17 +4,18 @@ import shutil
 import sys
 import os
 from collections import namedtuple
+from types import FrameType
 from typing import Optional
 from plumbum.cmd import sudo
 
 run_command_counter = 0
-from plumbum.commands.base import ConcreteCommand
+from plumbum.commands.base import BaseCommand
 
 ExecResult = namedtuple("ExecResult", ["retcode", "stdout", "stderr"])
 
 
 def execute(
-    cmd: ConcreteCommand,
+    cmd: BaseCommand,
     retcodes: Optional[tuple[int, ...]] = None,
     as_sudo=False,
     log=False,
@@ -34,18 +35,26 @@ def execute(
     """
     global run_command_counter
 
-    def log_command() -> None:
-        if log:
+    def log_command(cmd: str, stdout: str, log: bool = True) -> None:
+        if not log:
+            return
 
-            def formatstring_stdout(stdout_arg):
-                # Empty strings are 'falsy'
-                return f"\n\tOutput:\n {stdout_arg}" if stdout_arg.strip() else ""
+        def formatstring_stdout(stdout_arg: str) -> str:
+            return f"\n\tOutput:\n {stdout_arg}" if stdout_arg.strip() else ""
 
-            # inspect.stack()[1][3] is the name of the calling function
-            # https://docs.python.org/3/library/inspect.html#the-interpreter-stack
-            print(
-                f"-> function:{inspect.currentframe().f_back.f_back.f_code.co_name}, line {inspect.currentframe().f_back.f_back.f_lineno} \n\t{cmd} {formatstring_stdout(stdout)}"
-            )
+        # Safe frame handling
+        frame: Optional[FrameType] = inspect.currentframe()
+        if frame and frame.f_back and frame.f_back.f_back:
+            caller_frame = frame.f_back.f_back
+            func_name = caller_frame.f_code.co_name
+            line_number = caller_frame.f_lineno
+        else:
+            func_name = "<unknown>"
+            line_number = -1
+
+        print(
+            f"-> function:{func_name}, line {line_number} \n\t{cmd}{formatstring_stdout(stdout)}"
+        )
 
     logging.debug(f"Command nr: {run_command_counter} \n{cmd}\nRetcodes: {retcodes}")
     run_command_counter = run_command_counter + 1
@@ -54,12 +63,12 @@ def execute(
     else:
         (rc, stdout, stderr) = cmd.run(retcode=retcodes)
     if retcodes is None and rc != 0:
-        log_command()
+        log_command(str(cmd), stdout, log)
         logging.critical(
             f"UNEXPECTED ERROR:\nrc: {rc}\nstdout: {stdout}\nstderr: {stderr}\n"
         )
         exit(1)
-    log_command()
+    log_command(str(cmd), stdout, log)
     if retcodes is None:
         return ExecResult(None, stdout, None)
     else:
@@ -101,9 +110,9 @@ def check_or_request_sudo() -> None:
     euid = os.geteuid()
     if euid != 0:
         print("Script not running as root. Requesting sudo..")
-        args = ["sudo", sys.executable] + sys.argv + [os.environ]
+        args = ["sudo", sys.executable] + sys.argv
         # the next line replaces the currently-running process with the sudo
-        os.execlpe("sudo", *args)
+        os.execlpe("sudo", *args, os.environ)
 
 
 class ColorHandler(logging.StreamHandler):
@@ -116,9 +125,12 @@ class ColorHandler(logging.StreamHandler):
 
     def __init__(self, stream: logging.StreamHandler):
         super().__init__()
+        assert stream.formatter is not None, "stream formatter should not be none"
         self.formatter = stream.formatter
 
     def emit(self, record):
+        assert self.formatter is not None, "stream formatter should not be none"
+
         # Don't use white for any logging, to help distinguish from user print statements
         level_color_map = {
             logging.DEBUG: self.GRAY8,

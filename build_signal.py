@@ -197,6 +197,8 @@ class SignalBuilder:
             # Stream output in real-time
             output = []
             while True:
+                if not process.stdout:
+                    break
                 line = process.stdout.readline()
                 if not line and process.poll() is not None:
                     break
@@ -280,8 +282,8 @@ class SignalBuilder:
         chain = (
             ps["-aux"] | grep["disorderfs"] | grep[dfs_mount_dir] | awk["{print $2}"]
         )
-        er = execute(chain, retcodes=(0, 1), log=True)
-        return er.stdout.strip()
+        err = execute(chain, retcodes=(0, 1), log=True)
+        return err if isinstance(err, str) else err.stdout.strip()
 
     def clone_signal(self, version: str) -> None:
         """Clone Signal repository at specific version."""

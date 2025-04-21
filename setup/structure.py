@@ -9,12 +9,15 @@ from typing import Optional
 # Utilities related to the directory structure of the repository
 ##
 
+
 def get_git_root() -> Path:
     """
     Returns the absolute path to the root of the Git repository.
     """
     try:
-        root = subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
+        root = subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"], text=True
+        ).strip()
         return Path(root).resolve()
     except subprocess.CalledProcessError:
         raise RuntimeError("Not inside a Git repository.")
@@ -25,7 +28,7 @@ def get_git_root() -> Path:
 ROOT = get_git_root()
 
 COMPARATORS_PATH = ROOT / "comparators"
-DATA_ROOT = ROOT /  "data"
+DATA_ROOT = ROOT / "data"
 
 # The root of all the data related to the local builds
 BUILDS_ROOT = DATA_ROOT / "build"
@@ -39,7 +42,13 @@ REPRODUCIBLE_TESTS_ROOT = BUILDS_ROOT / "reproducible-tests"
 # part of the dfstest directory structure
 DFS_ROOT_PATH = REPRODUCIBLE_TESTS_ROOT / "disorderfs_root"
 CB_AAB_PATH = (
-    CB_PATH / "app" / "build" / "outputs" / "bundle" / "playProdRelease" / "Signal-Android-play-prod-release.aab"
+    CB_PATH
+    / "app"
+    / "build"
+    / "outputs"
+    / "bundle"
+    / "playProdRelease"
+    / "Signal-Android-play-prod-release.aab"
 )
 
 PLAYSTORE_APKS_ROOT = DATA_ROOT / "playstore-mirror"
@@ -73,7 +82,7 @@ def create_or_clear_summary_directory_for(testname, version=True, clear=True) ->
     if !clear and the dir exists function does nothing
     """
     # Check main folder
-    main_dir = SUMMARY_ROOT /  testname
+    main_dir = SUMMARY_ROOT / testname
     subdir = main_dir / (_VERSION if version else _PARAMS)
 
     # Create main directory if it doesn't exist
@@ -90,7 +99,11 @@ def create_or_clear_summary_directory_for(testname, version=True, clear=True) ->
 
 def summary_path(testname, key) -> str:
     # Which dimension is fixed?
-    fixed = _PARAMS if any(word in key for word in ("without", "alph", "ctime")) else _VERSION
+    fixed = (
+        _PARAMS
+        if any(word in key for word in ("without", "alph", "ctime"))
+        else _VERSION
+    )
 
     # Format filename
     filename = f'{"_".join(key.split(" "))}.json' if fixed == _PARAMS else f"{key}.json"
@@ -101,14 +114,14 @@ def summary_path(testname, key) -> str:
 
 def turn_cvc_code_mapping_to_json() -> None:
     """
-        Reads a colon-separated version code mapping file and converts it to a JSON format.
+    Reads a colon-separated version code mapping file and converts it to a JSON format.
 
-        Each line in the source file is expected to be in the format:
-            <version_code>: <version_name>
+    Each line in the source file is expected to be in the format:
+        <version_code>: <version_name>
 
-        Both directions (code → name, and name → code) are stored in the resulting JSON.
+    Both directions (code → name, and name → code) are stored in the resulting JSON.
 
-        Output is written to VERSION_CVC_FILE.
+    Output is written to VERSION_CVC_FILE.
     """
     json_obj = {}
 
