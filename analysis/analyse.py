@@ -78,8 +78,6 @@ def run_all_checks(
 # classified_runs = {"ctime reverse sorted":SortedRuns(...), "alphabetically sorted":SortedRuns(...), ...}
 ###
 
-
-
 class SortedRuns:
     """
     Helper class to devide runs into distinct 'classes' 
