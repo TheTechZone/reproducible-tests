@@ -150,7 +150,7 @@ def version_and_run_from_tar_filename(filename) -> tuple[Optional[str], Optional
     # Define the regex pattern
     pattern = r"v(\d+\.\d+\.\d+)(?:_)?(\d+)?"
     # Search for the pattern in the filename
-    match = re.search(pattern, filename)
+    match = re.search(pattern, str(filename))
     if match:
         version = match.group(1)
         run = match.group(2) if match.group(2) else "01"  # If no run number, return 01
