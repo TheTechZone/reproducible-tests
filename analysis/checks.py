@@ -128,6 +128,7 @@ def _first_dex_hash(dex_list: dict[str, dict]) -> Optional[str]:
     for k in dex_list.keys():
         if dex_list[k] == "classes.dex":
             return k
+    return None
 
 
 # Because according to Aditz the first dex file matters more!

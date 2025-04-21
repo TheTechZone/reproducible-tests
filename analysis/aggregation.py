@@ -316,7 +316,7 @@ def create_apkdiff_record(local_apk_filename) -> dict:
         print(f"Did not find a 'mismatches' folder in {os.getcwd()}")
     mismatches_dir.mkdir(parents=True, exist_ok=True)
 
-    apkdiff_res = {}
+    apkdiff_res: dict[str, str | list[str] | bool] = {}
 
     # APKdiff will return 1 if the match fails. We don't want plumbum to crash the script and accept all retcodes.
     (_, stdout, _) = local["python3"][
@@ -368,7 +368,7 @@ def record_all_apkdiff_comparisons(tarfile_name):
 
 def run_comparator_on_apkdiff_mismatches() -> dict:
     mismatches_path = Path("mismatches")
-    result = defaultdict(dict)
+    result: dict = defaultdict(dict)
 
     # Use Path for comparators as well
     axml = local[str(COMPARATORS_PATH / "axml_compare.py")]

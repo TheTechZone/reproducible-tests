@@ -65,11 +65,11 @@ def _playstore_apk_path(cvc) -> str:
 
 
 def universal_apk_path(cvc, relative=False) -> str:
-    path = Path(_playstore_apk_path(cvc)) / f"org.thoughtcrime.securesms-{cvc}.apk"
+    path = str(Path(_playstore_apk_path(cvc)) / f"org.thoughtcrime.securesms-{cvc}.apk")
     if relative:
         # Assuming posix
         path = create_relpath(path)
-    return str(path)
+    return path
 
 
 _VERSION = "fixed_versions"
@@ -140,7 +140,7 @@ def turn_cvc_code_mapping_to_json() -> None:
         json.dump(json_obj, f, indent=2)
 
 
-def create_relpath(abspath) -> str:
+def create_relpath(abspath: str | Path) -> str:
     git_root = ROOT.resolve()
     abspath = Path(abspath).resolve()
     return str(abspath.relative_to(git_root))
@@ -205,5 +205,5 @@ def parameters_from_tar_filename(
         reverse = True if "reversed" in tar_filename else False
     (version, run) = version_and_run_from_tar_filename(tar_filename)
     assert version is not None
-    run = run if run is not None else "01"
+    run = run if run is not None else 1
     return (version, int(run), dfstest, dfs, ctime, reverse)
