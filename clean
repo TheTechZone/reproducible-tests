@@ -2,4 +2,5 @@
 
 rm -rf reproducible-signal
 rm -rf Signal-Android
+rm -rf disorderfs_root/
 # yes | docker system prune -a

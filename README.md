@@ -1,4 +1,4 @@
-# Reproducability test for signalapp/Signal-Android
+# Reproducibility test for signalapp/Signal-Android
 
 The script attempts to automate Signal's reproducible-builds workflow. They only require a working installation of Python 3 (as they rely solely on the standard library).
 
@@ -22,7 +22,7 @@ Prerequisitives:
 ./01_check_dependencies.py
 ```
 
-- install disorderfs and associated libs to fix the overlay filesystem on which the build will be executed 
+- install disorderfs and associated libs to fix the overlay filesystem on which the build will be executed
 ```shell
 ./02_install_disorderfs.py
 ```
