@@ -99,6 +99,14 @@ def print_with_params(
     sorting_criteria: Optional[str] = None,
     direction: Optional[str] = None,
 ):
+    """
+    Convenience method to pretty print the contents of a result json file 
+    for a specified version and optionally filtered by parameters.
+
+    PRE:
+    sorting_criteria is None or ('ctime' or 'alph')
+    direction is None or ('reverse' or 'sort')
+    """
     file_path = DATA_ROOT / "res" / file
 
     with file_path.open("r", encoding="utf-8") as f:
@@ -116,7 +124,11 @@ def print_with_params(
 # E.g., used to filter out runs that were not internally consistent for the metadata list
 # Or could be used to filter out runs that did not match something we want to match in their playstore equivalent
 def assemble_consistent_tarfile_list(consistency_check: Callable[[str], bool]):
-    """makes sure that multiple runs with the same parameters are consistent amongst each other"""
+    """
+    assembles a list of tarfiles that are consistent amongst themselves relative to the provided check
+    (if multiple runs for the same version and parameters are present)
+    or that only had a single run
+    """
     consistent_runs = []
     tarfiles_dir = Path(TARS_ROOT)
 
@@ -135,11 +147,16 @@ def _compare_amongst_runs(
 ):
     """
     if key is given, method checks for internal consistency between multiple runs
-    contained in the individual SortedRun Objects,
+    contained in the individual SortedRun Objects stored in classified_runs,
     Otherwise we check pairwise for each run that was classified as internally consistent,
     and record the result
+
+    Parameters:
+        classified_runs: All the runs of interest, keyed by their description
+        key: key in classified_runs.keys()
+        compare: the check to be applied
+        summary_file: where to record the results
     """
-    # TODO: Do I these to be optional args?
     record_result = True if summary_file is not None else False
     mark_consistency = False
     if key is None:
@@ -165,7 +182,7 @@ def _compare_amongst_runs(
                 v_02, run_02 = version_and_run_from_tar_filename(other)
                 if (
                     mark_consistency
-                ):  # TODO: this is a confusing overload, unconfuse at some point
+                ):  
                     classified_runs[key].consistent = False
                     if "dfstest" in tarfile:
                         run_01 = f"{v_01}_{run_01}_dfstest"
@@ -205,6 +222,16 @@ def are_classified_runs_consistent(
     compare: Callable[[str, str], tuple[bool, list]],
     summary_file=None,
 ) -> None:
+    """
+    Marks any class of runs that only had a single run as internally consistent.
+    Calls _compare_amongst_runs for any that have more than one run.
+    Finally, compares all the internally consistent runs amongst each other.
+
+    Parameters:
+        classified_runs: All the runs of interest, keyed by their description
+        compare: the check to be applied
+        summary_file: where to record the results
+    """
     for key in classified_runs.keys():
         no_runs = len(classified_runs[key].runs)
         if no_runs < 2:
@@ -216,13 +243,23 @@ def are_classified_runs_consistent(
             # Writing down the result each time no matter if internal test or not
             _compare_amongst_runs(classified_runs, key, compare, summary_file)
     # Now compare any runs that were consistent amongst each other
-    print("Checking consistency of equal and internally consistent runs...")
+    print("Checking consistency amongst internally consistent runs...")
     _compare_amongst_runs(classified_runs, None, compare, summary_file)
 
 
 def check_for_same_version(
     version, tarfiles, compare: Callable[[str, str], tuple[bool, list]]
 ) -> None:
+    """
+    Sorts any runs with the provided version into their existing distinct parameter combinations.
+    Then calls are_classified_runs_consistent with the provided check.
+    The results are written to a summary file determined by the check
+        method and version.
+    Parameters:
+        version: which version to consider
+        tarfiles: which tarfiles to include (will be get_all_tarfiles() in the usual case)
+        compare: which check to apply
+    """
     versioned_tarfiles = [file for file in tarfiles if version in file]
     # print(versioned_tarfiles)
     alphabetical = []
@@ -254,6 +291,9 @@ def check_for_same_version(
 
 
 def all_versions() -> list[str]:
+    """
+    Extracts all the distinct versions from the TARS_ROOT folder.
+    """
     versions = []
     for tarfile in TARS_ROOT.iterdir():
         v, _ = version_and_run_from_tar_filename(tarfile)
@@ -343,15 +383,15 @@ def check_for_same_params(
     reverse: bool = False,
 ) -> None:
     """
-    Checks whether a group of test runs (tarfiles) with the same parameters
-        produce consistent comparison results across different versions.
-    The comparison results are written to a summary file determined by the comparison
+    Sorts any runs with the provided parameters into their existing distinct versions.
+    Then calls are_classified_runs_consistent with the provided check.
+    The results are written to a summary file determined by the check
         method and parameter description
 
     Parameters:
-        tarfiles (Optional[list[str]]): A list of tarfile names to check. If `None`, all
+        tarfiles: A list of tarfile names to check. If `None`, all
             matching tarfiles based on the given parameters are included.
-        compare (Callable[[str, str], tuple[bool, list]]): A comparison function that
+        compare: A comparison function that
             takes two file paths and returns a tuple (is_equal, details).
         dfs: Whether to consider disorderfs-based runs. If `dfs` is False, the other sorting flags (`alph`, `ctime`, `reverse`) are ignored.
         alph: Whether to include runs with alphabetical sorting (requires `dfs`=True). Mutually exclusive with `ctime`.
