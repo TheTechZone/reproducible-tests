@@ -1,7 +1,6 @@
 from pathlib import Path
 import json
-from typing import Optional
-from collections.abc import Callable
+from typing import Callable, Optional, overload, Literal
 from setup.structure import (
     DATA_ROOT,
     TARS_ROOT,
@@ -16,10 +15,10 @@ from analysis.checks import (
     is_metadata_to_dirorder_consistent,
 )
 
+CompareFn = Callable[[str, str], tuple[bool, list]]
 
-def run_checks(
-    tarfiles: list[str], compare: Callable[[str, str], tuple[bool, list]]
-) -> None:
+
+def run_checks(tarfiles: list[str], compare: CompareFn) -> None:
     """
     Clears any previous data in the summary directory of that specific check (created from check name, See analyse::COMPARE_TO_CHECK_NAME),
     then runs the check for all versions and for all combinations of parameters.
@@ -37,6 +36,7 @@ def run_checks(
     check_for_same_params(None, compare, dfs=False)
     print()
     # Enumerate the 4 parameter combinations
+
     param_combinations = [
         {"dfs": True, "alph": True, "ctime": False, "reverse": False},
         {"dfs": True, "alph": True, "ctime": False, "reverse": True},
@@ -45,7 +45,7 @@ def run_checks(
     ]
 
     for params in param_combinations:
-        check_for_same_params(None, compare, **params)
+        check_for_same_params(None, compare, **params)  # type: ignore
         print()
 
 
@@ -54,9 +54,7 @@ def run_checks(
 ###
 
 
-def run_all_checks(
-    checks: list[Callable[[str, str], tuple[bool, list]]], with_metadata_list=True
-) -> None:
+def run_all_checks(checks: list[CompareFn], with_metadata_list=True) -> None:
     """
     Executes all the checks on all the available tared builds.
     checks: contains all the handles to checks that should be applied
@@ -147,7 +145,7 @@ def assemble_consistent_tarfile_list(
 def _compare_amongst_runs(
     classified_runs: dict[str, SortedRuns],
     key: Optional[str],
-    compare: Callable[[str, str], tuple[bool, list]],
+    compare: CompareFn,
     summary_file: Optional[str] = None,
 ):
     """
@@ -223,7 +221,7 @@ def _compare_amongst_runs(
 
 def are_classified_runs_consistent(
     classified_runs: dict[str, SortedRuns],
-    compare: Callable[[str, str], tuple[bool, list]],
+    compare: CompareFn,
     summary_file=None,
 ) -> None:
     """
@@ -252,7 +250,7 @@ def are_classified_runs_consistent(
 
 
 def check_for_same_version(
-    version: str, tarfiles: list[str], compare: Callable[[str, str], tuple[bool, list]]
+    version: str, tarfiles: list[str], compare: CompareFn
 ) -> None:
     """
     Sorts any runs with the provided version into their existing distinct parameter combinations.
@@ -390,9 +388,56 @@ def description_from_params(
     return description
 
 
+@overload
 def check_for_same_params(
     tarfiles: Optional[list[str]],
-    compare: Callable[[str, str], tuple[bool, list]],
+    compare: CompareFn,
+    *,
+    dfs: Literal[False],
+    alph: Literal[False] = False,
+    ctime: Literal[False] = False,
+    reverse: Literal[False] = False,
+) -> None: ...
+
+
+@overload
+def check_for_same_params(
+    tarfiles: Optional[list[str]],
+    compare: CompareFn,
+    dfs: Literal[True],
+    alph: Literal[True],
+    ctime: Literal[False] = False,
+    reverse: bool = False,
+) -> None: ...
+
+
+@overload
+def check_for_same_params(
+    tarfiles: Optional[list[str]],
+    compare: CompareFn,
+    *,
+    dfs: Literal[True],
+    alph: Literal[False] = False,
+    ctime: Literal[True],
+    reverse: bool = False,
+) -> None: ...
+
+
+@overload
+def check_for_same_params(
+    tarfiles: Optional[list[str]],
+    compare: CompareFn,
+    *,
+    dfs: Literal[True],
+    alph: Literal[False] = False,
+    ctime: Literal[False] = False,
+    reverse: bool,
+) -> None: ...
+
+
+def check_for_same_params(
+    tarfiles: Optional[list[str]],
+    compare: CompareFn,
     dfs: bool = False,
     alph: bool = False,
     ctime: bool = False,
