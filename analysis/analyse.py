@@ -72,7 +72,7 @@ def run_all_checks(
 
 ###
 # The analysis makes use of the 'classified_runs' structure
-# a dict of SortedRuns the  key is the description of the classification
+# a dict of SortedRuns where the key is the description of the classification
 #
 # Examples:
 # classified_runs = {"v7.30.4":SortedRuns(...), "v7.28.4":SortedRuns(...), ...}
