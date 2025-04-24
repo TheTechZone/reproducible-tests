@@ -64,7 +64,7 @@ def _playstore_apk_path(cvc) -> str:
     return PLAYSTORE_APKS_ROOT / cvc
 
 
-def universal_apk_path(cvc, relative=False) -> str:
+def universal_apk_path(cvc, relative: bool = False) -> str:
     path = str(Path(_playstore_apk_path(cvc)) / f"org.thoughtcrime.securesms-{cvc}.apk")
     if relative:
         # Assuming posix
@@ -76,7 +76,9 @@ _VERSION = "fixed_versions"
 _PARAMS = "fixed_parameters"
 
 
-def create_or_clear_summary_directory_for(testname, version=True, clear=True) -> None:
+def create_or_clear_summary_directory_for(
+    testname, version: bool = True, clear: bool = True
+) -> None:
     """
     if !version we create/clear the by/param directry
     if !clear and the dir exists function does nothing

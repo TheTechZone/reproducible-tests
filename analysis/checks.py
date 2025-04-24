@@ -28,7 +28,7 @@ def _differences(list1: list[str], list2: list[str]) -> list[str]:
 ###
 
 
-def _get_metadata_list(tarfile):
+def _get_metadata_list(tarfile: str):
     """
     reads output_metadata_mtimes.json from the data/res folder and returns all recorded output files
     expects the format: {tarfile:{..., "output-metadata.json":{..., "elements":[{"outputFile":"value"}, {"outputFile":value}, ...], ...}, ...}, ...}
@@ -100,7 +100,7 @@ def compare_metadata_list(tarfile1, tarfile2) -> tuple[bool, list]:
 # TODO: may be useful to add one in the future
 
 
-def _dex_list_for_local_build(tarfile) -> dict:
+def _dex_list_for_local_build(tarfile: str) -> dict:
     dex_sort_file_path = DATA_ROOT / "res" / "dex_sort.json"
     with dex_sort_file_path.open("r") as f:
         obj = json.load(f)

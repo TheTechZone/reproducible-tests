@@ -54,7 +54,7 @@ def run_checks(tarfiles: list[str], compare: CompareFn) -> None:
 ###
 
 
-def run_all_checks(checks: list[CompareFn], with_metadata_list=True) -> None:
+def run_all_checks(checks: list[CompareFn], with_metadata_list: bool = True) -> None:
     """
     Executes all the checks on all the available tared builds.
     checks: contains all the handles to checks that should be applied
@@ -97,7 +97,7 @@ def print_with_params(
     file: str,
     sorting_criteria: Optional[str] = None,
     direction: Optional[str] = None,
-):
+) -> None:
     """
     Convenience method to pretty print the contents of a result json file
     for a specified version and optionally filtered by parameters.
@@ -147,7 +147,7 @@ def _compare_amongst_runs(
     key: Optional[str],
     compare: CompareFn,
     summary_file: Optional[str] = None,
-):
+) -> None:
     """
     if key is given, method checks for internal consistency between multiple runs
     contained in the individual SortedRun Objects stored in classified_runs,

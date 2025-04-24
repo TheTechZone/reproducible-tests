@@ -181,7 +181,7 @@ def _unzip_playstore_apk(cvc: str) -> None:
     print(f"Successfully unzipped universal-{cvc}!")
 
 
-def _update_aggregation_result(file, key, value, log=True):
+def _update_aggregation_result(file: str, key: str, value, log: bool = True) -> None:
     if log:
         print(f"Updating {file}...")
 
@@ -294,7 +294,7 @@ def create_diffuse_record() -> Optional[str]:
 # apk_compare is the key to the dict, representing the part of the apk name without the prefixing: org.thoughtcrime.securesms-
 # returns {apkdiff:{'match':<Boolean>, 'mismatched_files':[<filename>,...]}, diffuse:<string>}
 # where APKdiff's "first" is the local build and "second" is the playstore APK
-def create_apkdiff_record(local_apk_filename) -> dict:
+def create_apkdiff_record(local_apk_filename: str) -> dict:
     cvc = current_cvc()
 
     # Construct paths using pathlib
@@ -349,7 +349,7 @@ def create_apkdiff_record(local_apk_filename) -> dict:
 # and diffoscope results
 # for each pairwise apks in APK_COMPARE_MAP
 # PRE: local apks must already be extracted
-def record_all_apkdiff_comparisons(tarfile_name):
+def record_all_apkdiff_comparisons(tarfile_name: str) -> None:
     print("Running apkdiff on all pairs in APK_COMPARE_MAP...")
     result = {}
     comparator_result = {}
@@ -418,7 +418,7 @@ def run_comparator_on_apkdiff_mismatches() -> dict:
     return result
 
 
-def copy_navigation_jsons(tarfile_name):
+def copy_navigation_jsons(tarfile_name: Path | str) -> None:
     # create recursive folder structure
     root = Path(DATA_ROOT) / "res" / "files"
     copy_dir = root / tarfile_name
@@ -511,7 +511,7 @@ def aggregate_all_runs(
     apkdiff: bool = True,
     nav: bool = True,
     output_meta: bool = True,
-):
+) -> None:
     """
     Iterates through the data/tars folder and aggregates the comparison results one run at a time
 
@@ -551,7 +551,7 @@ def aggregate_all_runs(
                 diffuse_record = create_diffuse_record()
                 _update_aggregation_result("diffuse.json", tar_id, diffuse_record)
             if apkdiff:  # apkdiff
-                record_all_apkdiff_comparisons(tarfile)
+                record_all_apkdiff_comparisons(tarfile.name)
             if nav:
                 copy_navigation_jsons(tarfile)
             if output_meta:
