@@ -81,7 +81,7 @@ def nr_of_subplots(root: Path) -> int:
     return len(list(root.iterdir()))
 
 
-def subfigures(test, fixed_version: bool):
+def subfigures(test: str, fixed_version: bool) -> None:
     # root of the files?
     root = (
         SUMMARY_ROOT
@@ -224,7 +224,7 @@ def subfigures(test, fixed_version: bool):
     plt.savefig(PLOT_ROOT / f"{test}_{version_or_params}", dpi=300)
 
 
-def correlation_triangle(fixed_version, ax, filepath: Path):
+def correlation_triangle(fixed_version: bool, ax, filepath: Path) -> bool:
     df = generate_pd_frame(filepath, fixed_version)
     if df is not None:  # otherwise we skip the file
         mask = np.triu(np.ones_like(df, dtype=bool))

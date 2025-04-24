@@ -13,7 +13,7 @@ class UnsupportedPlatformError(Exception):
 class PackageManager(metaclass=ABCMeta):
     """A generic package manager class."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.check_platform_support()
 
     @staticmethod
@@ -51,14 +51,14 @@ class PackageManager(metaclass=ABCMeta):
             f"Subclass {self.__class__.__name__} must provide an implementation for `is_installed` method."
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}: a (Linux) package manager"
 
 
 class AptPackageManager(PackageManager):
     """Package manager for Debian-based distributions (e.g., Ubuntu)."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.package_manager = local["apt-get"]
         self.dpkg_query = local["dpkg-query"]
@@ -90,7 +90,7 @@ class AptPackageManager(PackageManager):
         print("Updating package list with apt...")
         execute(self.package_manager["update"], as_sudo=True, log=True)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "APT Package manager"
 
     def is_installed(self, package_name) -> bool:
@@ -110,7 +110,7 @@ class AptPackageManager(PackageManager):
 class DnfPackageManager(PackageManager):
     """Package manager for Red Hat-based distributions (e.g., Fedora)."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.package_manager = local["dnf"]
 
@@ -134,7 +134,7 @@ class DnfPackageManager(PackageManager):
         print("Updating package list with dnf...")
         execute(self.package_manager["makecache"], as_sudo=True, log=True)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "DNF Package manager"
 
     def search(self, package_name) -> str:

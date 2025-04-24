@@ -1,3 +1,4 @@
+from logging import LogRecord
 import inspect
 import logging
 import shutil
@@ -18,8 +19,8 @@ ExecResult = namedtuple("ExecResult", ["retcode", "stdout", "stderr"])
 def execute(
     cmd: BaseCommand,
     retcodes: Optional[tuple[int, ...]] = None,
-    as_sudo=False,
-    log=False,
+    as_sudo: bool = False,
+    log: bool = False,
 ) -> str | ExecResult:
     """
     Executes and logs a plumbum command.
@@ -98,12 +99,12 @@ def get_term() -> str:
     return "gnome-terminal"
 
 
-def signal_handler(_sig, _frame):
+def signal_handler(_sig, _frame) -> None:
     print("You pressed Ctrl+C!")
     sys.exit(0)
 
 
-def open_terminal(command: str):
+def open_terminal(command: str) -> None:
     os.system(f"gnome-terminal -- {command} &")
 
 
@@ -129,7 +130,7 @@ class ColorHandler(logging.StreamHandler):
         assert stream.formatter is not None, "stream formatter should not be none"
         self.formatter = stream.formatter
 
-    def emit(self, record):
+    def emit(self, record: LogRecord) -> None:
         assert self.formatter is not None, "stream formatter should not be none"
 
         # Don't use white for any logging, to help distinguish from user print statements
