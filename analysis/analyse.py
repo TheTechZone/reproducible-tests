@@ -395,23 +395,17 @@ def description_from_params(
 def check_for_same_params(
     tarfiles: Optional[list[str]],
     compare: CompareFn,
-    *,
-    dfs: bool = False,
-    alph: None,
-    ctime: None,
-    reverse: None,
+    dfs: Literal[False]
 ) -> None: ...
-
 
 @overload
 def check_for_same_params(
     tarfiles: Optional[list[str]],
     compare: CompareFn,
-    *,
     dfs: Literal[False],
-    alph: Literal[False] = False,
-    ctime: Literal[False] = False,
-    reverse: Literal[False] = False,
+    alph: Optional[bool],
+    ctime: Optional[bool],
+    reverse: Optional[bool],
 ) -> None: ...
 
 
@@ -419,10 +413,9 @@ def check_for_same_params(
 def check_for_same_params(
     tarfiles: Optional[list[str]],
     compare: CompareFn,
-    *,
     dfs: Literal[True],
     alph: Literal[True],
-    ctime: Literal[False] = False,
+    ctime: Literal[False],
     reverse: bool,
 ) -> None: ...
 
@@ -431,33 +424,20 @@ def check_for_same_params(
 def check_for_same_params(
     tarfiles: Optional[list[str]],
     compare: CompareFn,
-    *,
     dfs: Literal[True],
-    alph: Literal[False] = False,
+    alph: Literal[False],
     ctime: Literal[True],
     reverse: bool,
 ) -> None: ...
 
 
-@overload
 def check_for_same_params(
     tarfiles: Optional[list[str]],
     compare: CompareFn,
-    *,
-    dfs: Literal[True],
-    alph: Literal[False] = False,
-    ctime: Literal[False] = False,
-    reverse: bool,
-) -> None: ...
-
-
-def check_for_same_params(
-    tarfiles: Optional[list[str]],
-    compare: CompareFn,
-    dfs: bool = False,
-    alph: bool = False,
-    ctime: bool = False,
-    reverse: bool = False,
+    dfs: bool,
+    alph: Optional[bool] = None,
+    ctime: Optional[bool] = None,
+    reverse: Optional[bool] = None,
 ) -> None:
     """
     Sorts any runs with the provided parameters into their existing distinct versions.
