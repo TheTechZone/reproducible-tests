@@ -35,8 +35,8 @@ def run_checks(tarfiles: list[str], compare: CompareFn) -> None:
     create_or_clear_summary_directory_for(COMPARE_TO_CHECK_NAME[compare], version=False)
     check_for_same_params(None, compare, dfs=False)
     print()
-    # Enumerate the 4 parameter combinations
 
+    # Enumerate the 4 parameter combinations
     param_combinations = [
         {"dfs": True, "alph": True, "ctime": False, "reverse": False},
         {"dfs": True, "alph": True, "ctime": False, "reverse": True},
