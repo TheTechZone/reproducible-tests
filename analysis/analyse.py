@@ -391,12 +391,12 @@ def description_from_params(
 
 # Define the allowed combinations of parameters
 
+
 @overload
 def check_for_same_params(
-    tarfiles: Optional[list[str]],
-    compare: CompareFn,
-    dfs: Literal[False]
+    tarfiles: Optional[list[str]], compare: CompareFn, dfs: Literal[False]
 ) -> None: ...
+
 
 @overload
 def check_for_same_params(

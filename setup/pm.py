@@ -1,7 +1,7 @@
 import platform
 from abc import abstractmethod, ABCMeta
 
-from plumbum import local, CommandNotFound
+from plumbum import local, CommandNotFound  # type: ignore
 
 from setup.shell import ExecResult, execute
 

@@ -32,7 +32,7 @@ def create_multiindex(index: pd.Index, fixed_version: bool) -> pd.MultiIndex:
 
     hierarchy := "version"|"params"
     """
-    hierarchy: list[str|tuple] = []
+    hierarchy: list[str | tuple] = []
 
     # Extract version/parameter info for each tarfile
     for tarfile in index:

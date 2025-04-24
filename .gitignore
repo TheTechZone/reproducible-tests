@@ -30,3 +30,8 @@ data/build/*
 !data/build/tars/
 !data/build/tars/**
 data/playstore-universal-unzipped
+
+.dmypy.json
+.mypy_cache
+.pytest_cache
+.ropeproject
