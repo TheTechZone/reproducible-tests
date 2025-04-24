@@ -123,7 +123,7 @@ def print_with_params(
 # E.g., used to filter out runs that were not internally consistent for the metadata list
 # Or could be used to filter out runs that did not match something we want to match in their playstore equivalent
 def assemble_consistent_tarfile_list(
-    consistency_check: Callable[[str], bool]
+    consistency_check: Callable[[str], bool],
 ) -> list[str]:
     """
     assembles a list of tarfiles that are consistent amongst themselves relative to the provided check
