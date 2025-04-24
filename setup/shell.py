@@ -6,10 +6,11 @@ import os
 from collections import namedtuple
 from types import FrameType
 from typing import Optional
-from plumbum.cmd import sudo
+
+from plumbum.cmd import sudo  # type: ignore
+from plumbum.commands.base import BaseCommand  # type: ignore
 
 run_command_counter = 0
-from plumbum.commands.base import BaseCommand
 
 ExecResult = namedtuple("ExecResult", ["retcode", "stdout", "stderr"])
 

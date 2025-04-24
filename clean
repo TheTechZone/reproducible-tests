@@ -4,3 +4,6 @@ rm -rf reproducible-signal
 rm -rf Signal-Android
 rm -rf disorderfs_root/
 # yes | docker system prune -a
+
+
+rm -rf .dmypy.json .mypy_cache .pytest_cache .ropeproject cov_html

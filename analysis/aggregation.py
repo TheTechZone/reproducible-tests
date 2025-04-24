@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 import json
 from typing import Optional
-from plumbum import local
+from plumbum import local  # type: ignore
 from collections import defaultdict
 from setup.structure import (
     COMPARATORS_PATH,
