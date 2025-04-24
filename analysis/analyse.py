@@ -396,7 +396,7 @@ def check_for_same_params(
     dfs: Literal[False],
     alph: Literal[False] = False,
     ctime: Literal[False] = False,
-    reverse: bool,
+    reverse: Literal[False] = False,
 ) -> None: ...
 
 
