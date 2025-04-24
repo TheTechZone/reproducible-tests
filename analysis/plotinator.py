@@ -32,7 +32,7 @@ def create_multiindex(index: pd.Index, fixed_version: bool) -> pd.MultiIndex:
 
     hierarchy := "version"|"params"
     """
-    hierarchy = []
+    hierarchy: list[str|tuple] = []
 
     # Extract version/parameter info for each tarfile
     for tarfile in index:
@@ -40,7 +40,7 @@ def create_multiindex(index: pd.Index, fixed_version: bool) -> pd.MultiIndex:
             tarfile
         )
         if fixed_version:
-            hierarchy.append(version)
+            hierarchy.append((version))
         else:
             hierarchy.append((dfs, ctime, reverse))
 

@@ -1,10 +1,11 @@
 import json
 from setup.structure import DATA_ROOT
-from typing import Optional
+from typing import Optional, Callable
 
 ###
 # General utility
 ###
+CompareFn = Callable[[str, str], tuple[bool, list]]
 
 
 def _differences(list1: list[str], list2: list[str]) -> list[str]:
@@ -114,14 +115,14 @@ def _dict_pairs_to_string(dictionary: dict) -> list[str]:
 
 
 # Compare all dex hashes
-def compare_dex_hashes(tarfile1: str, tarfile2: str) -> tuple[bool, set[str]]:
+def compare_dex_hashes(tarfile1: str, tarfile2: str) -> tuple[bool, list[str]]:
     dex_list_1 = _dex_list_for_local_build(tarfile1)
     dex_list_2 = _dex_list_for_local_build(tarfile2)
     # Create symmetric difference between the sets
     diff = set(_dict_pairs_to_string(dex_list_1)).symmetric_difference(
         set(_dict_pairs_to_string(dex_list_2))
     )
-    return len(diff) > 0, diff
+    return len(diff) > 0, list(diff)
 
 
 def _first_dex_hash(dex_list: dict[str, dict]) -> Optional[str]:
@@ -144,7 +145,7 @@ def compare_first_dex_hash(tarfile1: str, tarfile2: str) -> tuple[bool, list[str
 # Define a name for each toplevel test, this will be used when updating the 'summary' results of this test
 ####
 ## TODO: Refine these names
-COMPARE_TO_CHECK_NAME = {
+COMPARE_TO_CHECK_NAME: dict[CompareFn, str] = {
     compare_metadata_list: "metadata_list",
     compare_dex_hashes: "dex_sort",
     compare_first_dex_hash: "does_first_dexfile_match",

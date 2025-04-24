@@ -62,7 +62,7 @@ def run_all_checks(checks: list[CompareFn], with_metadata_list=True) -> None:
     """
 
     for check in checks:
-        run_checks(get_all_tarfiles(), check)
+        run_checks(all_tarfiles(), check)
     if with_metadata_list:
         tarfiles = assemble_consistent_tarfile_list(is_metadata_to_dirorder_consistent)
         run_checks(tarfiles, compare_metadata_list)
@@ -181,19 +181,19 @@ def _compare_amongst_runs(
             # Second parameter, diff, could be printed for runs of interest here
             (has_diff, _) = compare(tarfile, other)
             if has_diff:
-                v_01, run_01 = version_and_run_from_tar_filename(tarfile)
-                v_02, run_02 = version_and_run_from_tar_filename(other)
+                v_01, tar_run_01 = version_and_run_from_tar_filename(tarfile)
+                v_02, tar_run_02 = version_and_run_from_tar_filename(other)
                 if mark_consistency:
                     assert key
                     classified_runs[key].consistent = False
                     if "dfstest" in tarfile:
-                        run_01 = f"{v_01}_{run_01}_dfstest"
+                        run_01 = f"{v_01}_{tar_run_01}_dfstest"
                     else:
-                        run_01 = f"{v_01}_{run_01}"
+                        run_01 = f"{v_01}_{tar_run_01}"
                     if "dfstest" in other:
-                        run_02 = f"{v_02}_{run_02}_dfstest"
+                        run_02 = f"{v_02}_{tar_run_02}_dfstest"
                     else:
-                        run_02 = f"{v_02}_{run_02}"
+                        run_02 = f"{v_02}_{tar_run_02}"
                     # print(f"diff:\n{"".join(diff)}")
                 else:
                     # we want to indicate which parameters were compared against each other in this case
@@ -302,14 +302,15 @@ def all_versions() -> list[str]:
     """
     Extracts all the distinct versions from the TARS_ROOT folder.
     """
-    versions = []
+    versions: list[str] = []
     for tarfile in TARS_ROOT.iterdir():
         v, _ = version_and_run_from_tar_filename(tarfile)
+        assert v
         versions.append(v)
     return list(set(versions))
 
 
-def _get_all_tarfiles_with_params(
+def _filter_tarfiles_with_params(
     dfs: bool, alph: Optional[bool], ctime: Optional[bool], reverse: Optional[bool]
 ) -> list[str]:
     """
@@ -327,7 +328,7 @@ def _get_all_tarfiles_with_params(
     """
     files: list[str] = []
     ignored: list[str] = []
-    for tarfile in get_all_tarfiles():
+    for tarfile in all_tarfiles():
         if dfs:
             if alph and "alph" in tarfile or ctime and "ctime" in tarfile:
                 if (reverse and "reverse" in tarfile) or (
@@ -344,12 +345,12 @@ def _get_all_tarfiles_with_params(
             else:
                 ignored.append(tarfile)
     assert set(files + ignored) == set(
-        get_all_tarfiles()
-    ), f"Some filenames were malformed!\ndfs{dfs},alph:{alph}, ctime:{ctime}, reverse: {reverse}\n {set(get_all_tarfiles()) - set(files) - set(ignored)}"
+        all_tarfiles()
+    ), f"Some filenames were malformed!\ndfs{dfs},alph:{alph}, ctime:{ctime}, reverse: {reverse}\n {set(all_tarfiles()) - set(files) - set(ignored)}"
     return files
 
 
-def get_all_tarfiles() -> list[str]:
+def all_tarfiles() -> list[str]:
     tarfiles_dir = Path(TARS_ROOT)
     return [tarfile.name for tarfile in tarfiles_dir.iterdir()]
 
@@ -386,6 +387,20 @@ def description_from_params(
     else:
         description = "without disorderfs"
     return description
+
+
+# Define the allowed combinations of parameters
+
+@overload
+def check_for_same_params(
+    tarfiles: Optional[list[str]],
+    compare: CompareFn,
+    *,
+    dfs: bool = False,
+    alph: None,
+    ctime: None,
+    reverse: None,
+) -> None: ...
 
 
 @overload
@@ -463,7 +478,7 @@ def check_for_same_params(
     versions = all_versions()
     # create description string
     description = description_from_params(dfs, alph, ctime, reverse)
-    appropriate_tars = _get_all_tarfiles_with_params(dfs, alph, ctime, reverse)
+    appropriate_tars = _filter_tarfiles_with_params(dfs, alph, ctime, reverse)
     if tarfiles is None:
         relevant_files = appropriate_tars
     else:
