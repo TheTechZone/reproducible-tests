@@ -237,7 +237,7 @@ def are_classified_runs_consistent(
     for key in classified_runs.keys():
         no_runs = len(classified_runs[key].runs)
         if no_runs < 2:
-            print(f"Only one run was {key}")
+            print(f"There was at most one {key} run.")
             classified_runs[key].consistent = True
         else:
             print(f"There were {no_runs} {key} runs")
