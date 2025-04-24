@@ -396,7 +396,7 @@ def check_for_same_params(
     dfs: Literal[False],
     alph: Literal[False] = False,
     ctime: Literal[False] = False,
-    reverse: Literal[False] = False,
+    reverse: bool,
 ) -> None: ...
 
 
@@ -404,10 +404,11 @@ def check_for_same_params(
 def check_for_same_params(
     tarfiles: Optional[list[str]],
     compare: CompareFn,
+    *,
     dfs: Literal[True],
     alph: Literal[True],
     ctime: Literal[False] = False,
-    reverse: bool = False,
+    reverse: bool,
 ) -> None: ...
 
 
@@ -419,7 +420,7 @@ def check_for_same_params(
     dfs: Literal[True],
     alph: Literal[False] = False,
     ctime: Literal[True],
-    reverse: bool = False,
+    reverse: bool,
 ) -> None: ...
 
 
