@@ -268,8 +268,6 @@ def check_for_same_version(
     """
     versioned_tarfiles = [file for file in tarfiles if version in file]
     # print(versioned_tarfiles)
-    alphabetical = []
-    ctime = []
     alphabetical = [file for file in versioned_tarfiles if "alph" in file]
     ctime = [file for file in versioned_tarfiles if "ctime" in file]
     vanilla = [
