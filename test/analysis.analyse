@@ -199,12 +199,14 @@ sort(get_all_versions()) == [
 
 
 ###
-# _filter_tarfiles_with_params
+# _tarfiles_with_params
 ###
 
 # Tests
 
-# A:
+=> I don't care about the order here so probably cast to set
+
+# A - M:
 tars in TARS_ROOT:
 
 signal-android_v7.1.2.tar.gz
@@ -215,6 +217,181 @@ signal-android-alph-sort_v7.1.1.tar.gz
 signal-android-ctime-sort_v7.1.2.tar.gz
 signal-android_v7.1.2_02.tar.gz
 
+# Expected
+
+# A:
+_tarfiles_with_params(dfs=True) ==  [
+    dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz
+    dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz
+    signal-android-alph-reversed_v7.1.22_04.tar.gz
+    signal-android-alph-sort_v7.1.1.tar.gz
+    signal-android-ctime-sort_v7.1.2.tar.gz
+]
+
+# B:
+_tarfiles_with_params(dfs=False) ==  [
+    signal-android_v7.1.2.tar.gz,
+    signal-android_v7.1.2_02.tar.gz
+]
+
+# C:
+_tarfiles_with_params(dfs=True, ctime=True) ==  [
+    dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz,
+    dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz,
+    signal-android-ctime-sort_v7.1.2.tar.gz
+]
+
+# D:
+_tarfiles_with_params(dfs=True, reverse=True) ==  [
+    dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz,
+    dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz,
+    signal-android-ctime-sort_v7.1.2.tar.gz
+]
+
+# E:
+_tarfiles_with_params(dfs=True, sort=True) ==  [
+    dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz,
+    signal-android-alph-sort_v7.1.1.tar.gz,
+    signal-android-ctime-sort_v7.1.2.tar.gz
+]
+
+# F:
+_tarfiles_with_params(dfs=True, sort=True, alph=True) ==[
+    signal-android-alph-sort_v7.1.1.tar.gz
+]
+
+# G:
+_tarfiles_with_params(dfs=True, reverse=True, alph=True) == [
+    signal-android-alph-reversed_v7.1.22_04.tar.gz
+]
+
+# H:
+_tarfiles_with_params(dfs=True, reverse=True, ctime=True) == [
+    dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz
+]
+
+# I:
+_tarfiles_with_params(dfs=True, sort=True, ctime=True) == [
+    dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz,
+    signal-android-ctime-sort_v7.1.2.tar.gz
+]
+
+# J:
+_tarfiles_with_params(dfs=True, sort=True, ctime=True) == [
+    dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz,
+    signal-android-ctime-sort_v7.1.2.tar.gz
+]
+
+# K:
+_tarfiles_with_params(dfs=True, sort=True, ctime=True, alph=True) == [
+    dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz,
+    signal-android-ctime-sort_v7.1.2.tar.gz
+]
+
+# L:
+_tarfiles_with_params(dfs=True, sort=True, reverse=True, ctime=True, alph=True) == [
+    dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz
+    dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz
+    signal-android-alph-reversed_v7.1.22_04.tar.gz
+    signal-android-alph-sort_v7.1.1.tar.gz
+    signal-android-ctime-sort_v7.1.2.tar.gz
+]
+
+# M: 
+_tarfiles_with_params(dfs=False, sort=True, reverse=True, ctime=True, alph=True) == [
+    signal-android_v7.1.2.tar.gz,
+    signal-android_v7.1.2_02.tar.gz
+]
+
+###
+# _compare_amongst_runs
+###
+
+# Tests
+
+def dummy_check_nothing_consistent(tarfile1, tarfile2):
+    return True, [f"{tarfile1}:{tarfile2}"]
+	
+def dummy_check_everything_consistent(tarfile1, tarfile2):
+    return False, []
+
+# A, B:
+classified_runs = {
+    "1-run": SortedRuns(True, ["example_v7.16.256.tar.gz"]),
+    "no-runs": SortedRuns(True, []),
+    "all v_28": SortedRuns(True, ["example_v7.28.1.tar.gz", "example_v7.28.1_02.tar.gz", "example_v7.28.1_03.tar.gz"]),
+    "all but one v_28": SortedRuns(True, ["example_v7.28.1.tar.gz", "example_v7.29.1_02.tar.gz", "example_v7.28.1_03.tar.gz"])
+}
+
+# C:
+def dummy_check_version_28(tarfile1, tarfile2):
+    is_not_28 = False
+    diff = []
+    if "v7.28" not in tarfile1:
+        diff.append(tarfile1)
+        is_not_28 = True
+    if "v7.28" not in tarfile2:
+        diff.append(tarfile2)
+        is_not_28 = True
+    return is_not_28, diff
+
+classified_runs = {
+    "1-run": SortedRuns(True, ["example_v7.16.256.tar.gz"]),
+    "no-runs": SortedRuns(True, []),
+    "all v_28": SortedRuns(True, ["example_v7.28.1.tar.gz", "example_v7.28.1_02.tar.gz", "example_v7.28.1_03.tar.gz"]),
+    "more_v_28": SortedRuns(True, ["example_v7.28.1.tar.gz", "example_v7.29.1_02.tar.gz", "example_v7.28.1_03.tar.gz"])
+}
+
+# Expected
+
+# A:
+_compare_amongst_runs(classified_runs, "all v_28", dummy_check_everything_consistent)
+->
+classified_runs = {
+    "1-run": SortedRuns(True, ["example_v7.16.256.tar.gz"]),
+    "no-runs": SortedRuns(True, []),
+    "all v_28": SortedRuns(True, ["example_v7.28.1.tar.gz", "example_v7.28.1_02.tar.gz", "example_v7.28.1_03.tar.gz"]),
+    "all but one v_28": SortedRuns(True, ["example_v7.28.1.tar.gz", "example_v7.29.1_02.tar.gz", "example_v7.28.1_03.tar.gz"])
+}
+
+# B:
+_compare_amongst_runs(classified_runs, "all v_28", dummy_check_nothing_consistent)
+_compare_amongst_runs(classified_runs, "all but one v_28", dummy_check_nothing_consistent)
+->
+classified_runs = {
+    "1-run": SortedRuns(True, ["example_v7.16.256.tar.gz"]),
+    "no-runs": SortedRuns(True, []),
+    "all v_28": SortedRuns(False, ["example_v7.28.1.tar.gz", "example_v7.28.1_02.tar.gz", "example_v7.28.1_03.tar.gz"]),
+    "all but one v_28": SortedRuns(False, ["example_v7.28.1_09.tar.gz", "example_v7.29.1_02.tar.gz", "example_v7.28.1_03.tar.gz"])
+}
+
+# C:
+_compare_amongst_runs(classified_runs, None, dummy_check_version_28, "dummy_check_28.json")
+
+dummy_check_28.json:
+{
+    "example_v7.16.256.tar.gz":{
+        "example_v7.28.1.tar.gz": False,
+        "example_v7.28.1_09.tar.gz": False
+    },
+    "example_v7.28.1.tar.gz":{
+        "example_v7.16.256.tar.gz": False,
+        "example_v7.28.1_09.tar.gz": True
+    },
+    "example_v7.28.1_09.tar.gz":{
+        "example_v7.16.256.tar.gz": False,
+        "example_v7.28.1.tar.gz": True
+    }
+}
+
+
+###
+# example
+###
+
+# Tests
+
+# A:
 # B:
 # C:
 # D:
@@ -224,11 +401,32 @@ signal-android_v7.1.2_02.tar.gz
 # Expected
 
 # A:
-_filter_tarfiles_with_params(dfs=True) =
 # B:
 # C:
 # D:
 # E:
 # F:
 
+
+###
+# example
+###
+
+# Tests
+
+# A:
+# B:
+# C:
+# D:
+# E:
+# F:
+
+# Expected
+
+# A:
+# B:
+# C:
+# D:
+# E:
+# F:
 

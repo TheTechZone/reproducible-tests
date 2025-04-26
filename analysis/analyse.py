@@ -150,9 +150,11 @@ def _compare_amongst_runs(
 ) -> None:
     """
     if key is given, method checks for internal consistency between multiple runs
-    contained in the individual SortedRun Objects stored in classified_runs,
-    Otherwise we check pairwise for each run that was classified as internally consistent,
-    and record the result
+    contained in the individual SortedRun Objects stored in classified_runs
+    Note: this assumes that the consistency bit is initialized to True initially, and will be set
+    to false if any of the internal pairwise checks fail,
+    Otherwise we check pairwise for each run that was classified as internally consistent (takes the first element
+    if there are multiple) and record the result
 
     Parameters:
         classified_runs: All the runs of interest, keyed by their description
@@ -175,9 +177,11 @@ def _compare_amongst_runs(
     else:
         to_compare = classified_runs[key].runs
         mark_consistency = True
+        # before we mark consistency, the consistency bit is assumed to be set as True
+        assert classified_runs[key].consistent, f"{key} consistency bit was not set to consistent, before we doing pairwise tests!"
     mid = int(len(to_compare) / 2)
     for tarfile in to_compare[0:mid]:
-        for other in [file for file in to_compare if file not in tarfile]:
+        for other in [file for file in to_compare if file != tarfile]:
             # Second parameter, diff, could be printed for runs of interest here
             (has_diff, _) = compare(tarfile, other)
             if has_diff:
@@ -310,15 +314,16 @@ def all_versions() -> list[str]:
     return list(set(versions))
 
 
-def _filter_tarfiles_with_params(
-    dfs: bool, alph: Optional[bool], ctime: Optional[bool], reverse: Optional[bool]
+def _tarfiles_with_params(
+    dfs: bool, alph: Optional[bool], ctime: Optional[bool], sort: Optional[bool], reverse: Optional[bool]
 ) -> list[str]:
     """
     Returns a filtered list of tarfile names from the TARS_ROOT directory
     based on specified parameter flags.
 
     Parameters:
-        dfs: filter runs done with disorderfs based on the optional ('alph', 'ctime', and 'reverse') flags.
+        dfs: return runs done with disorderfs based on the optional ('alph', 'ctime', and 'reverse') flags.
+            Note that any optional flag that is not passed will default to False.
         alph: include tarfiles with contents sorted alphabetically.
         ctime: include tarfiles with contents sorted by ctime.
         reverse: include the files sorted by alph/ctime in reverse order
@@ -328,11 +333,16 @@ def _filter_tarfiles_with_params(
     """
     files: list[str] = []
     ignored: list[str] = []
+    if dfs: # Set any unset variables if needed
+        alph = False if alph is None else alph
+        ctime = False if ctime is None else ctime
+        sort = False if sort is None else sort
+        reverse = False if reverse is None else reverse
     for tarfile in all_tarfiles():
         if dfs:
             if alph and "alph" in tarfile or ctime and "ctime" in tarfile:
                 if (reverse and "reverse" in tarfile) or (
-                    not reverse and "sort" in tarfile
+                    sort and "sort" in tarfile
                 ):
                     files.append(tarfile)
                 else:
@@ -405,7 +415,7 @@ def check_for_same_params(
     dfs: Literal[False],
     alph: Optional[bool],
     ctime: Optional[bool],
-    reverse: Optional[bool],
+    reverse: Optional[bool]
 ) -> None: ...
 
 
@@ -416,7 +426,7 @@ def check_for_same_params(
     dfs: Literal[True],
     alph: Literal[True],
     ctime: Literal[False],
-    reverse: bool,
+    reverse: bool
 ) -> None: ...
 
 
@@ -427,7 +437,7 @@ def check_for_same_params(
     dfs: Literal[True],
     alph: Literal[False],
     ctime: Literal[True],
-    reverse: bool,
+    reverse: bool
 ) -> None: ...
 
 
@@ -437,7 +447,7 @@ def check_for_same_params(
     dfs: bool,
     alph: Optional[bool] = None,
     ctime: Optional[bool] = None,
-    reverse: Optional[bool] = None,
+    reverse: Optional[bool] = None
 ) -> None:
     """
     Sorts any runs with the provided parameters into their existing distinct versions.
@@ -458,7 +468,7 @@ def check_for_same_params(
     versions = all_versions()
     # create description string
     description = description_from_params(dfs, alph, ctime, reverse)
-    appropriate_tars = _filter_tarfiles_with_params(dfs, alph, ctime, reverse)
+    appropriate_tars = _tarfiles_with_params(dfs, alph, ctime, reverse)
     if tarfiles is None:
         relevant_files = appropriate_tars
     else:
