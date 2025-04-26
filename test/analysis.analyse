@@ -386,8 +386,48 @@ dummy_check_28.json:
 
 
 ###
-# example
+# check_for_same_version
 ###
+
+TARS_ROOT:
+
+dfstest-signal-android-ctime-reversed_v7.28.4_01.tar.gz
+dfstest-signal-android-ctime-reversed_v7.28.4_02.tar.gz
+dfstest-signal-android-ctime-sort_v7.28.4_01.tar.gz
+dfstest-signal-android-ctime-sort_v7.28.4_02.tar.gz
+signal-android-ctime-reversed_v7.28.4_01.tar.gz
+signal-android-ctime-reversed_v7.28.4_02.tar.gz
+signal-android-ctime-reversed_v7.28.4_03.tar.gz
+signal-android-ctime-sort_v7.28.4.tar.gz
+dfstest-signal-android-alph-reversed_v7.28.4_01.tar.gz
+dfstest-signal-android-alph-reversed_v7.28.4_02.tar.gz
+dfstest-signal-android-alph-sort_v7.28.4_01.tar.gz
+dfstest-signal-android-alph-sort_v7.28.4_02.tar.gz
+signal-android-alph-reversed_v7.28.4_01.tar.gz
+signal-android-alph-reversed_v7.28.4_02.tar.gz
+signal-android-alph-reversed_v7.28.4_03.tar.gz
+signal-android-alph-sort_v7.28.4.tar.gz
+signal-android_v7.28.4.tar.gz
+signal-android_v7.28.4_02.tar.gz
+dfstest-signal-android-ctime-reversed_v7.37.2_01.tar.gz
+dfstest-signal-android-ctime-reversed_v7.37.2_02.tar.gz
+dfstest-signal-android-ctime-sort_v7.37.2_01.tar.gz
+dfstest-signal-android-ctime-sort_v7.37.2_02.tar.gz
+signal-android-ctime-reversed_v7.37.2_01.tar.gz
+signal-android-ctime-reversed_v7.37.2_02.tar.gz
+signal-android-ctime-reversed_v7.37.2_03.tar.gz
+signal-android-ctime-sort_v7.37.2.tar.gz
+dfstest-signal-android-alph-reversed_v7.37.2_01.tar.gz
+dfstest-signal-android-alph-reversed_v7.37.2_02.tar.gz
+dfstest-signal-android-alph-sort_v7.37.2_01.tar.gz
+dfstest-signal-android-alph-sort_v7.37.2_02.tar.gz
+signal-android-alph-reversed_v7.37.2_01.tar.gz
+signal-android-alph-reversed_v7.37.2_02.tar.gz
+signal-android-alph-reversed_v7.37.2_03.tar.gz
+signal-android-alph-sort_v7.37.2.tar.gz
+signal-android_v7.37.2.tar.gz
+signal-android_v7.37.2_02.tar.gz
+
 
 # Tests
 
