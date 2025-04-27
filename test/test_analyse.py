@@ -13,8 +13,6 @@ from analysis.analyse import (
     all_versions,
     _tarfiles_with_params,
     _compare_amongst_runs,
-    check_for_same_version,
-    check_for_same_params,
 )
 
 
@@ -260,24 +258,26 @@ def test_get_all_versions(
                 "signal-android-ctime-sort_v7.1.2.tar.gz",
             },
         ),
-        # # D -- -BORKED
-        # (
-        #     {"dfs": True, "reverse": True},
-        #     {
-        #         "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
-        #         "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
-        #         "signal-android-ctime-sort_v7.1.2.tar.gz",
-        #     },
-        # ),
-        # # E -- BORKED
-        # (
-        #     {"dfs": True, "sort": True},
-        #     {
-        #         "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
-        #         "signal-android-alph-sort_v7.1.1.tar.gz",
-        #         "signal-android-ctime-sort_v7.1.2.tar.gz",
-        #     },
-        # ),
+        # D
+        # todo: BORKED @xy
+        (
+            {"dfs": True, "reverse": True},
+            {
+                "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
+                "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
+                "signal-android-ctime-sort_v7.1.2.tar.gz",
+            },
+        ),
+        # E
+        # todo: BORKED @xy
+        (
+            {"dfs": True, "sort": True},
+            {
+                "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
+                "signal-android-alph-sort_v7.1.1.tar.gz",
+                "signal-android-ctime-sort_v7.1.2.tar.gz",
+            },
+        ),
         # F
         (
             {"dfs": True, "sort": True, "alph": True},
@@ -301,14 +301,15 @@ def test_get_all_versions(
                 "signal-android-ctime-sort_v7.1.2.tar.gz",
             },
         ),
-        # # K -- BORKEEEEEEED!
-        # (
-        #     {"dfs": True, "sort": True, "ctime": True, "alph": True},
-        #     {
-        #         "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
-        #         "signal-android-ctime-sort_v7.1.2.tar.gz",
-        #     },
-        # ),
+        # # K
+        # todo: @xy BORKEEEEEEED!
+        (
+            {"dfs": True, "sort": True, "ctime": True, "alph": True},
+            {
+                "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
+                "signal-android-ctime-sort_v7.1.2.tar.gz",
+            },
+        ),
         # L
         (
             {"dfs": True, "sort": True, "reverse": True, "ctime": True, "alph": True},
@@ -380,6 +381,7 @@ def dummy_comparator2_version_28(t1, t2):
 
 
 @pytest.mark.parametrize(
+    # todo: @xy check these arguments
     "target_key, check_fn, expected_consistent",
     [
         (
@@ -408,7 +410,7 @@ def dummy_comparator2_version_28(t1, t2):
             {
                 "1-run": True,
                 "no-runs": True,
-                "all v_28": False,  # remains False from above
+                "all v_28": True,  # TODO: is this correct? @xy
                 "all but one v_28": False,
             },
         ),
@@ -422,8 +424,8 @@ def test_compare_amongst_runs_variants(
         assert base_classified_runs[k].consistent == expected
 
 
-@pytest.mark.skip("borked")
 def test_compare_amongst_runs_writes_json(tmp_path, monkeypatch):
+    # todo: @xy example for test C) looks borked :p
     classified_runs = {
         "1-run": SortedRuns(True, ["example_v7.16.256.tar.gz"]),
         "no-runs": SortedRuns(True, []),
@@ -453,7 +455,7 @@ def test_compare_amongst_runs_writes_json(tmp_path, monkeypatch):
 
     # Initialize the file with an empty dictionary before calling the function
     with open(json_path, "w") as f:
-        json.dump("{}", f)  # Start with an empty dictionary
+        json.dump({}, f)  # Start with an empty dictionary
 
     # Now invoke the function which writes to the file
     _compare_amongst_runs(
@@ -469,4 +471,5 @@ def test_compare_amongst_runs_writes_json(tmp_path, monkeypatch):
 
     # Spot check some known entries
     assert result["example_v7.16.256.tar.gz"]["example_v7.28.1.tar.gz"] is False
+    assert result["example_v7.28.1.tar.gz"]["example_v7.16.256.tar.gz"] is False
     assert result["example_v7.28.1.tar.gz"]["example_v7.28.1_09.tar.gz"] is True
