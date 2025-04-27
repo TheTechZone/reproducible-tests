@@ -77,7 +77,7 @@ def is_metadata_to_dirorder_consistent(tarfile: str) -> bool:
     if has_diffs := len(diff) > 0:
         print(f"Metadata inconsistency in: {tarfile}")
         print(diff)
-    return not has_diffs
+    return has_diffs
 
 
 # Test between runs
@@ -138,8 +138,8 @@ def _first_dex_hash(dex_list: dict[str, dict]) -> Optional[str]:
 def compare_first_dex_hash(tarfile1: str, tarfile2: str) -> tuple[bool, list[str]]:
     dex_hash_1 = _first_dex_hash(_dex_list_for_local_build(tarfile1))
     dex_hash_2 = _first_dex_hash(_dex_list_for_local_build(tarfile2))
-    equal = dex_hash_1 == dex_hash_2
-    return equal, [] if equal else [f"{dex_hash_1}->{dex_hash_2}"]
+    unequal = dex_hash_1 != dex_hash_2
+    return unequal, [] if not unequal else [f"{dex_hash_1}->{dex_hash_2}"]
 
 
 ####
