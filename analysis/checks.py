@@ -10,7 +10,7 @@ CompareFn = Callable[[str, str], tuple[bool, list]]
 
 def _differences(list1: list[str], list2: list[str]) -> list[str]:
     """
-    Compare two given list and return the differences in a human readable form
+    Compare two given lists and return the differences in a human-readable form
     ["differing_value_list1 -> differing_value_list2", ...]
 
     PRE: len(list1) == len(list2)
@@ -31,7 +31,8 @@ def _differences(list1: list[str], list2: list[str]) -> list[str]:
 def _get_metadata_list(tarfile: str):
     """
     reads output_metadata_mtimes.json from the data/res folder and returns all recorded output files
-    expects the format: {tarfile:{..., "output-metadata.json":{..., "elements":[{"outputFile":"value"}, {"outputFile":value}, ...], ...}, ...}, ...}
+    expect the format: {tarfile: {..., "output-metadata.json":
+        {..., "elements": [{"outputFile":"value"}, {"outputFile":value}, ...], ...}, ...}, ...}
     """
     metadata_file_path = DATA_ROOT / "res" / "output_metadata_mtimes.json"
 
@@ -132,7 +133,7 @@ def _first_dex_hash(dex_list: dict[str, dict]) -> Optional[str]:
     return None
 
 
-# Because according to Aditz the first dex file matters more!
+# Because, according to Aditz, the first dex file matters more!
 # Only checks classes.dex
 def compare_first_dex_hash(tarfile1: str, tarfile2: str) -> tuple[bool, list[str]]:
     dex_hash_1 = _first_dex_hash(_dex_list_for_local_build(tarfile1))
