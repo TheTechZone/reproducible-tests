@@ -465,8 +465,8 @@ def check_for_same_params(
     """
     versions = all_versions()
     # create description string
-    description = description_from_params(dfs, alph, ctime, reverse)
-    appropriate_tars = _tarfiles_with_params(dfs, alph, ctime, reverse)
+    description = description_from_params(dfs, alph=alph, ctime=ctime, reverse=reverse)
+    appropriate_tars = _tarfiles_with_params(dfs, alph=alph, ctime=ctime, reverse=reverse, sort=(not reverse))
     if tarfiles is None:
         relevant_files = appropriate_tars
     else:
