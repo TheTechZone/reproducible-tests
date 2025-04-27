@@ -302,9 +302,8 @@ def check_for_same_version(
     # print(classified_runs)
     # Create/truncate summary file for idempotence
     summary_file = Path(summary_path(COMPARE_TO_CHECK_NAME[compare], version))
-    if not summary_file.exists():
-        print(f"Creating {summary_file.relative_to(SUMMARY_ROOT)}...")
-        summary_file.write_text("{}")
+    print(f"Creating {summary_file.relative_to(SUMMARY_ROOT)}...")
+    summary_file.write_text("{}")
 
     are_classified_runs_consistent(classified_runs, compare, summary_file)
 
@@ -492,9 +491,7 @@ def check_for_same_params(
                 classified_runs[v].runs.append(tarfile)
     print(f"checking the parameters: '{description}'...")
     summary_file = Path(summary_path(COMPARE_TO_CHECK_NAME[compare], description))
-
-    if not summary_file.exists():
-        print(f"Creating {summary_file.relative_to(SUMMARY_ROOT)}...")
-        summary_file.write_text("{}")
+    print(f"Creating {summary_file.relative_to(SUMMARY_ROOT)}...")
+    summary_file.write_text("{}")
 
     are_classified_runs_consistent(classified_runs, compare, summary_file)
