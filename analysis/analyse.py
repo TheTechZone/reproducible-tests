@@ -14,6 +14,7 @@ from analysis.checks import (
     compare_metadata_list,
     is_metadata_to_dirorder_consistent,
 )
+from dataclasses import dataclass
 
 CompareFn = Callable[[str, str], tuple[bool, list]]
 
@@ -78,6 +79,7 @@ def run_all_checks(checks: list[CompareFn], with_metadata_list: bool = True) -> 
 ###
 
 
+@dataclass
 class SortedRuns:
     """
     Helper class to divide runs into distinct 'classes'
@@ -163,8 +165,9 @@ def _compare_amongst_runs(
         summary_file: where to record the results
     """
     record_result = True if summary_file is not None else False
-    mark_consistency = False
+    mark_consistency = True
     if key is None:
+        mark_consistency = False
         to_compare = []
         # compare the first run of each set marked consistent with each other
         for k in classified_runs.keys():
@@ -172,13 +175,12 @@ def _compare_amongst_runs(
                 if len(classified_runs[k].runs) > 0:
                     # Only comparing consistent runs against one another
                     to_compare.append(classified_runs[k].runs[0])
-        # print(f"classified_runs:\n{classified_runs}")
-        # print(f"compared to:\n{to_compare}")
     else:
         to_compare = classified_runs[key].runs
-        mark_consistency = True
         # before we mark consistency, the consistency bit is assumed to be set as True
-        assert classified_runs[key].consistent, f"{key} consistency bit was not set to consistent, before we doing pairwise tests!"
+        assert classified_runs[
+            key
+        ].consistent, f"{key} consistency bit was not set to consistent, before we doing pairwise tests!"
     mid = int(len(to_compare) / 2)
     for tarfile in to_compare[0:mid]:
         for other in [file for file in to_compare if file != tarfile]:
@@ -313,7 +315,11 @@ def all_versions() -> list[str]:
 
 
 def _tarfiles_with_params(
-    dfs: bool, alph: Optional[bool], ctime: Optional[bool], sort: Optional[bool], reverse: Optional[bool]
+    dfs: bool = False,
+    alph: Optional[bool] = None,
+    ctime: Optional[bool] = None,
+    sort: Optional[bool] = None,
+    reverse: Optional[bool] = None,
 ) -> list[str]:
     """
     Returns a filtered list of tarfile names from the TARS_ROOT directory
@@ -331,7 +337,7 @@ def _tarfiles_with_params(
     """
     files: list[str] = []
     ignored: list[str] = []
-    if dfs: # Set any unset variables if needed
+    if dfs:  # Set any unset variables if needed
         alph = False if alph is None else alph
         ctime = False if ctime is None else ctime
         sort = False if sort is None else sort
@@ -339,9 +345,7 @@ def _tarfiles_with_params(
     for tarfile in all_tarfiles():
         if dfs:
             if alph and "alph" in tarfile or ctime and "ctime" in tarfile:
-                if (reverse and "reverse" in tarfile) or (
-                    sort and "sort" in tarfile
-                ):
+                if (reverse and "reverse" in tarfile) or (sort and "sort" in tarfile):
                     files.append(tarfile)
                 else:
                     ignored.append(tarfile)
@@ -413,7 +417,7 @@ def check_for_same_params(
     dfs: Literal[False],
     alph: Optional[bool],
     ctime: Optional[bool],
-    reverse: Optional[bool]
+    reverse: Optional[bool],
 ) -> None: ...
 
 
@@ -424,7 +428,7 @@ def check_for_same_params(
     dfs: Literal[True],
     alph: Literal[True],
     ctime: Literal[False],
-    reverse: bool
+    reverse: bool,
 ) -> None: ...
 
 
@@ -435,7 +439,7 @@ def check_for_same_params(
     dfs: Literal[True],
     alph: Literal[False],
     ctime: Literal[True],
-    reverse: bool
+    reverse: bool,
 ) -> None: ...
 
 
@@ -445,7 +449,7 @@ def check_for_same_params(
     dfs: bool,
     alph: Optional[bool] = None,
     ctime: Optional[bool] = None,
-    reverse: Optional[bool] = None
+    reverse: Optional[bool] = None,
 ) -> None:
     """
     Sorts any runs with the provided parameters into their existing distinct versions.
@@ -466,7 +470,9 @@ def check_for_same_params(
     versions = all_versions()
     # create description string
     description = description_from_params(dfs, alph=alph, ctime=ctime, reverse=reverse)
-    appropriate_tars = _tarfiles_with_params(dfs, alph=alph, ctime=ctime, reverse=reverse, sort=(not reverse))
+    appropriate_tars = _tarfiles_with_params(
+        dfs, alph=alph, ctime=ctime, reverse=reverse, sort=(not reverse)
+    )
     if tarfiles is None:
         relevant_files = appropriate_tars
     else:

@@ -2,7 +2,7 @@ import pytest
 import os
 import sys
 
-# handling relatvie import
+# handling relative import
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import json
 from pathlib import Path
@@ -128,7 +128,7 @@ def test_get_metadata_list(
         json.dump(file_contents, f)
 
     # Patch DATA_ROOT inside your module
-    import analysis.checks  # again, replace with your real module
+    import analysis.checks
 
     monkeypatch.setattr(analysis.checks, "DATA_ROOT", tmp_path)
 

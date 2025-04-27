@@ -8,7 +8,7 @@ from setup.pm import (
     UnsupportedPlatformError,
     get_package_manager,
     get_os_release,
-    ExecResult
+    ExecResult,
 )
 
 
@@ -53,7 +53,7 @@ def test_get_os_release_non_linux():
 
 @patch("setup.pm.local")
 @patch("setup.pm.get_os_release", return_value={"ID": "ubuntu"})
-def test_get_package_manager_apt(mock_get_os_release, mock_local):
+def test_get_package_manager_apt(_, mock_local):
     mock_local.__getitem__.return_value = MagicMock()
     pm = get_package_manager()
     assert isinstance(pm, AptPackageManager)
@@ -61,20 +61,20 @@ def test_get_package_manager_apt(mock_get_os_release, mock_local):
 
 @patch("setup.pm.local")
 @patch("setup.pm.get_os_release", return_value={"ID": "fedora"})
-def test_get_package_manager_dnf(mock_get_os_release, mock_local):
+def test_get_package_manager_dnf(_, mock_local):
     mock_local.__getitem__.return_value = MagicMock()
     pm = get_package_manager()
     assert isinstance(pm, DnfPackageManager)
 
 
 @patch("setup.pm.get_os_release", return_value={"ID": "arch"})
-def test_get_package_manager_arch_raises(mock_get_os_release):
+def test_get_package_manager_arch_raises(_):
     with pytest.raises(UnsupportedPlatformError, match="Arch"):
         get_package_manager()
 
 
 @patch("setup.pm.get_os_release", return_value={"ID": "unknown"})
-def test_get_package_manager_unknown_distro(mock_get_os_release):
+def test_get_package_manager_unknown_distro(_):
     with pytest.raises(UnsupportedPlatformError, match="unknown"):
         get_package_manager()
 
@@ -179,6 +179,7 @@ def test_apt_is_installed(mock_local, mock_execute):
     result = pm.is_installed("curl")
     assert result is True
 
+
 # --- DNF PACKAGE MANAGER --------------------------------------------------
 
 
@@ -248,7 +249,6 @@ def test_dnf_is_installed(mock_local, mock_execute):
     mock_result.stderr = None
     mock_result.stdout = "nano 1.2.3"
     mock_execute.return_value = mock_result
-
 
     pm = DnfPackageManager()
     assert pm.is_installed("nano") is True

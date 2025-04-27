@@ -98,7 +98,7 @@ def test_sudo_elevation_when_not_root(mock_geteuid, mock_execlpe):
     # Setup environment and system variables
     with patch.object(sys, "executable", "/usr/bin/python"), patch.object(
         sys, "argv", ["script.py", "--arg"]
-    ), patch.dict(os.environ, {"PATH": "/usr/bin", "USER": "testuser"}, clear=True):
+    ), patch.dict(os.environ, {"PATH": "/usr/bin", "USER": "test_user"}, clear=True):
 
         # Call the function
         check_or_request_sudo()
@@ -122,7 +122,7 @@ def test_sudo_elevation_when_not_root(mock_geteuid, mock_execlpe):
         # Check that the environment dictionary is the last argument
         assert args[-1] is os.environ
         assert args[-1]["PATH"] == "/usr/bin"
-        assert args[-1]["USER"] == "testuser"
+        assert args[-1]["USER"] == "test_user"
 
 
 @patch("os.execlpe")
@@ -139,7 +139,7 @@ def test_no_sudo_elevation_when_root(mock_geteuid, mock_execlpe):
 
 
 @patch("setup.shell.os.geteuid", return_value=0)
-def test_check_or_request_sudo_as_root(mock_geteuid):
+def test_check_or_request_sudo_as_root(_):
     check_or_request_sudo()  # Should not do anything or raise
 
 
