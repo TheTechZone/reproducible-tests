@@ -77,7 +77,7 @@ def is_metadata_to_dirorder_consistent(tarfile: str) -> bool:
     if has_diffs := len(diff) > 0:
         print(f"Metadata inconsistency in: {tarfile}")
         print(diff)
-    return has_diffs
+    return not has_diffs
 
 
 # Test between runs
