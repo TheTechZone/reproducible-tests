@@ -25,7 +25,7 @@ def run_checks(tarfiles: list[str], compare: CompareFn) -> None:
 
     (Might be superfluous, doing this at another level rn.):
     Note: Currently this takes the same set of files for between and within version comparisons. May want to separate that
-    for some of the checks (e.g., metadata consistency)
+    for some checks (e.g., metadata consistency)
     """
     create_or_clear_summary_directory_for(COMPARE_TO_CHECK_NAME[compare], version=True)
     versions = all_versions()
@@ -36,7 +36,7 @@ def run_checks(tarfiles: list[str], compare: CompareFn) -> None:
     check_for_same_params(None, compare, dfs=False)
     print()
 
-    # Enumerate the 4 parameter combinations
+    # List the 4-parameter combinations
     param_combinations = [
         {"dfs": True, "alph": True, "ctime": False, "reverse": False},
         {"dfs": True, "alph": True, "ctime": False, "reverse": True},
@@ -80,7 +80,7 @@ def run_all_checks(checks: list[CompareFn], with_metadata_list: bool = True) -> 
 
 class SortedRuns:
     """
-    Helper class to devide runs into distinct 'classes'
+    Helper class to divide runs into distinct 'classes'
     (currently by version or parameter combination)
     Attributes:
         consistent: Denotes if the runs are consistent amongst each other for the current check
@@ -99,7 +99,7 @@ def print_with_params(
     direction: Optional[str] = None,
 ) -> None:
     """
-    Convenience method to pretty print the contents of a result json file
+    Convenience method to pretty print the contents of a result JSON file
     for a specified version and optionally filtered by parameters.
 
     PRE:
@@ -182,7 +182,7 @@ def _compare_amongst_runs(
     mid = int(len(to_compare) / 2)
     for tarfile in to_compare[0:mid]:
         for other in [file for file in to_compare if file != tarfile]:
-            # Second parameter, diff, could be printed for runs of interest here
+            # The Second parameter, diff, could be printed for runs of interest here
             (has_diff, _) = compare(tarfile, other)
             if has_diff:
                 v_01, tar_run_01 = version_and_run_from_tar_filename(tarfile)
@@ -207,7 +207,7 @@ def _compare_amongst_runs(
                 print(f"MISSMATCH: {run_01} <=> {run_02}!")
             if record_result:
                 # print(f"Recording result of {COMPARE_TO_TESTNAME[compare]} between {tarfile} and {other}")
-                assert summary_file is not None  # to please the typecheckr
+                assert summary_file is not None  # to please the typechecking
                 with open(summary_file, "r") as f:
                     obj = json.loads(f.read())
                 # create internal dicts if they do not yet exist
@@ -371,7 +371,7 @@ def description_from_params(
 ) -> str:
     """
     Parameters:
-        dfs: file was created with disorderfs
+        dfs: the file was created with disorderfs
         alph: disorderfs was sorting alphabetically
         ctime: disorderfs was sorting by ctime.
         reverse: disorderfs was sorting in reverse order

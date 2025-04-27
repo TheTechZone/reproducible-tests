@@ -14,7 +14,7 @@ from analysis.checks import COMPARE_TO_CHECK_NAME
 
 def assert_symmetry(df: pd.DataFrame) -> None:
     """
-    matrices should be symmetrical, sanity check this before turning the plot into a triangle
+    matrices should be symmetrical, validate this before turning the plot into a triangle
 
     Raises:
            AssertionError: If any check fails
@@ -36,9 +36,7 @@ def create_multiindex(index: pd.Index, fixed_version: bool) -> pd.MultiIndex:
 
     # Extract version/parameter info for each tarfile
     for tarfile in index:
-        (version, run, dfstest, dfs, ctime, reverse) = parameters_from_tar_filename(
-            tarfile
-        )
+        (version, _, _, dfs, ctime, reverse) = parameters_from_tar_filename(tarfile)
         if fixed_version:
             hierarchy.append((version))
         else:
@@ -51,7 +49,7 @@ def create_multiindex(index: pd.Index, fixed_version: bool) -> pd.MultiIndex:
 
     new_index = []
 
-    # Construct the new index based on fixed_version flag
+    # Construct the new index based on the fixed_version flag
     for tarfile in index:
         (version, run, dfstest, dfs, ctime, reverse) = parameters_from_tar_filename(
             tarfile
@@ -92,8 +90,6 @@ def subfigures(test: str, fixed_version: bool) -> None:
     # Organisation of subplots?
     nr_of_plots = nr_of_subplots(root)
     nr_x = int(nr_of_plots / 2)
-    # nr_x = 2
-    # nr_y = 3
     nr_y = int(nr_of_plots / 2) + (1 if nr_of_plots % 2 == 0 else 0) + 1
     print(f"Creating {nr_x}x{nr_y} subplots...")
     fig, axes = plt.subplots(nrows=nr_x, ncols=nr_y, figsize=(22, 7))
@@ -115,7 +111,6 @@ def subfigures(test: str, fixed_version: bool) -> None:
             if i < len(all_files):
                 print(f"x:{x}, y:{y}")
                 file_path = all_files[i]
-                # ax = fig.add_subplot(nr_x, nr_y, plot_idx)
                 success = correlation_triangle(fixed_version, axes[x, y], file_path)
                 while not success:
                     i = i + 1
@@ -134,7 +129,6 @@ def subfigures(test: str, fixed_version: bool) -> None:
                 )
                 i = i + 1
                 plot_idx = plot_idx + 1
-                # axes[x, y].tick_params(axis='x', labelrotation=45)
             else:
                 # No more files to plot, hide the remaining axes
                 axes[x, y].set_visible(False)
@@ -170,7 +164,7 @@ def subfigures(test: str, fixed_version: bool) -> None:
             elif optimal_cols == 1:
                 new_axes = new_axes.reshape(-1, 1)
 
-            # Copy content from old figure to new figure
+            # Copy content from the old figure to the new figure
             for idx, plot in enumerate(successful_plots):
                 new_x = idx // optimal_cols
                 new_y = idx % optimal_cols
@@ -192,19 +186,12 @@ def subfigures(test: str, fixed_version: bool) -> None:
 
             # Set the title on the new figure
             new_fig.suptitle(f"{test} for {version_or_params.replace('_', ' ')}")
-
-            # # Adjust spacing for the new figure
-            # new_fig.subplots_adjust(hspace=1.4, wspace=0.9)
-
-            # # Save the new figure and close the old one
-            # new_fig.savefig(os.path.join(PLOT_ROOT, f"{test}_{version_or_params}"), dpi=300)
             plt.close(fig)
 
             fig = new_fig
             axes = new_axes
             # return
 
-    # plt.subplots_adjust(hspace=1.4, wspace=1.4)
     plt.tight_layout()
 
     colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]
@@ -226,7 +213,7 @@ def subfigures(test: str, fixed_version: bool) -> None:
 
 def correlation_triangle(fixed_version: bool, ax, filepath: Path) -> bool:
     df = generate_pd_frame(filepath, fixed_version)
-    if df is not None:  # otherwise we skip the file
+    if df is not None:  # otherwise, we skip the file
         mask = np.triu(np.ones_like(df, dtype=bool))
         with plt.xkcd():
             np.fill_diagonal(mask, False)

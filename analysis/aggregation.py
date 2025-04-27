@@ -39,7 +39,7 @@ APK_COMPARE_MAP = {
 
 def get_version(cvc: str) -> Optional[str]:
     """
-    Get the human readable, sematic version for a version code
+    Get the human-readable, sematic version for a version code
     """
     with open(VERSION_CVC_FILE, "r") as f:
         v_c = json.loads(f.read())
@@ -48,7 +48,7 @@ def get_version(cvc: str) -> Optional[str]:
 
 def get_cvc(version: str) -> Optional[str]:
     """
-    Get the cannocial version code for a known semantic version (git tag)
+    Get the canonical version code for a known semantic version (git tag)
     """
     if version[0] == "v":
         version = version[1:]
@@ -80,7 +80,7 @@ def extract(filepath: str, dfs_test: bool) -> None:
 
 def _clear_untared_folder() -> None:
     """
-    recursively clears the codabase directory
+    recursively clears the codebase directory
     """
     if CB_PATH.exists():
         print("Clearing current build...")
@@ -138,7 +138,7 @@ def current_cvc() -> str:
     )
 
     stdout = get_version_code()
-    canonical_version_code = f"{stdout.split(version_code_line)[-1].strip()}00"  # Assuming hotfix version is 0
+    canonical_version_code = f"{stdout.split(version_code_line)[-1].strip()}"  # Assuming the hotfix version is 0
 
     # Extract the current hotfix version and format it as a 2-digit string
     hotfix_version_line = "val currentHotfixVersion ="
@@ -149,7 +149,7 @@ def current_cvc() -> str:
     hotfix_version = stdout.split(hotfix_version_line)[-1].strip()
     current_hotfix_version = f"{int(hotfix_version):02d}" if hotfix_version else "00"
 
-    # Assumes hotfix version is 0
+    # Assumes the hotfix version is 0
     return f"{canonical_version_code}{current_hotfix_version}"
 
 
@@ -163,7 +163,7 @@ def _unzip_playstore_apk(cvc: str) -> None:
 
     # Create the directory if necessary
     if unzip_path.exists():
-        # Idempotence: Clearing the unzip directory for the given cvc
+        # Idempotence: Clearing the unzipped directory for the given cvc
         print(f"Clearing universal zip directory for {cvc}...")
         local["rm"]["-r", str(unzip_path)]()
 
@@ -173,7 +173,7 @@ def _unzip_playstore_apk(cvc: str) -> None:
     # Pull apk with git lfs
     print(f"Pulling {universal_apk} with git lfs...")
     lfs = local["git"]["lfs", "pull", f"--include={universal_apk}"]
-    rt, stdout, stderr = lfs.run()
+    _, _, _ = lfs.run()
 
     # Unzip the file to the specified directory
     local["unzip"]["-d", str(unzip_path), str(universal_apk)]()
@@ -345,7 +345,7 @@ def create_apkdiff_record(local_apk_filename: str) -> dict:
 
 
 # Runs comparisons and updates diftools summary with
-# apkdiff result
+# the apkdiff result
 # and diffoscope results
 # for each pairwise apks in APK_COMPARE_MAP
 # PRE: local apks must already be extracted
