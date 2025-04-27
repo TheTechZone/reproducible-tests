@@ -9,16 +9,14 @@ from analysis.analyse import run_all_checks
 # )
 # from analysis.plotinator import visualize
 # from setup.structure import create_or_clear_summary_directory_for
-
+from analysis.plotinator import visualize
 
 ###
 # Script
 ###
 
-
 # redo apkdiff
 # aggregate_all_runs(dexsort=False, diffuse=False, apkdiff=True, nav=False, output_meta=False)
-
 
 # pretty_print_raw("/home/chrissy/Code/reproducible-tests/data/summary/dex_sort/fixed_versions/7.30.2.json")
 # visualize()

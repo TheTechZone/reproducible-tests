@@ -27,15 +27,18 @@ def run_checks(tarfiles: list[str], compare: CompareFn) -> None:
     Note: Currently this takes the same set of files for between and within version comparisons. May want to separate that
     for some of the checks (e.g., metadata consistency)
     """
+    # sort by version
     create_or_clear_summary_directory_for(COMPARE_TO_CHECK_NAME[compare], version=True)
     versions = all_versions()
     for v in versions:
         check_for_same_version(v, tarfiles, compare)
         print()
+    exit(0)
+    # Sort by parameter combination
     create_or_clear_summary_directory_for(COMPARE_TO_CHECK_NAME[compare], version=False)
+    # Vanilla
     check_for_same_params(None, compare, dfs=False)
     print()
-
     # Enumerate the 4 parameter combinations
     param_combinations = [
         {"dfs": True, "alph": True, "ctime": False, "reverse": False},
@@ -43,7 +46,6 @@ def run_checks(tarfiles: list[str], compare: CompareFn) -> None:
         {"dfs": True, "alph": False, "ctime": True, "reverse": False},
         {"dfs": True, "alph": False, "ctime": True, "reverse": True},
     ]
-
     for params in param_combinations:
         check_for_same_params(None, compare, **params)  # type: ignore
         print()
@@ -65,6 +67,8 @@ def run_all_checks(checks: list[CompareFn], with_metadata_list: bool = True) -> 
         run_checks(all_tarfiles(), check)
     if with_metadata_list:
         tarfiles = assemble_consistent_tarfile_list(is_metadata_to_dirorder_consistent)
+        print("Consistent tarfiles")
+        print(tarfiles)
         run_checks(tarfiles, compare_metadata_list)
 
 
@@ -134,6 +138,7 @@ def assemble_consistent_tarfile_list(
     tarfiles_dir = Path(TARS_ROOT)
 
     for tarfile in tarfiles_dir.iterdir():
+        print(tarfile.name)
         if consistency_check(
             tarfile.name
         ):  # tarfile is now a Path object, use .name to get the filename
@@ -267,7 +272,8 @@ def check_for_same_version(
         compare: which check to apply
     """
     versioned_tarfiles = [file for file in tarfiles if version in file]
-    # print(versioned_tarfiles)
+    print("Versioned Tarfiles:")
+    print(versioned_tarfiles)
     alphabetical = [file for file in versioned_tarfiles if "alph" in file]
     ctime = [file for file in versioned_tarfiles if "ctime" in file]
     vanilla = [
