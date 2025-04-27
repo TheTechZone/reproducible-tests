@@ -69,8 +69,8 @@ def run_all_checks(checks: list[CompareFn], with_metadata_list: bool = True) -> 
         run_checks(all_tarfiles(), check)
     if with_metadata_list:
         tarfiles = assemble_consistent_tarfile_list(is_metadata_to_dirorder_consistent)
-        print("Consistent tarfiles")
-        print(tarfiles)
+        #print("Consistent tarfiles")
+        #print(tarfiles)
         run_checks(tarfiles, compare_metadata_list)
 
 
@@ -188,7 +188,6 @@ def _compare_amongst_runs(
             key
         ].consistent, f"{key} consistency bit was not set to consistent, before we doing pairwise tests!"
     mid = int(len(to_compare) / 2) 
-    # mid = len(to_compare)
     for tarfile in to_compare[0:mid]:
         for other in [file for file in to_compare]:
             # The Second parameter, diff, could be printed for runs of interest here
@@ -215,7 +214,7 @@ def _compare_amongst_runs(
                     run_02 = other.split("signal-android-")[-1].replace(".tar.gz", "")
                 print(f"MISSMATCH: {run_01} <=> {run_02}!")
             if record_result:
-                # print(f"Recording result of {COMPARE_TO_TESTNAME[compare]} between {tarfile} and {other}")
+                print(f"Recording result of {COMPARE_TO_CHECK_NAME[compare]} between {tarfile} and {other}")
                 assert summary_file is not None  # to please the typechecking
                 with open(summary_file, "r") as f:
                     obj = json.loads(f.read())
