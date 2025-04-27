@@ -102,7 +102,6 @@ def subfigures(test: str, fixed_version: bool) -> None:
     # print(all_files)
     # return
     i = 0
-    plot_idx = 1
 
     successful_plots = []
     # call plotting
@@ -114,21 +113,27 @@ def subfigures(test: str, fixed_version: bool) -> None:
                 success = correlation_triangle(fixed_version, axes[x, y], file_path)
                 while not success:
                     i = i + 1
-                    file_path = all_files[i]
-                    success = correlation_triangle(fixed_version, axes[x, y], file_path)
-                # Set title:
-                title = file_path.stem.replace("_", " ")
-                axes[x, y].set_title(title)
-                # Record the successful plot
-                successful_plots.append(
-                    {
-                        "ax": axes[x, y],
-                        "title": title,
-                        "position": (x, y),
-                    }
-                )
-                i = i + 1
-                plot_idx = plot_idx + 1
+                    if i < len(all_files):
+                        file_path = all_files[i]
+                        success = correlation_triangle(fixed_version, axes[x, y], file_path)
+                    else:
+                        # we are out of data
+                        # No more files to plot, hide the remaining axes
+                        axes[x, y].set_visible(False)
+                        break
+                if success:
+                    # Set title:
+                    title = file_path.stem.replace("_", " ")
+                    axes[x, y].set_title(title)
+                    # Record the successful plot
+                    successful_plots.append(
+                        {
+                            "ax": axes[x, y],
+                            "title": title,
+                            "position": (x, y),
+                        }
+                    )
+                    i = i + 1
             else:
                 # No more files to plot, hide the remaining axes
                 axes[x, y].set_visible(False)
@@ -194,7 +199,7 @@ def subfigures(test: str, fixed_version: bool) -> None:
 
     plt.tight_layout()
 
-    colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]
+    colors = ["xkcd:blood red", "xkcd:azure", "xkcd:light grey"]
     cmap = LinearSegmentedColormap.from_list("Custom", colors, len(colors))
     bounds = [0, 1, 2, 3]
     norm = BoundaryNorm(bounds, 4)
@@ -206,7 +211,7 @@ def subfigures(test: str, fixed_version: bool) -> None:
         ticks=[0.5, 1.5, 2.5],
         shrink=cbar_shrink,
     )
-    cbar.set_ticklabels(["match", "inconsistent", "n/a"])
+    cbar.set_ticklabels(["inconsistent", "match", "n/a"])
 
     plt.savefig(PLOT_ROOT / f"{test}_{version_or_params}", dpi=300)
 
@@ -215,10 +220,10 @@ def correlation_triangle(fixed_version: bool, ax, filepath: Path) -> bool:
     df = generate_pd_frame(filepath, fixed_version)
     if df is not None:  # otherwise, we skip the file
         print(df)
-        mask = np.triu(np.ones_like(df, dtype=bool))
+        mask = np.triu(np.ones_like(df, dtype=bool), k=1)
         with plt.xkcd():
             np.fill_diagonal(mask, False)
-            colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]
+            colors = ["xkcd:blood red", "xkcd:azure", "xkcd:light grey"]
             cmap = LinearSegmentedColormap.from_list("Custom", colors, len(colors))
             sns.heatmap(
                 df,
