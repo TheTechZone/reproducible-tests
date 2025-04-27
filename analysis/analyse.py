@@ -33,7 +33,7 @@ def run_checks(tarfiles: list[str], compare: CompareFn) -> None:
     for v in versions:
         check_for_same_version(v, tarfiles, compare)
         print()
-    exit(0)
+
     # Sort by parameter combination
     create_or_clear_summary_directory_for(COMPARE_TO_CHECK_NAME[compare], version=False)
     # Vanilla
@@ -272,8 +272,8 @@ def check_for_same_version(
         compare: which check to apply
     """
     versioned_tarfiles = [file for file in tarfiles if version in file]
-    print("Versioned Tarfiles:")
-    print(versioned_tarfiles)
+    #print("Versioned Tarfiles:")
+    #print(versioned_tarfiles)
     alphabetical = [file for file in versioned_tarfiles if "alph" in file]
     ctime = [file for file in versioned_tarfiles if "ctime" in file]
     vanilla = [
