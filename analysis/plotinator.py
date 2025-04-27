@@ -102,7 +102,6 @@ def subfigures(test: str, fixed_version: bool) -> None:
     # print(all_files)
     # return
     i = 0
-    plot_idx = 1
 
     successful_plots = []
     # call plotting
@@ -122,19 +121,19 @@ def subfigures(test: str, fixed_version: bool) -> None:
                         # No more files to plot, hide the remaining axes
                         axes[x, y].set_visible(False)
                         break
-                # Set title:
-                title = file_path.stem.replace("_", " ")
-                axes[x, y].set_title(title)
-                # Record the successful plot
-                successful_plots.append(
-                    {
-                        "ax": axes[x, y],
-                        "title": title,
-                        "position": (x, y),
-                    }
-                )
-                i = i + 1
-                plot_idx = plot_idx + 1
+                if success:
+                    # Set title:
+                    title = file_path.stem.replace("_", " ")
+                    axes[x, y].set_title(title)
+                    # Record the successful plot
+                    successful_plots.append(
+                        {
+                            "ax": axes[x, y],
+                            "title": title,
+                            "position": (x, y),
+                        }
+                    )
+                    i = i + 1
             else:
                 # No more files to plot, hide the remaining axes
                 axes[x, y].set_visible(False)
