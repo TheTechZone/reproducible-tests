@@ -215,7 +215,7 @@ def correlation_triangle(fixed_version: bool, ax, filepath: Path) -> bool:
     df = generate_pd_frame(filepath, fixed_version)
     if df is not None:  # otherwise, we skip the file
         print(df)
-        mask = np.triu(np.ones_like(df, dtype=bool))
+        mask = np.triu(np.ones_like(df, dtype=bool), k=1)
         with plt.xkcd():
             np.fill_diagonal(mask, False)
             colors = ["xkcd:azure", "xkcd:blood red", "xkcd:light grey"]

@@ -187,7 +187,7 @@ def _compare_amongst_runs(
         assert classified_runs[
             key
         ].consistent, f"{key} consistency bit was not set to consistent, before we doing pairwise tests!"
-    mid = int(len(to_compare) / 2)
+    mid = int(len(to_compare) / 2) + 1
     for tarfile in to_compare[0:mid]:
         for other in [file for file in to_compare if file != tarfile]:
             # The Second parameter, diff, could be printed for runs of interest here
