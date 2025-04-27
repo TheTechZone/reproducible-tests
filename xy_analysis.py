@@ -18,6 +18,6 @@ from analysis.plotinator import visualize
 # aggregate_all_runs(dexsort=False, diffuse=False, apkdiff=True, nav=False, output_meta=False)
 
 # pretty_print_raw("/home/chrissy/Code/reproducible-tests/data/summary/dex_sort/fixed_versions/7.30.2.json")
-# visualize()
+visualize()
 # test()
-run_all_checks([compare_dex_hashes, compare_first_dex_hash, compare_metadata_list], with_metadata_list=True)
+# run_all_checks([compare_dex_hashes, compare_first_dex_hash, compare_metadata_list], with_metadata_list=True)

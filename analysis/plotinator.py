@@ -226,6 +226,7 @@ def subfigures(test: str, fixed_version: bool) -> None:
 
 def correlation_triangle(fixed_version: bool, ax, filepath: Path) -> bool:
     df = generate_pd_frame(filepath, fixed_version)
+    print(df)
     if df is not None:  # otherwise we skip the file
         mask = np.triu(np.ones_like(df, dtype=bool))
         with plt.xkcd():
@@ -268,7 +269,7 @@ def generate_pd_frame(
     except ValueError as e:
         print(f"Error reading {file_path}: {e}")
         return None
-    # print(df)
+    print(df)
     # Return early if the data is empty
     if df.empty:
         # Not all tests can always be run, e.g., we only have a single 34 run
