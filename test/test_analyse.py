@@ -279,7 +279,6 @@ def test_get_all_versions(
             },
         ),
         # E
-        # todo: BORKED @xy
         (
             {"dfs": True, "sort": True},
             {
@@ -312,11 +311,11 @@ def test_get_all_versions(
             },
         ),
         # # K
-        # todo: @xy BORKEEEEEEED!
         (
             {"dfs": True, "sort": True, "ctime": True, "alph": True},
             {
                 "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
+                "signal-android-alph-sort_v7.1.1.tar.gz",
                 "signal-android-ctime-sort_v7.1.2.tar.gz",
             },
         ),

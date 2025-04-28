@@ -350,7 +350,7 @@ def _tarfiles_with_params(
             alph = True
             ctime = True
         # same for sort and reverse
-        if sort is None or reverse is None:
+        if sort is None and reverse is None:
             sort = True
             reverse = True
     # Now set any other variable that was not set to False.
