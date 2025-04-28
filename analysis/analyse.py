@@ -213,7 +213,7 @@ def _compare_amongst_runs(
                     run_02 = other.split("signal-android-")[-1].replace(".tar.gz", "")
                 print(f"MISSMATCH: {run_01} <=> {run_02}!")
             if record_result:
-                print(f"Recording result of {COMPARE_TO_CHECK_NAME[compare]} between {tarfile} and {other}")
+                # print(f"Recording result of {COMPARE_TO_CHECK_NAME[compare]} between {tarfile} and {other}")
                 assert summary_file is not None  # to please the typechecking
                 with open(summary_file, "r") as f:
                     obj = json.loads(f.read())
