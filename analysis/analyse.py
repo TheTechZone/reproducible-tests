@@ -332,7 +332,9 @@ def _tarfiles_with_params(
 
     Parameters:
         dfs: return runs done with disorderfs based on the optional ('alph', 'ctime', and 'reverse') flags.
-            Note that any optional flag that is not passed will default to False.
+            If dfs is given and none of ctime/alph, both default to True
+            If dfs is given and non of sort/reverse, both default to True
+            Otherwise (and if dfs is left False), all parameters that are not passed default to False
         alph: include tarfiles with contents sorted alphabetically.
         ctime: include tarfiles with contents sorted by ctime.
         reverse: include the files sorted by alph/ctime in reverse order
@@ -343,13 +345,22 @@ def _tarfiles_with_params(
     files: list[str] = []
     ignored: list[str] = []
     if dfs:  # Set any unset variables if needed
-        alph = False if alph is None else alph
-        ctime = False if ctime is None else ctime
-        sort = False if sort is None else sort
-        reverse = False if reverse is None else reverse
+        # check if neither alph nor ctime are set
+        if ctime is None and alph is None:
+            alph = True
+            ctime = True
+        # same for sort and reverse
+        if sort is None or reverse is None:
+            sort = True
+            reverse = True
+    # Now set any other variable that was not set to False.
+    alph = False if alph is None else alph
+    ctime = False if ctime is None else ctime
+    sort = False if sort is None else sort
+    reverse = False if reverse is None else reverse
     for tarfile in all_tarfiles():
         if dfs:
-            if alph and "alph" in tarfile or ctime and "ctime" in tarfile:
+            if (alph and "alph" in tarfile) or (ctime and "ctime" in tarfile):
                 if (reverse and "reverse" in tarfile) or (sort and "sort" in tarfile):
                     files.append(tarfile)
                 else:

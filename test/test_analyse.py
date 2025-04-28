@@ -241,14 +241,26 @@ def test_get_all_versions(
     "kwargs, expected_files",
     [
         # A
-        ({"dfs": True}, set()),
+        ({"dfs": True}, 
+        {
+            "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
+            "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
+            "signal-android-alph-reversed_v7.1.22_04.tar.gz",
+            "signal-android-alph-sort_v7.1.1.tar.gz",
+            "signal-android-ctime-sort_v7.1.2.tar.gz"
+        }),
         # B
         (
             {"dfs": False},
             {"signal-android_v7.1.2.tar.gz", "signal-android_v7.1.2_02.tar.gz"},
         ),
         # C
-        ({"dfs": True, "ctime": True}, set()),
+        ({"dfs": True, "ctime": True}, 
+        {
+            "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
+            "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
+            "signal-android-ctime-sort_v7.1.2.tar.gz",
+        }),
         # C - inverse
         (
             {"dfs": True, "ctime": True, "reverse": True, "sort": True},
@@ -259,13 +271,11 @@ def test_get_all_versions(
             },
         ),
         # D
-        # todo: BORKED @xy
         (
             {"dfs": True, "reverse": True},
             {
                 "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
-                "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
-                "signal-android-ctime-sort_v7.1.2.tar.gz",
+                "signal-android-alph-reversed_v7.1.22_04.tar.gz"
             },
         ),
         # E
