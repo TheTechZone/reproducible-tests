@@ -33,8 +33,8 @@ def dummy_check_version_28(tarfile1, tarfile2):
 classified_runs = {
     "1-run": SortedRuns(True, ["example_v7.16.256.tar.gz"]),
     "no-runs": SortedRuns(True, []),
-    "all v_28": SortedRuns(True, ["example_v7.28.1.tar.gz", "example_v7.28.1_02.tar.gz", "example_v7.28.1_03.tar.gz"]),
-    "more_v_28": SortedRuns(True, ["example_v7.28.1.tar.gz", "example_v7.29.1_02.tar.gz", "example_v7.28.1_03.tar.gz"])
+    "all v_28": SortedRuns(True, ["example_v7.28.1.tar.gz", "example_v7.28.1_02.tar.gz"]),
+    "more_v_28": SortedRuns(True, ["example_v7.29.1_02.tar.gz", "example_v7.28.1.tar.gz",])
 }
 
 # Expected
@@ -67,19 +67,28 @@ dummy_check_28.json:
 {
     "example_v7.16.256.tar.gz":{
         "example_v7.28.1.tar.gz": False,
-        "example_v7.28.1_09.tar.gz": False,
-        "example_v7.16.256.tar.gz":False
+        "example_v7.28.1_02.tar.gz": False,
+        "example_v7.16.256.tar.gz": False,
+		"example_v7.29.1_02.tar.gz": False
     },
     "example_v7.28.1.tar.gz":{
         "example_v7.16.256.tar.gz": False,
-        "example_v7.28.1_09.tar.gz": True,
-        "example_v7.28.1.tar.gz": True
+        "example_v7.28.1_02.tar.gz": True,
+        "example_v7.28.1.tar.gz": True,
+		"example_v7.29.1_02.tar.gz": False
     },
-    "example_v7.28.1_09.tar.gz":{
+    "example_v7.28.1_02.tar.gz":{
         "example_v7.16.256.tar.gz": False,
         "example_v7.28.1.tar.gz": True,
-        "example_v7.28.1_09.tar.gz": True
+        "example_v7.28.1_02.tar.gz": True,
+		"example_v7.29.1_02.tar.gz": False
     }
+	"example_v7.29.1_02.tar.gz": {
+	"example_v7.16.256.tar.gz": False,
+    "example_v7.28.1.tar.gz": False,
+    "example_v7.28.1_02.tar.gz": False,
+	"example_v7.29.1_02.tar.gz": False
+	}
 }
 
 

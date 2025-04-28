@@ -436,24 +436,10 @@ def test_compare_amongst_runs_variants(
 def test_compare_amongst_runs_writes_json(tmp_path, monkeypatch):
     # todo: @xy example for test C) looks borked :p
     classified_runs = {
-        "1-run": SortedRuns(True, ["example_v7.16.256.tar.gz"]),
-        "no-runs": SortedRuns(True, []),
-        "all v_28": SortedRuns(
-            True,
-            [
-                "example_v7.28.1.tar.gz",
-                "example_v7.28.1_02.tar.gz",
-                "example_v7.28.1_03.tar.gz",
-            ],
-        ),
-        "more_v_28": SortedRuns(
-            True,
-            [
-                "example_v7.28.1.tar.gz",
-                "example_v7.29.1_02.tar.gz",
-                "example_v7.28.1_03.tar.gz",
-            ],
-        ),
+    "1-run": SortedRuns(True, ["example_v7.16.256.tar.gz"]),
+    "no-runs": SortedRuns(True, []),
+    "all v_28": SortedRuns(True, ["example_v7.28.1.tar.gz", "example_v7.28.1_02.tar.gz"]),
+    "more_v_28": SortedRuns(True, ["example_v7.29.1_02.tar.gz", "example_v7.28.1.tar.gz",])
     }
 
     # Set the path for the JSON file
@@ -481,4 +467,5 @@ def test_compare_amongst_runs_writes_json(tmp_path, monkeypatch):
     # Spot check some known entries
     assert result["example_v7.16.256.tar.gz"]["example_v7.28.1.tar.gz"] is False
     assert result["example_v7.28.1.tar.gz"]["example_v7.16.256.tar.gz"] is False
-    assert result["example_v7.28.1.tar.gz"]["example_v7.28.1_09.tar.gz"] is True
+    assert result["example_v7.28.1.tar.gz"]["example_v7.29.1_02.tar.gz"] is False
+    assert result["example_v7.28.1.tar.gz"]["example_v7.28.1.tar.gz"] is True
