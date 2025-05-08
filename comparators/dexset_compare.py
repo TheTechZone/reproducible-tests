@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-DEX Folder Comparison Tool - Analyzes and compares DEX files across multiple folders.
+DEX Set Comparison - Analyzes and compares DEX files across multiple folders.
 
-This tool:
 - Takes two or more folders containing DEX files as input
 - Analyzes all DEX files in each folder
 - For each DEX in a folder, finds the most similar DEX file in each other folder
@@ -14,17 +13,16 @@ Output includes:
 - Pairwise comparisons between folders
 """
 
+import argparse
+import itertools
+import json
 import os
 import sys
-import json
-import argparse
-from pathlib import Path
-from typing import Set, Dict, List, Tuple, Optional, Any, Union
-import itertools
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from pathlib import Path
+from typing import Dict, List, Tuple, Optional, Any
 
-# Import functionality from dex_compare
-from dex_comparator import (
+from dex_compare import (
     get_defined_class_names,
     get_method_signatures,
     get_field_signatures,
@@ -33,6 +31,7 @@ from dex_comparator import (
 )
 
 # Set logging level to ERROR to suppress unnecessary messages
+# todo: check upstream
 os.environ["LOGURU_LEVEL"] = "ERROR"
 
 try:
@@ -385,9 +384,9 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  dex_folder_compare.py folder1 folder2
-  dex_folder_compare.py --bytecode folder1 folder2 folder3
-  dex_folder_compare.py --bytecode --output result.json folder1 folder2
+  dexset_compare.py folder1 folder2
+  dexset_compare.py --bytecode folder1 folder2 folder3
+  dexset_compare.py --bytecode --output result.json folder1 folder2
         """,
     )
     parser.add_argument(

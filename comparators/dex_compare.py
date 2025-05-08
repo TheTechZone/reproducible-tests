@@ -12,14 +12,15 @@ This tool provides detailed comparison between DEX files, showing differences in
 Output can be formatted as human-readable text or JSON.
 """
 
+import argparse
+import json
 import os
 import sys
-import json
-import argparse
 from pathlib import Path
-from typing import Set, Dict, List, Tuple, Optional, Any, Union
+from typing import Set, Dict, Any
 
 # Set logging level to ERROR to suppress unnecessary messages
+# todo: check upstream
 os.environ["LOGURU_LEVEL"] = "ERROR"
 
 try:
