@@ -241,26 +241,30 @@ def test_get_all_versions(
     "kwargs, expected_files",
     [
         # A
-        ({"dfs": True}, 
-        {
-            "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
-            "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
-            "signal-android-alph-reversed_v7.1.22_04.tar.gz",
-            "signal-android-alph-sort_v7.1.1.tar.gz",
-            "signal-android-ctime-sort_v7.1.2.tar.gz"
-        }),
+        (
+            {"dfs": True},
+            {
+                "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
+                "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
+                "signal-android-alph-reversed_v7.1.22_04.tar.gz",
+                "signal-android-alph-sort_v7.1.1.tar.gz",
+                "signal-android-ctime-sort_v7.1.2.tar.gz",
+            },
+        ),
         # B
         (
             {"dfs": False},
             {"signal-android_v7.1.2.tar.gz", "signal-android_v7.1.2_02.tar.gz"},
         ),
         # C
-        ({"dfs": True, "ctime": True}, 
-        {
-            "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
-            "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
-            "signal-android-ctime-sort_v7.1.2.tar.gz",
-        }),
+        (
+            {"dfs": True, "ctime": True},
+            {
+                "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
+                "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
+                "signal-android-ctime-sort_v7.1.2.tar.gz",
+            },
+        ),
         # C - inverse
         (
             {"dfs": True, "ctime": True, "reverse": True, "sort": True},
@@ -275,7 +279,7 @@ def test_get_all_versions(
             {"dfs": True, "reverse": True},
             {
                 "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
-                "signal-android-alph-reversed_v7.1.22_04.tar.gz"
+                "signal-android-alph-reversed_v7.1.22_04.tar.gz",
             },
         ),
         # E
@@ -436,10 +440,18 @@ def test_compare_amongst_runs_variants(
 def test_compare_amongst_runs_writes_json(tmp_path, monkeypatch):
     # todo: @xy example for test C) looks borked :p
     classified_runs = {
-    "1-run": SortedRuns(True, ["example_v7.16.256.tar.gz"]),
-    "no-runs": SortedRuns(True, []),
-    "all v_28": SortedRuns(True, ["example_v7.28.1.tar.gz", "example_v7.28.1_02.tar.gz"]),
-    "more_v_28": SortedRuns(True, ["example_v7.29.1_02.tar.gz", "example_v7.28.1.tar.gz",])
+        "1-run": SortedRuns(True, ["example_v7.16.256.tar.gz"]),
+        "no-runs": SortedRuns(True, []),
+        "all v_28": SortedRuns(
+            True, ["example_v7.28.1.tar.gz", "example_v7.28.1_02.tar.gz"]
+        ),
+        "more_v_28": SortedRuns(
+            True,
+            [
+                "example_v7.29.1_02.tar.gz",
+                "example_v7.28.1.tar.gz",
+            ],
+        ),
     }
 
     # Set the path for the JSON file
