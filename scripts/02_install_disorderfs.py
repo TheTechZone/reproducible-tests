@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+root_dir = Path(__file__).resolve().parents[1]
+disorderfs_dir = str((Path(__file__).parent / "../disorderfs").resolve())
+sys.path.insert(0, str(root_dir))
 from setup.shell import execute
 from setup.pm import get_package_manager
 from plumbum import local
@@ -12,7 +18,7 @@ rm = local["rm"]
 execute(rm["-r", "disorderfs"], retcodes=(0, 1))
 
 # Clone disorderfs
-execute(git["clone", "https://github.com/Cerenia/disorderfs.git"])
+execute(git["clone", "https://github.com/Cerenia/disorderfs.git", disorderfs_dir])
 
 # Install libraries of fuse needed by disorderfs
 pm = get_package_manager()
@@ -20,6 +26,6 @@ pm.install_libfuse()
 pm.install("pkgconf")
 
 # Make disorderfs
-os.chdir("./disorderfs")
+os.chdir(disorderfs_dir)
 execute(make)
 execute(make["install"], as_sudo=True)

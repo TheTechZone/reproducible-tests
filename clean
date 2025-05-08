@@ -6,5 +6,5 @@ rm -rf disorderfs_root/
 # yes | docker system prune -a
 
 
-rm -rf .dmypy.json .mypy_cache .pytest_cache .ropeproject
+rm -rf .dmypy.json .mypy_cache .pytest_cache .ropeproject .coverage
 rm -rf cov_html comparators/androguard.db*

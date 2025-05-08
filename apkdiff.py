@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
-# Downloaded on March 24, 2025 from Signal-Android repository (version: main)
+# Downloaded on May 08, 2025 from Signal-Android repository (version: main)
 # Original content of apkdiff.py starts here:
-#! /usr/bin/env python3
-
 import sys
 from zipfile import ZipFile
 

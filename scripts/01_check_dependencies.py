@@ -72,15 +72,17 @@ class DependencyChecker:
         installed, version = self.check_command("git-lfs")
         self.print_result("Git-lfs", installed, version)
         if not installed:
-            print("After installation you may need to run\ngit lfs install\nSee: https://git-lfs.com/")
+            print(
+                "After installation you may need to run\ngit lfs install\nSee: https://git-lfs.com/"
+            )
 
     def check_java(self):
         installed, version = self.check_command("java")
         self.print_result("Java", installed, version)
 
     def check_unzip(self):
-        installed, version = self.check_command("unzip")
-        self.print_result("Unzip", installed, version)
+        installed, version = self.check_command("unzip", ["-v"])
+        self.print_result("unzip", installed, version.split("\n")[0])
 
     def check_docker(self):
         installed, version = self.check_command("docker")
@@ -102,7 +104,9 @@ class DependencyChecker:
     def check_bundletool(self):
         """Check if bundletool is available and properly linked."""
         # First check if the wrapper script exists in the current directory
-        wrapper_path = "./bundletool"
+        script_dir = Path(__file__).resolve().parent
+
+        wrapper_path = str(script_dir.parent / "bundletool")
         jar_found = False
         jar_path = None
 

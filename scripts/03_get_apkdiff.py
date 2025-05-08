@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
 import argparse
-import os
 import requests
 import stat
 from datetime import datetime
+from pathlib import Path
 
 
 def get_apkdiff(version="main"):
     """
     Downloads the apkdiff.py script from the Signal-Android repository,
-    adds a shebang and a comment, and saves it to the current directory
+    adds a shebang and a comment, and saves it to the project root
     with executable permissions.
     """
     url = f"https://github.com/signalapp/Signal-Android/blob/{version}/reproducible-builds/apkdiff/apkdiff.py"
     raw_url = url.replace("blob", "raw")
-    filename = "apkdiff.py"
+
+    # Get path to project root (one level up from this script)
+    script_path = Path(__file__).resolve()
+    project_root = script_path.parent.parent
+    filename = project_root / "apkdiff.py"
 
     try:
         response = requests.get(raw_url)
@@ -26,14 +30,12 @@ def get_apkdiff(version="main"):
 
 # Downloaded on {current_date} from Signal-Android repository (version: {version})
 # Original content of apkdiff.py starts here:
-{content}"""
+{'\n'.join(content.split('\n')[2:])}"""  # We can remove the shebang as we add our own manually. This will not affect the script's execution.
 
-        with open(filename, "w") as f:
-            f.write(modified_content)
+        filename.write_text(modified_content)
 
         # Make the script executable
-        st = os.stat(filename)
-        os.chmod(filename, st.st_mode | stat.S_IEXEC)
+        filename.chmod(filename.stat().st_mode | stat.S_IEXEC)
 
         print(
             f"Downloaded {filename} from {url}, version: {version} and set executable permissions."
