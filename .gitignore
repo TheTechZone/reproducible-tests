@@ -36,3 +36,4 @@ data/playstore-universal-unzipped
 .pytest_cache
 .ropeproject
 androguard.db*
+apkdiff.py
