@@ -1,0 +1,285 @@
+{
+  "folder_comparisons": {
+    "signal-android-ctime-sort_v7.28.4.tar.gz_vs_dfstest-signal-android-ctime-reversed_v7.28.4_02.tar.gz": {
+      "dex_comparisons": [
+        {
+          "file1": "classes7.dex",
+          "file2": "classes7.dex",
+          "similarity": {
+            "overall": 100.0,
+            "classes": 100.0,
+            "methods": 100.0,
+            "fields": 100.0,
+            "strings": 100.0,
+            "bytecode": 100.0
+          },
+          "comparison": {
+            "classes": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 612
+            },
+            "methods": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 5809
+            },
+            "fields": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 1160
+            },
+            "strings": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 3089
+            },
+            "bytecode": {
+              "changed_methods": [],
+              "changed_count": 0
+            }
+          }
+        },
+        {
+          "file1": "classes6.dex",
+          "file2": "classes4.dex",
+          "similarity": {
+            "overall": 100.0,
+            "classes": 100.0,
+            "methods": 100.0,
+            "fields": 100.0,
+            "strings": 100.0,
+            "bytecode": 100.0
+          },
+          "comparison": {
+            "classes": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 10795
+            },
+            "methods": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 65037
+            },
+            "fields": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 23994
+            },
+            "strings": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 65962
+            },
+            "bytecode": {
+              "changed_methods": [],
+              "changed_count": 0
+            }
+          }
+        },
+        {
+          "file1": "classes5.dex",
+          "file2": "classes5.dex",
+          "similarity": {
+            "overall": 100.0,
+            "classes": 100.0,
+            "methods": 100.0,
+            "fields": 100.0,
+            "strings": 100.0,
+            "bytecode": 100.0
+          },
+          "comparison": {
+            "classes": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 10136
+            },
+            "methods": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 64960
+            },
+            "fields": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 33001
+            },
+            "strings": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 76686
+            },
+            "bytecode": {
+              "changed_methods": [],
+              "changed_count": 0
+            }
+          }
+        },
+        {
+          "file1": "classes4.dex",
+          "file2": "classes6.dex",
+          "similarity": {
+            "overall": 100.0,
+            "classes": 100.0,
+            "methods": 100.0,
+            "fields": 100.0,
+            "strings": 100.0,
+            "bytecode": 100.0
+          },
+          "comparison": {
+            "classes": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 8301
+            },
+            "methods": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 65378
+            },
+            "fields": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 24732
+            },
+            "strings": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 62585
+            },
+            "bytecode": {
+              "changed_methods": [],
+              "changed_count": 0
+            }
+          }
+        },
+        {
+          "file1": "classes3.dex",
+          "file2": "classes2.dex",
+          "similarity": {
+            "overall": 100.0,
+            "classes": 100.0,
+            "methods": 100.0,
+            "fields": 100.0,
+            "strings": 100.0,
+            "bytecode": 100.0
+          },
+          "comparison": {
+            "classes": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 10087
+            },
+            "methods": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 61328
+            },
+            "fields": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 20704
+            },
+            "strings": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 63515
+            },
+            "bytecode": {
+              "changed_methods": [],
+              "changed_count": 0
+            }
+          }
+        },
+        {
+          "file1": "classes2.dex",
+          "file2": "classes3.dex",
+          "similarity": {
+            "overall": 100.0,
+            "classes": 100.0,
+            "methods": 100.0,
+            "fields": 100.0,
+            "strings": 100.0,
+            "bytecode": 100.0
+          },
+          "comparison": {
+            "classes": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 1138
+            },
+            "methods": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 8255
+            },
+            "fields": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 2989
+            },
+            "strings": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 7788
+            },
+            "bytecode": {
+              "changed_methods": [],
+              "changed_count": 0
+            }
+          }
+        },
+        {
+          "file1": "classes.dex",
+          "file2": "classes.dex",
+          "similarity": {
+            "overall": 100.0,
+            "classes": 100.0,
+            "methods": 100.0,
+            "fields": 100.0,
+            "strings": 100.0,
+            "bytecode": 100.0
+          },
+          "comparison": {
+            "classes": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 10226
+            },
+            "methods": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 65515
+            },
+            "fields": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 27903
+            },
+            "strings": {
+              "unique_to_file1": [],
+              "unique_to_file2": [],
+              "common_count": 74785
+            },
+            "bytecode": {
+              "changed_methods": [],
+              "changed_count": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "folders": [
+      "../data/build/classes/signal-android-ctime-sort_v7.28.4.tar.gz",
+      "../data/build/classes/dfstest-signal-android-ctime-reversed_v7.28.4_02.tar.gz"
+    ],
+    "folder_counts": {
+      "signal-android-ctime-sort_v7.28.4.tar.gz": 7,
+      "dfstest-signal-android-ctime-reversed_v7.28.4_02.tar.gz": 7
+    },
+    "with_bytecode": true
+  }
+}
