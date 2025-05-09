@@ -17,7 +17,7 @@ Each script is executable and can be run directly from the command line. To view
 Example:
 
 ```shell
-./03_get_apkdiff.py --version v1.0.0
+./03_get_apkdiff.py --version v7.25.2
 ```
 
 ## Dependencies

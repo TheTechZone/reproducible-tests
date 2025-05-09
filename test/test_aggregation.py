@@ -3,8 +3,8 @@ from unittest import mock
 from pathlib import Path
 import json
 
-from .context import analysis
-from analysis import aggregation
+from src.analysis import aggregation
+
 
 # --- Pytest Fixtures ---
 
@@ -119,7 +119,7 @@ def test_clear_untared_folder_exists(tmp_path, monkeypatch):
     monkeypatch.setattr(aggregation, "CB_PATH", mock_cb_path)
 
     mock_rm_cmd = create_mock_plumbum_cmd()
-    with mock.patch("analysis.aggregation.local") as mock_local:
+    with mock.patch("src.analysis.aggregation.local") as mock_local:
         mock_local.__getitem__.return_value = mock_rm_cmd  # Handles local["rm"]
 
         aggregation._clear_untared_folder()
@@ -137,7 +137,7 @@ def test_clear_untared_folder_not_exists(tmp_path, monkeypatch):
         aggregation, "CB_PATH", mock_cb_path
     )  # This path does not exist
 
-    with mock.patch("analysis.aggregation.local") as mock_local:
+    with mock.patch("src.analysis.aggregation.local") as mock_local:
         aggregation._clear_untared_folder()
         mock_local.__getitem__.assert_not_called()  # rm should not be called
 
@@ -160,7 +160,7 @@ def test_clear_current_apks(tmp_path, monkeypatch):
             return mock_mkdir_cmd
         return mock.MagicMock()
 
-    with mock.patch("analysis.aggregation.local") as mock_local:
+    with mock.patch("src.analysis.aggregation.local") as mock_local:
         mock_local.__getitem__.side_effect = local_getitem_side_effect
         aggregation._clear_current_apks()
 
@@ -175,9 +175,9 @@ def test_clear_current_apks(tmp_path, monkeypatch):
 
 def test_clear(monkeypatch):
     with mock.patch(
-        "analysis.aggregation._clear_untared_folder"
+        "src.analysis.aggregation._clear_untared_folder"
     ) as mock_clear_untar, mock.patch(
-        "analysis.aggregation._clear_current_apks"
+        "src.analysis.aggregation._clear_current_apks"
     ) as mock_clear_apks:
         aggregation.clear()
         mock_clear_untar.assert_called_once()
@@ -239,7 +239,7 @@ def test_current_cvc_normal(mock_build_gradle_kts_dir, monkeypatch):
 
     cat_cmd_with_path_obj.__or__ = mock.MagicMock(side_effect=or_operator_side_effect)
 
-    with mock.patch("analysis.aggregation.local") as mock_local_mgr:
+    with mock.patch("src.analysis.aggregation.local") as mock_local_mgr:
 
         def local_getitem_router(cmd_name):
             if cmd_name == "cat":
@@ -308,7 +308,7 @@ def test_current_cvc_no_hotfix_value(mock_build_gradle_kts_dir, monkeypatch):
 
     cat_cmd_with_path_obj.__or__ = mock.MagicMock(side_effect=or_operator_side_effect)
 
-    with mock.patch("analysis.aggregation.local") as mock_local_mgr:
+    with mock.patch("src.analysis.aggregation.local") as mock_local_mgr:
 
         def local_getitem_router(cmd_name):
             if cmd_name == "cat":
@@ -394,12 +394,12 @@ def test_extract_apks_bundle_exists_splits_dont_exist(tmp_path, monkeypatch):
 
     mock_bundletool_cmd = create_mock_plumbum_cmd()
 
-    with mock.patch("analysis.aggregation.local") as mock_local, mock.patch(
-        "analysis.aggregation.os.chdir"
+    with mock.patch("src.analysis.aggregation.local") as mock_local, mock.patch(
+        "src.analysis.aggregation.os.chdir"
     ) as mock_os_chdir, mock.patch(
-        "analysis.aggregation.Path.cwd"
+        "src.analysis.aggregation.Path.cwd"
     ) as mock_path_cwd, mock.patch(
-        "analysis.aggregation._clear_current_apks"
+        "src.analysis.aggregation._clear_current_apks"
     ) as mock_clear_current_apks:
         mock_path_cwd.return_value = Path("/original/working/dir")
         mock_local.__getitem__.return_value = (
@@ -448,10 +448,10 @@ def test_extract_apks_bundle_exists_splits_exist(tmp_path, monkeypatch):
 
     mock_bundletool_cmd = create_mock_plumbum_cmd()
 
-    with mock.patch("analysis.aggregation.local") as mock_local, mock.patch(
-        "analysis.aggregation.os.chdir"
-    ), mock.patch("analysis.aggregation.Path.cwd"), mock.patch(
-        "analysis.aggregation._clear_current_apks"
+    with mock.patch("src.analysis.aggregation.local") as mock_local, mock.patch(
+        "src.analysis.aggregation.os.chdir"
+    ), mock.patch("src.analysis.aggregation.Path.cwd"), mock.patch(
+        "src.analysis.aggregation._clear_current_apks"
     ) as mock_clear_current_apks:
         mock_local.__getitem__.return_value = mock_bundletool_cmd
         aggregation._extract_apks()
@@ -512,14 +512,14 @@ def test_extract_dfs_test_true(tmp_path, monkeypatch):
             return mock_rm_cmd_dfs  # This will be used for the REPRODUCIBLE_TESTS_ROOT
         return mock.MagicMock()
 
-    with mock.patch("analysis.aggregation.local") as mock_local, mock.patch(
-        "analysis.aggregation.os.chdir"
+    with mock.patch("src.analysis.aggregation.local") as mock_local, mock.patch(
+        "src.analysis.aggregation.os.chdir"
     ) as mock_os_chdir, mock.patch(
-        "analysis.aggregation.Path.cwd"
+        "src.analysis.aggregation.Path.cwd"
     ) as mock_path_cwd, mock.patch(
-        "analysis.aggregation._clear_untared_folder"
+        "src.analysis.aggregation._clear_untared_folder"
     ) as mock_clear_untar, mock.patch(
-        "analysis.aggregation._extract_apks"
+        "src.analysis.aggregation._extract_apks"
     ) as mock_extract_apks_call:
 
         mock_path_cwd.return_value = Path("/original/cwd_for_extract")
@@ -571,12 +571,12 @@ def test_extract_dfs_test_false(tmp_path, monkeypatch):
         # If they do, this will raise an error or return a generic MagicMock which might fail later assertions.
         raise AssertionError(f"local[{cmd_name}] should not be called in this path")
 
-    with mock.patch("analysis.aggregation.local") as mock_local, mock.patch(
-        "analysis.aggregation.os.chdir"
-    ), mock.patch("analysis.aggregation.Path.cwd"), mock.patch(
-        "analysis.aggregation._clear_untared_folder"
+    with mock.patch("src.analysis.aggregation.local") as mock_local, mock.patch(
+        "src.analysis.aggregation.os.chdir"
+    ), mock.patch("src.analysis.aggregation.Path.cwd"), mock.patch(
+        "src.analysis.aggregation._clear_untared_folder"
     ) as mock_clear_untar, mock.patch(
-        "analysis.aggregation._extract_apks"
+        "src.analysis.aggregation._extract_apks"
     ) as mock_extract_apks_call:
         # Ensure that if local is accessed with "mv" or "rm", it's via the side effect or we detect it.
         # A simple way is to ensure only 'tar' is in the expected call list.
@@ -602,10 +602,10 @@ def test_extract_dfs_test_false(tmp_path, monkeypatch):
 
 
 # Mock function for creating dex sets
-@mock.patch("analysis.aggregation._unzip_playstore_apk")
-@mock.patch("analysis.aggregation.os.chdir")
-@mock.patch("analysis.aggregation.Path.iterdir")
-@mock.patch("analysis.aggregation.local")
+@mock.patch("src.analysis.aggregation._unzip_playstore_apk")
+@mock.patch("src.analysis.aggregation.os.chdir")
+@mock.patch("src.analysis.aggregation.Path.iterdir")
+@mock.patch("src.analysis.aggregation.local")
 def test_create_dex_sets(mock_local, mock_iterdir, mock_chdir, mock_unzip):
     cvc = "10001"
 
@@ -643,10 +643,10 @@ def test_create_dex_sets(mock_local, mock_iterdir, mock_chdir, mock_unzip):
     assert result["differing_dexes"] == {}
 
 
-@mock.patch("analysis.aggregation._unzip_playstore_apk")
-@mock.patch("analysis.aggregation.os.chdir")
-@mock.patch("analysis.aggregation.Path.iterdir")
-@mock.patch("analysis.aggregation.local")
+@mock.patch("src.analysis.aggregation._unzip_playstore_apk")
+@mock.patch("src.analysis.aggregation.os.chdir")
+@mock.patch("src.analysis.aggregation.Path.iterdir")
+@mock.patch("src.analysis.aggregation.local")
 def test_create_dex_sets_with_differences(
     mock_local, mock_iterdir, mock_chdir, mock_unzip
 ):

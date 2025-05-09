@@ -9,7 +9,7 @@ from src.setup.structure import (
     summary_path,
     create_or_clear_summary_directory_for,
 )
-from analysis.checks import (
+from src.analysis.checks import (
     COMPARE_TO_CHECK_NAME,
     compare_metadata_list,
     is_metadata_to_dirorder_consistent,
@@ -69,8 +69,8 @@ def run_all_checks(checks: list[CompareFn], with_metadata_list: bool = True) -> 
         run_checks(all_tarfiles(), check)
     if with_metadata_list:
         tarfiles = assemble_consistent_tarfile_list(is_metadata_to_dirorder_consistent)
-        #print("Consistent tarfiles")
-        #print(tarfiles)
+        # print("Consistent tarfiles")
+        # print(tarfiles)
         run_checks(tarfiles, compare_metadata_list)
 
 
@@ -274,8 +274,8 @@ def check_for_same_version(
         compare: which check to apply
     """
     versioned_tarfiles = [file for file in tarfiles if version in file]
-    #print("Versioned Tarfiles:")
-    #print(versioned_tarfiles)
+    # print("Versioned Tarfiles:")
+    # print(versioned_tarfiles)
     alphabetical = [file for file in versioned_tarfiles if "alph" in file]
     ctime = [file for file in versioned_tarfiles if "ctime" in file]
     vanilla = [

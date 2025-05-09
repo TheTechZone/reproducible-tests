@@ -9,7 +9,7 @@ import seaborn as sns
 
 from src.setup.structure import SUMMARY_ROOT, PLOT_ROOT, parameters_from_tar_filename
 
-from analysis.checks import COMPARE_TO_CHECK_NAME
+from src.analysis.checks import COMPARE_TO_CHECK_NAME
 
 
 def assert_symmetry(df: pd.DataFrame) -> None:
@@ -115,7 +115,9 @@ def subfigures(test: str, fixed_version: bool) -> None:
                     i = i + 1
                     if i < len(all_files):
                         file_path = all_files[i]
-                        success = correlation_triangle(fixed_version, axes[x, y], file_path)
+                        success = correlation_triangle(
+                            fixed_version, axes[x, y], file_path
+                        )
                     else:
                         # we are out of data
                         # No more files to plot, hide the remaining axes

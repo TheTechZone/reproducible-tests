@@ -3,9 +3,7 @@ import json
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from .context import analysis
-
-from analysis.analyse import (
+from src.analysis import (
     are_classified_runs_consistent,
     SortedRuns,
     assemble_consistent_tarfile_list,
@@ -81,7 +79,7 @@ def mock_tarfiles():
         (dummy_check_version_28, [f for f in dummy_tarfiles if "v7.28" in f]),
     ],
 )
-@patch("analysis.analyse.TARS_ROOT", new_callable=lambda: Path("/fake/tars"))
+@patch("src.analysis.analyse.TARS_ROOT", new_callable=lambda: Path("/fake/tars"))
 @patch("pathlib.Path.iterdir")
 def test_assemble_consistent_tarfile_list(
     mock_iterdir, mock_tars_root, check_fn, expected
@@ -230,7 +228,7 @@ def test_get_all_versions(
         (tmp_path / file).touch()
 
     # Patch the location where TARS_ROOT is defined in the target module
-    monkeypatch.setattr("analysis.analyse.TARS_ROOT", tmp_path)
+    monkeypatch.setattr("src.analysis.analyse.TARS_ROOT", tmp_path)
 
     versions = all_versions()
     assert sorted(versions) == sorted(expected_versions)
@@ -354,7 +352,7 @@ def test_tarfiles_with_params(tmp_path, monkeypatch, kwargs, expected_files):
     for fname in filenames:
         (tmp_path / fname).touch()
 
-    monkeypatch.setattr("analysis.analyse.TARS_ROOT", tmp_path)
+    monkeypatch.setattr("src.analysis.analyse.TARS_ROOT", tmp_path)
 
     result = _tarfiles_with_params(**kwargs)
     result_names = {f for f in result}

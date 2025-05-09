@@ -1,8 +1,7 @@
 import pytest
 import json
 
-from .context import analysis  # noqa
-from analysis.checks import _differences, _get_metadata_list
+from src.analysis import _differences, _get_metadata_list
 
 
 @pytest.mark.parametrize(
@@ -124,9 +123,9 @@ def test_get_metadata_list(
         json.dump(file_contents, f)
 
     # Patch DATA_ROOT inside your module
-    import analysis.checks
+    import src.analysis.checks
 
-    monkeypatch.setattr(analysis.checks, "DATA_ROOT", tmp_path)
+    monkeypatch.setattr(src.analysis.checks, "DATA_ROOT", tmp_path)
 
     # Run the actual test
     result = _get_metadata_list(tarfile_name)
