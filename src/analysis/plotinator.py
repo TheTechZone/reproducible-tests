@@ -157,7 +157,9 @@ def subfigures(test: str, fixed_version: bool) -> None:
                     axes[x, y].set_visible(False)
 
             # Create a new figure with optimal dimensions
-            new_fig, new_axes = plt.subplots(
+            new_fig: plt.Figure
+            new_axes: tuple[plt.Axes]
+            new_fig, new_axes   = plt.subplots(
                 nrows=optimal_rows,
                 ncols=optimal_cols,
                 figsize=(optimal_cols * 12.75, optimal_rows * 4.25),

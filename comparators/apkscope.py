@@ -18,8 +18,8 @@ def find_git_root():
             text=True,
             check=True,
         )
-        git_root = result.stdout.strip()
-        return git_root
+        git_root_path = result.stdout.strip()
+        return git_root_path
     except subprocess.CalledProcessError:
         print("This script must be run inside a Git repository.")
         sys.exit(1)
@@ -34,7 +34,7 @@ apkdiff_path = os.path.join(git_root, "apkdiff.py")
 # Try to import apkdiff from the root of the Git repository
 try:
     sys.path.insert(0, git_root)  # Add the Git root to the system path
-    from apkdiff import ApkDiff
+    from apkdiff import ApkDiff  # noqa
 except ImportError:
     print("Please run install.py before using this.")
     sys.exit(1)
@@ -48,13 +48,13 @@ def clean_diffoscope_report(infile, outfile):
         "APK Signing Block",
         "zipinfo",
         "apksigner",
-        # Add more ignore patterns here as needed
+        # Add more `ignore` patterns here as needed
     ]
     ignore_list.extend(ApkDiff.IGNORE_FILES)
 
     # Function to check if the section should be ignored
-    def should_ignore(section):
-        text = section.text.lower()
+    def should_ignore(diff_section):
+        text = diff_section.text.lower()
         for pattern in ignore_list:
             if pattern.lower() in text:
                 print(f"{pattern} in text!")

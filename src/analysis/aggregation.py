@@ -205,7 +205,7 @@ def create_dex_sets(cvc: str) -> dict:
 
     # Playstore
     _unzip_playstore_apk(cvc)
-    shasum = local["sha256sum"]
+    sha256 = local["sha256sum"]
     current_dir = Path.cwd()  # Get the current directory using pathlib
     playstore_univ = {}
 
@@ -216,12 +216,12 @@ def create_dex_sets(cvc: str) -> dict:
 
     for file in playstore_path.iterdir():
         if file.suffix == ".dex":  # Check if the file is a dex file
-            sha = shasum[str(file)]().split(" ")[0].strip()
+            sha = sha256[str(file)]().split(" ")[0].strip()
             playstore_univ[sha] = file.name  # Use file.name to get the file's name
     cvc_d["playstore"] = playstore_univ
 
     # Current Build
-    root_rel_dexpath = (
+    root_rel_dex_path = (
         Path(CB_PATH)
         / "app"
         / "build"
@@ -231,12 +231,12 @@ def create_dex_sets(cvc: str) -> dict:
         / "minifyPlayProdReleaseWithR8"
     )
     os.chdir(current_dir)
-    os.chdir(root_rel_dexpath)
+    os.chdir(root_rel_dex_path)
 
     local_build = {}
-    for file in root_rel_dexpath.iterdir():
+    for file in root_rel_dex_path.iterdir():
         if file.suffix == ".dex":  # Check if the file is a dex file
-            sha = shasum[str(file)]().split(" ")[0].strip()
+            sha = sha256[str(file)]().split(" ")[0].strip()
             local_build[sha] = file.name  # Use file.name to get the file's name
     cvc_d["local"] = local_build
 
@@ -290,11 +290,16 @@ def create_diffuse_record() -> Optional[str]:
     return diffuse_res
 
 
-# param: apk_compare -> which apk to compare according to key-value in APK_COMPARE_MAP
-# apk_compare is the key to the dict, representing the part of the apk name without the prefixing: org.thoughtcrime.securesms-
-# returns {apkdiff:{'match':<Boolean>, 'mismatched_files':[<filename>,...]}, diffuse:<string>}
-# where APKdiff's "first" is the local build and "second" is the playstore APK
 def create_apkdiff_record(local_apk_filename: str) -> dict:
+    """
+    param: apk_compare -> which apk to compare, according to key-value in APK_COMPARE_MAP
+
+    apk_compare is the key to the dict, representing the part of the apk name without the prefixing: org.thoughtcrime.securesms-
+
+    :param local_apk_filename:
+    :return: {apkdiff:{'match':<Boolean>, 'mismatched_files':[<filename>, ...]}, diffuse:<string>}
+        where APK diff's "first" is the local build and "second" is the playstore APK
+    """
     cvc = current_cvc()
 
     # Construct paths using pathlib
@@ -318,7 +323,7 @@ def create_apkdiff_record(local_apk_filename: str) -> dict:
 
     apkdiff_res: dict[str, str | list[str] | bool] = {}
 
-    # APKdiff will return 1 if the match fails. We don't want plumbum to crash the script and accept all retcodes.
+    # APK diff will return 1 if the match fails. We don't want plumbum to crash the script and accept all retcodes.
     (_, stdout, _) = local["python3"][
         "./apkdiff.py", str(local_apk_path), str(playstore_apk_path)
     ].run(retcode=None)
@@ -344,12 +349,15 @@ def create_apkdiff_record(local_apk_filename: str) -> dict:
     return apkdiff_res
 
 
-# Runs comparisons and updates diftools summary with
-# the apkdiff result
-# and diffoscope results
-# for each pairwise apks in APK_COMPARE_MAP
-# PRE: local apks must already be extracted
 def record_all_apkdiff_comparisons(tarfile_name: str) -> None:
+    """
+    Runs comparisons and updates diftools summary with the apkdiff result
+    and diffoscope results for each pairwise apks in APK_COMPARE_MAP
+
+    PRE: local apks must already be extracted
+    :param tarfile_name:
+    :return:
+    """
     print("Running apkdiff on all pairs in APK_COMPARE_MAP...")
     result = {}
     comparator_result = {}
@@ -495,11 +503,11 @@ def extract_output_metadata(tarfile):
         )
 
     # Get the file modification times and contents
-    timeinfo = local["ls"]["-ltr", "--full-time", str(directory_path)]()
-    filecontents = local["cat"][str(directory_path / "output-metadata.json")]()
+    time_info = local["ls"]["-ltr", "--full-time", str(directory_path)]()
+    file_contents = local["cat"][str(directory_path / "output-metadata.json")]()
 
     # Prepare the data to update
-    data = {"mtimes": timeinfo, "output-metadata.json": filecontents}
+    data = {"mtimes": time_info, "output-metadata.json": file_contents}
 
     # Update the aggregation result
     _update_aggregation_result("output_metadata_mtimes.json", tarfile, data)

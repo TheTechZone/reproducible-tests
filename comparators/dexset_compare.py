@@ -31,7 +31,6 @@ from dex_compare import (
 )
 
 # Set logging level to ERROR to suppress unnecessary messages
-# todo: check upstream
 os.environ["LOGURU_LEVEL"] = "ERROR"
 
 try:

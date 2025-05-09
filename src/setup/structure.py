@@ -37,7 +37,8 @@ CB_APKS_PATH = BUILDS_ROOT / "apks"
 CB_SPLITS_PATH = CB_APKS_PATH / "splits"
 TARS_ROOT = BUILDS_ROOT / "tars"
 CB_PATH = BUILDS_ROOT / "Signal-Android"
-# local builds with a functional whitness (dfstest), have a differing directory structure that we normalise while extracting
+# local builds with a functional witness (dfstest),
+# have a differing directory structure that we normalize while extracting
 REPRODUCIBLE_TESTS_ROOT = BUILDS_ROOT / "reproducible-tests"
 # part of the dfstest directory structure
 DFS_ROOT_PATH = REPRODUCIBLE_TESTS_ROOT / "disorderfs_root"
@@ -77,17 +78,17 @@ _PARAMS = "fixed_parameters"
 
 
 def create_or_clear_summary_directory_for(
-    testname, version: bool = True, clear: bool = True
+    test_name, version: bool = True, clear: bool = True
 ) -> None:
     """
-    if !version we create/clear the by/param directry
+    if !version we create/clear the by/param directory
     if !clear and the dir exists function does nothing
     """
-    # Check main folder
-    main_dir = SUMMARY_ROOT / testname
+    # Check the main folder
+    main_dir = SUMMARY_ROOT / test_name
     subdir = main_dir / (_VERSION if version else _PARAMS)
 
-    # Create main directory if it doesn't exist
+    # Create the main directory if it doesn't exist
     main_dir.mkdir(parents=True, exist_ok=True)
 
     if subdir.exists():
@@ -99,7 +100,7 @@ def create_or_clear_summary_directory_for(
     subdir.mkdir(parents=True, exist_ok=True)
 
 
-def summary_path(testname, key) -> str:
+def summary_path(test_name, key) -> str:
     # Which dimension is fixed?
     fixed = (
         _PARAMS
@@ -110,7 +111,7 @@ def summary_path(testname, key) -> str:
     # Format filename
     filename = f'{"_".join(key.split(" "))}.json' if fixed == _PARAMS else f"{key}.json"
 
-    path = SUMMARY_ROOT / testname / fixed / filename
+    path = SUMMARY_ROOT / test_name / fixed / filename
     return str(path)
 
 
@@ -182,7 +183,8 @@ def parameters_from_tar_filename(
 ) -> tuple[str, int, bool, bool, Optional[bool], Optional[bool]]:
     """
     Returns the parameters that were fixed during the run packed into the tarfile:
-    (version, run_nr, functional whitness present?, with disorderfs?, sorted by ctime? (or alphabetically), sort reversed?)
+    (version, run_nr, functional witness present?, with disorderfs?,
+    sorted by ctime? (or alphabetically), sort reversed?)
 
     # PRE:
     Expects the version and run to be last in the filename in this order, separated by '_'
@@ -208,4 +210,4 @@ def parameters_from_tar_filename(
     (version, run) = version_and_run_from_tar_filename(tar_filename)
     assert version is not None
     run = run if run is not None else 1
-    return (version, int(run), dfstest, dfs, ctime, reverse)
+    return version, int(run), dfstest, dfs, ctime, reverse

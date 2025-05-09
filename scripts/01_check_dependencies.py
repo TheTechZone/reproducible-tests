@@ -99,7 +99,7 @@ class DependencyChecker:
         self.print_result("gcc", installed)
 
     def check_make(self):
-        installed, version = self.check_command("make")
+        installed, _ = self.check_command("make")
         self.print_result("make", installed)
 
     def check_bundletool(self):
@@ -124,7 +124,7 @@ class DependencyChecker:
                         jar_found = True
 
         if jar_found:
-            # Try to get version using java -jar
+            # Try to get the version using `java -jar`
             try:
                 result = subprocess.run(
                     ["java", "-jar", str(jar_path), "version"],

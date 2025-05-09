@@ -11,9 +11,18 @@ from typing import Optional, Any
 from enum import Enum
 import copy
 
+import xml.etree.ElementTree as ET  # noqa
+
 os.environ["LOGURU_LEVEL"] = "ERROR"
-from androguard.core.axml import AXMLPrinter
-import xml.etree.ElementTree as ET
+try:
+    from androguard.core.axml import AXMLPrinter  # noqa
+except ImportError as e:
+    print(f"Error: {e}", file=sys.stderr)
+    print(
+        "Androguard not found. Please install it: pip install androguard",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 
 class ChangeType(Enum):
@@ -54,7 +63,7 @@ class AndroidXMLSemanticDiffComparator:
         self.file2_lines = []
 
         # Android namespace
-        self.android_ns = "{http://schemas.android.com/apk/res/android}"
+        self.android_ns = "{http://schemas.android.com/apk/res/android}"  # noqa
 
     def parse_binary_xml(
         self, file_path
@@ -263,10 +272,10 @@ class AndroidXMLSemanticDiffComparator:
                 path = self.get_element_path(elem, parent_map1)
 
                 # Check if this is truly a removed element or just a moved element
-                # For this simple approach, we'll just check the signature without path
+                # For this simple approach, we'll just check the signature without the path
                 signature = sig[
                     0
-                ]  # The first part is the element signature without path
+                ]  # The first part is the element signature without the path
                 possible_moved = False
 
                 for other_sig in elements2:
@@ -305,7 +314,7 @@ class AndroidXMLSemanticDiffComparator:
                 # Check if this is truly a new element or just a moved element
                 signature = sig[
                     0
-                ]  # The first part is the element signature without path
+                ]  # The first part is the element signature without the path
                 possible_moved = False
 
                 for other_sig in elements1:
@@ -390,7 +399,7 @@ class AndroidXMLSemanticDiffComparator:
 
             if is_manifest1 != is_manifest2:
                 print(
-                    "Attempting to compore two different types of xml files. Exiting early."
+                    "Attempting to compare two different types of xml files. Exiting early."
                 )
                 sys.exit(-1)
             if not (root1 is not None and root2 is not None):
@@ -617,9 +626,9 @@ def main():
                 #     print(addition.details)
                 attrs_diffs = {
                     d.details["attributes"][
-                        "{http://schemas.android.com/apk/res/android}name"
+                        "{http://schemas.android.com/apk/res/android}name"  # noqa: it's not a real URL
                     ]: d.details["attributes"][
-                        "{http://schemas.android.com/apk/res/android}value"
+                        "{http://schemas.android.com/apk/res/android}value"  # noqa: it's not a real URL
                     ]
                     for d in added
                 }
@@ -630,9 +639,9 @@ def main():
 
                 attrs_diffs = {
                     d.details["attributes"][
-                        "{http://schemas.android.com/apk/res/android}name"
+                        "{http://schemas.android.com/apk/res/android}name"  # noqa: it's not a real URL
                     ]: d.details["attributes"][
-                        "{http://schemas.android.com/apk/res/android}value"
+                        "{http://schemas.android.com/apk/res/android}value"  # noqa: noqa: it's not a real URL
                     ]
                     for d in removed
                 }
@@ -691,11 +700,14 @@ def main():
             added = added_keys - removed_keys
             removed = removed_keys - added_keys
             print(
-                f"Found key diferences beside know language discrepancy:\n\tadded: {added}\n\tremoved: {removed}"
+                f"Found key differences beside know language discrepancy:\n\tadded: {added}\n\tremoved: {removed}"
             )
             return
         else:
             print("differences were not expected :(")
+
+
+"""
     # # Example of programmatic access to differences
     # if has_differences:
     #     print("\nProgrammatic access examples:")
@@ -731,7 +743,7 @@ def main():
     #             print(
     #                 f"  {attr.xpath}/@{attr.name}: {attr.old_value} -> {attr.new_value}"
     #             )
-
+"""
 
 if __name__ == "__main__":
     main()

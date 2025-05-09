@@ -69,8 +69,6 @@ def run_all_checks(checks: list[CompareFn], with_metadata_list: bool = True) -> 
         run_checks(all_tarfiles(), check)
     if with_metadata_list:
         tarfiles = assemble_consistent_tarfile_list(is_metadata_to_dirorder_consistent)
-        # print("Consistent tarfiles")
-        # print(tarfiles)
         run_checks(tarfiles, compare_metadata_list)
 
 
@@ -106,7 +104,7 @@ def print_with_params(
     direction: Optional[str] = None,
 ) -> None:
     """
-    Convenience method to pretty print the contents of a result json file
+    Convenience method to pretty print the contents of a result JSON file
     for a specified version and optionally filtered by parameters.
 
     PRE:
@@ -274,8 +272,6 @@ def check_for_same_version(
         compare: which check to apply
     """
     versioned_tarfiles = [file for file in tarfiles if version in file]
-    # print("Versioned Tarfiles:")
-    # print(versioned_tarfiles)
     alphabetical = [file for file in versioned_tarfiles if "alph" in file]
     ctime = [file for file in versioned_tarfiles if "ctime" in file]
     vanilla = [
@@ -332,8 +328,8 @@ def _tarfiles_with_params(
 
     Parameters:
         dfs: return runs done with disorderfs based on the optional ('alph', 'ctime', and 'reverse') flags.
-            If dfs is given and none of ctime/alph, both default to True
-            If dfs is given and non of sort/reverse, both default to True
+            If dfs is given and none of ctime/alph, both values default to True
+            If dfs is given and none of sort/reverse, both values default to True
             Otherwise (and if dfs is left False), all parameters that are not passed default to False
         alph: include tarfiles with contents sorted alphabetically.
         ctime: include tarfiles with contents sorted by ctime.

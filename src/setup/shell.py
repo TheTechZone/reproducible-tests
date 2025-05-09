@@ -37,8 +37,8 @@ def execute(
     """
     global run_command_counter
 
-    def log_command(cmd: str, stdout: str, log: bool = True) -> None:
-        if not log:
+    def log_command(cmd_str: str, stdout_data: str, should_log: bool = True) -> None:
+        if not should_log:
             return
 
         def formatstring_stdout(stdout_arg: str) -> str:
@@ -55,7 +55,7 @@ def execute(
             line_number = -1
 
         print(
-            f"-> function:{func_name}, line {line_number} \n\t{cmd}{formatstring_stdout(stdout)}"
+            f"-> function:{func_name}, line {line_number} \n\t{cmd_str}{formatstring_stdout(stdout_data)}"
         )
 
     logging.debug(f"Command nr: {run_command_counter} \n{cmd}\nRetcodes: {retcodes}")
@@ -114,7 +114,7 @@ def check_or_request_sudo() -> None:
         print("Script not running as root. Requesting sudo..")
         args = ["sudo", sys.executable] + sys.argv
         # the next line replaces the currently-running process with the sudo
-        os.execlpe("sudo", *args, os.environ)
+        os.execlpe("sudo", *args, os.environ)  # noqa
 
 
 class ColorHandler(logging.StreamHandler):

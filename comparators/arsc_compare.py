@@ -13,16 +13,25 @@ from collections import defaultdict
 
 os.environ["LOGURU_LEVEL"] = "ERROR"
 
-from androguard.core.axml import (
-    ARSCParser,
-    ARSCResTablePackage,
-    StringBlock,
-    ARSCHeader,
-    ARSCResTypeSpec,
-    ARSCResTableEntry,
-    ARSCResType,
-)
 from tqdm import tqdm
+
+try:
+    from androguard.core.axml import (
+        ARSCParser,
+        ARSCResTablePackage,
+        StringBlock,
+        ARSCHeader,
+        ARSCResTypeSpec,
+        ARSCResTableEntry,
+        ARSCResType,
+    )
+except ImportError as e:
+    print(f"Error: {e}", file=sys.stderr)
+    print(
+        "Androguard not found. Please install it: pip install androguard",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 
 def deep_compare(

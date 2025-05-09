@@ -101,7 +101,7 @@ class AptPackageManager(PackageManager):
     def search(self, package_name) -> str:
         result = execute(self.cache["search", package_name], log=True, retcodes=(0, 1))
         assert isinstance(result, ExecResult)
-        return result.stdout  # TODO: do something useful with it
+        return result.stdout
 
     def install_libfuse(self) -> None:
         self.install(["libfuse2", "libfuse-dev"])
