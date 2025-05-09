@@ -91,6 +91,8 @@ def main(tag=None):
         try:
             zip_filename.unlink()
             print(f"Deleted temporary zip file: {zip_filename}")
+            diffuse_path = (tools_path / "diffuse/bin/diffuse").resolve()
+            diffuse_path.chmod(0o755)
         except OSError as e:
             print(f"Failed to delete zip file: {e}")
 
