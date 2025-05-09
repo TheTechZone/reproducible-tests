@@ -2,6 +2,7 @@
 import requests
 import sys
 import argparse
+from typing import Optional
 from pathlib import Path
 
 
@@ -17,7 +18,7 @@ exec java -jar "{jar_path}" "$@"
     return wrapper_path
 
 
-def download_bundletool(version: str = None):
+def download_bundletool(version: Optional[str] = None):
     script_dir = Path(__file__).resolve().parent
 
     try:

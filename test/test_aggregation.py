@@ -378,7 +378,7 @@ def test_extract_apks_bundle_exists_splits_dont_exist(tmp_path, monkeypatch):
     # Mock Paths used by the function
     mock_cb_aab_path = mock.MagicMock(spec=Path, name="MockAABPath")
     mock_cb_aab_path.exists.return_value = True
-    mock_cb_aab_path.__str__.return_value = (
+    mock_cb_aab_path.__str__.return_value = (  # type: ignore
         "path/to/bundle.aab"  # For f-string in bundletool command
     )
 
@@ -436,7 +436,7 @@ def test_extract_apks_bundle_exists_splits_exist(tmp_path, monkeypatch):
 
     mock_cb_aab_path = mock.MagicMock(spec=Path)
     mock_cb_aab_path.exists.return_value = True
-    mock_cb_aab_path.__str__.return_value = "path/to/bundle.aab"
+    mock_cb_aab_path.__str__.return_value = "path/to/bundle.aab"  # type: ignore
 
     mock_cb_splits_path = mock.MagicMock(spec=Path)
     mock_cb_splits_path.exists.return_value = True  # Splits path DOES exist
@@ -632,8 +632,8 @@ def test_create_dex_sets(mock_local, mock_iterdir, mock_chdir, mock_unzip):
 
     result = aggregation.create_dex_sets(cvc)
 
-    expected_shas = {f"classes0.dex_SHA", f"classes1.dex_SHA"}
-    expected_names = {f"classes0.dex", f"classes1.dex"}
+    expected_shas = {"classes0.dex_SHA", "classes1.dex_SHA"}
+    expected_names = {"classes0.dex", "classes1.dex"}
 
     assert set(result["playstore"].keys()) == expected_shas
     assert set(result["local"].keys()) == expected_shas

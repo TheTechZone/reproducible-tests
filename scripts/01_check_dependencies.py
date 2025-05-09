@@ -82,6 +82,7 @@ class DependencyChecker:
 
     def check_unzip(self):
         installed, version = self.check_command("unzip", ["-v"])
+        version = "" if version is None else version
         self.print_result("unzip", installed, version.split("\n")[0])
 
     def check_docker(self):
@@ -126,10 +127,10 @@ class DependencyChecker:
             # Try to get version using java -jar
             try:
                 result = subprocess.run(
-                    ["java", "-jar", jar_path, "version"],
+                    ["java", "-jar", str(jar_path), "version"],
                     capture_output=True,
                     text=True,
-                )
+                )  # type: ignore
                 version = result.stdout.strip() if result.stdout else None
                 self.print_result("Bundletool", True, version, True, jar_path)
                 return
