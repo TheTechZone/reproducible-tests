@@ -1,11 +1,7 @@
 import pytest
-import os
-import sys
-
-# handling relative import
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import json
-from pathlib import Path
+
+from .context import analysis  # noqa
 from analysis.checks import _differences, _get_metadata_list
 
 

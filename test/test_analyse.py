@@ -1,11 +1,10 @@
 import pytest
-import os
-import sys
 import json
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from .context import analysis
+
 from analysis.analyse import (
     are_classified_runs_consistent,
     SortedRuns,

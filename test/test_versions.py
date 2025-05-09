@@ -6,11 +6,7 @@ Manual checking and integration testing are still very recommended ;)
 import pytest
 from unittest.mock import patch, MagicMock
 
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-import analysis.analyse  # Import the module to patch things within it
+from .context import analysis
 
 # Import the functions to be tested and the dataclass
 from analysis.analyse import (
