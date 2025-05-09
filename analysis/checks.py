@@ -1,5 +1,5 @@
 import json
-from setup.structure import DATA_ROOT
+from src.setup.structure import DATA_ROOT
 from typing import Optional, Callable
 
 ###

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from setup.structure import SUMMARY_ROOT, PLOT_ROOT, parameters_from_tar_filename
+from src.setup.structure import SUMMARY_ROOT, PLOT_ROOT, parameters_from_tar_filename
 
 from analysis.checks import COMPARE_TO_CHECK_NAME
 

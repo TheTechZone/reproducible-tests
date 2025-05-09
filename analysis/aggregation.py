@@ -4,7 +4,7 @@ import json
 from typing import Optional
 from plumbum import local  # type: ignore
 from collections import defaultdict
-from setup.structure import (
+from src.setup.structure import (
     COMPARATORS_PATH,
     BUILDS_ROOT,
     BUNDLETOOL_EXE,
@@ -20,7 +20,7 @@ from setup.structure import (
     TARS_ROOT,
     VERSION_CVC_FILE,
 )
-from setup.structure import (
+from src.setup.structure import (
     universal_apk_path,
     create_relpath,
     parameters_from_tar_filename,

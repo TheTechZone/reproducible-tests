@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 from typing import Callable, Optional, overload, Literal
-from setup.structure import (
+from src.setup.structure import (
     DATA_ROOT,
     TARS_ROOT,
     SUMMARY_ROOT,

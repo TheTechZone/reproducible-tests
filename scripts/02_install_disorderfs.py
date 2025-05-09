@@ -5,8 +5,8 @@ from pathlib import Path
 root_dir = Path(__file__).resolve().parents[1]
 disorderfs_dir = str((Path(__file__).parent / "../disorderfs").resolve())
 sys.path.insert(0, str(root_dir))
-from setup.shell import execute
-from setup.pm import get_package_manager
+from src.setup import execute
+from src.setup import get_package_manager
 from plumbum import local
 import os
 

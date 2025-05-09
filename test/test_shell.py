@@ -1,10 +1,9 @@
-import pytest
 from unittest.mock import patch, MagicMock
 import logging
 import os
 import sys
 
-from setup.shell import (
+from src.setup import (
     execute,
     get_term,
     signal_handler,
@@ -18,7 +17,7 @@ from setup.shell import (
 # ---- execute() ------------------------------------------------------
 
 
-@patch("setup.shell.sudo")
+@patch("src.setup.shell.sudo")
 def test_execute_with_retcode_and_sudo(mock_sudo):
     mock_cmd = MagicMock()
     mock_sudo.__getitem__.return_value.run.return_value = (0, "ok", "")
@@ -38,8 +37,8 @@ def test_execute_without_retcode():
     assert result == ExecResult(None, "ok", None)
 
 
-@patch("setup.shell.logging.critical")
-@patch("setup.shell.exit")
+@patch("src.setup.shell.logging.critical")
+@patch("src.setup.shell.exit")
 def test_execute_unexpected_error(mock_exit, mock_critical):
     mock_cmd = MagicMock()
     mock_cmd.run.return_value = (1, "failed", "something bad")
@@ -53,13 +52,13 @@ def test_execute_unexpected_error(mock_exit, mock_critical):
 # ---- get_term() ------------------------------------------------------
 
 
-@patch("setup.shell.shutil.which")
+@patch("src.setup.shell.shutil.which")
 def test_get_term_fallback(mock_which):
     mock_which.return_value = None
     assert get_term() == "gnome-terminal"
 
 
-@patch("setup.shell.shutil.which")
+@patch("src.setup.shell.shutil.which")
 def test_get_term_first_match(mock_which):
     def which_side_effect(cmd):
         return True if cmd == "konsole" else None
@@ -71,7 +70,7 @@ def test_get_term_first_match(mock_which):
 # ---- signal_handler() ------------------------------------------------
 
 
-@patch("setup.shell.sys.exit")
+@patch("src.setup.shell.sys.exit")
 def test_signal_handler_calls_exit(mock_exit):
     signal_handler(None, None)
     mock_exit.assert_called_once_with(0)
@@ -80,7 +79,7 @@ def test_signal_handler_calls_exit(mock_exit):
 # ---- open_terminal() -------------------------------------------------
 
 
-@patch("setup.shell.os.system")
+@patch("src.setup.shell.os.system")
 def test_open_terminal(mock_system):
     open_terminal("echo hello")
     mock_system.assert_called_once_with("gnome-terminal -- echo hello &")
@@ -138,7 +137,7 @@ def test_no_sudo_elevation_when_root(mock_geteuid, mock_execlpe):
     mock_execlpe.assert_not_called()
 
 
-@patch("setup.shell.os.geteuid", return_value=0)
+@patch("src.setup.shell.os.geteuid", return_value=0)
 def test_check_or_request_sudo_as_root(_):
     check_or_request_sudo()  # Should not do anything or raise
 

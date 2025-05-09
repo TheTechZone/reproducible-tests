@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock, mock_open
 
-from setup.pm import (
+from src.setup import (
     PackageManager,
     AptPackageManager,
     DnfPackageManager,
@@ -51,29 +51,29 @@ def test_get_os_release_non_linux():
 # --- PACKAGE MANAGER SELECTION --------------------------------------------
 
 
-@patch("setup.pm.local")
-@patch("setup.pm.get_os_release", return_value={"ID": "ubuntu"})
+@patch("src.setup.pm.local")
+@patch("src.setup.pm.get_os_release", return_value={"ID": "ubuntu"})
 def test_get_package_manager_apt(_, mock_local):
     mock_local.__getitem__.return_value = MagicMock()
     pm = get_package_manager()
     assert isinstance(pm, AptPackageManager)
 
 
-@patch("setup.pm.local")
-@patch("setup.pm.get_os_release", return_value={"ID": "fedora"})
+@patch("src.setup.pm.local")
+@patch("src.setup.pm.get_os_release", return_value={"ID": "fedora"})
 def test_get_package_manager_dnf(_, mock_local):
     mock_local.__getitem__.return_value = MagicMock()
     pm = get_package_manager()
     assert isinstance(pm, DnfPackageManager)
 
 
-@patch("setup.pm.get_os_release", return_value={"ID": "arch"})
+@patch("src.setup.pm.get_os_release", return_value={"ID": "arch"})
 def test_get_package_manager_arch_raises(_):
     with pytest.raises(UnsupportedPlatformError, match="Arch"):
         get_package_manager()
 
 
-@patch("setup.pm.get_os_release", return_value={"ID": "unknown"})
+@patch("src.setup.pm.get_os_release", return_value={"ID": "unknown"})
 def test_get_package_manager_unknown_distro(_):
     with pytest.raises(UnsupportedPlatformError, match="unknown"):
         get_package_manager()
@@ -82,8 +82,8 @@ def test_get_package_manager_unknown_distro(_):
 # --- APT PACKAGE MANAGER --------------------------------------------------
 
 
-@patch("setup.pm.execute")
-@patch("setup.pm.local", autospec=True)
+@patch("src.setup.pm.execute")
+@patch("src.setup.pm.local", autospec=True)
 def test_apt_install_single(mock_local, mock_execute):
     mock_apt_get = MagicMock()
     mock_local.__getitem__.side_effect = lambda cmd: {
@@ -111,8 +111,8 @@ def test_apt_install_single(mock_local, mock_execute):
     mock_execute.assert_called_once()
 
 
-@patch("setup.pm.execute")
-@patch("setup.pm.local", autospec=True)
+@patch("src.setup.pm.execute")
+@patch("src.setup.pm.local", autospec=True)
 def test_apt_install_multiple(mock_local, mock_execute):
     mock_apt_get = MagicMock()
     mock_local.__getitem__.side_effect = lambda cmd: {
@@ -141,8 +141,8 @@ def test_apt_install_multiple(mock_local, mock_execute):
     mock_execute.assert_called_once()
 
 
-@patch("setup.pm.execute")
-@patch("setup.pm.local", autospec=True)
+@patch("src.setup.pm.execute")
+@patch("src.setup.pm.local", autospec=True)
 def test_apt_update(mock_local, mock_execute):
     mock_apt_get = MagicMock()
 
@@ -162,8 +162,8 @@ def test_apt_update(mock_local, mock_execute):
     mock_execute.assert_called_once()
 
 
-@patch("setup.pm.execute")
-@patch("setup.pm.local", autospec=True)
+@patch("src.setup.pm.execute")
+@patch("src.setup.pm.local", autospec=True)
 def test_apt_is_installed(mock_local, mock_execute):
     mock_cmd = MagicMock()
     mock_local.__getitem__.return_value = mock_cmd
@@ -183,8 +183,8 @@ def test_apt_is_installed(mock_local, mock_execute):
 # --- DNF PACKAGE MANAGER --------------------------------------------------
 
 
-@patch("setup.pm.execute")
-@patch("setup.pm.local", autospec=True)
+@patch("src.setup.pm.execute")
+@patch("src.setup.pm.local", autospec=True)
 def test_dnf_install_single(mock_local, mock_execute):
     mock_dnf = MagicMock()
     mock_local.__getitem__.side_effect = lambda cmd: {"dnf": mock_dnf}[cmd]
@@ -202,8 +202,8 @@ def test_dnf_install_single(mock_local, mock_execute):
     mock_execute.assert_called_once()
 
 
-@patch("setup.pm.execute")
-@patch("setup.pm.local", autospec=True)
+@patch("src.setup.pm.execute")
+@patch("src.setup.pm.local", autospec=True)
 def test_dnf_install_multiple(mock_local, mock_execute):
     mock_dnf = MagicMock()
     mock_local.__getitem__.side_effect = lambda cmd: {"dnf": mock_dnf}[cmd]
@@ -222,8 +222,8 @@ def test_dnf_install_multiple(mock_local, mock_execute):
     mock_execute.assert_called_once()
 
 
-@patch("setup.pm.execute")
-@patch("setup.pm.local", autospec=True)
+@patch("src.setup.pm.execute")
+@patch("src.setup.pm.local", autospec=True)
 def test_dnf_update(mock_local, mock_execute):
     mock_dnf = MagicMock()
     mock_local.__getitem__.side_effect = lambda cmd: {"dnf": mock_dnf}[cmd]
@@ -238,8 +238,8 @@ def test_dnf_update(mock_local, mock_execute):
     mock_execute.assert_called_once()
 
 
-@patch("setup.pm.execute")
-@patch("setup.pm.local", autospec=True)
+@patch("src.setup.pm.execute")
+@patch("src.setup.pm.local", autospec=True)
 def test_dnf_is_installed(mock_local, mock_execute):
     mock_cmd = MagicMock()
     mock_local.__getitem__.return_value = mock_cmd
@@ -257,8 +257,8 @@ def test_dnf_is_installed(mock_local, mock_execute):
 # --- LIBFUSE INSTALL ------------------------------------------------------
 
 
-@patch("setup.pm.AptPackageManager.install")
-@patch("setup.pm.local", autospec=True)
+@patch("src.setup.pm.AptPackageManager.install")
+@patch("src.setup.pm.local", autospec=True)
 def test_apt_install_libfuse(mock_local, mock_install):
     mock_local.__getitem__.return_value = MagicMock()
     pm = AptPackageManager()
@@ -266,8 +266,8 @@ def test_apt_install_libfuse(mock_local, mock_install):
     mock_install.assert_called_once_with(["libfuse2", "libfuse-dev"])
 
 
-@patch("setup.pm.DnfPackageManager.install")
-@patch("setup.pm.local", autospec=True)
+@patch("src.setup.pm.DnfPackageManager.install")
+@patch("src.setup.pm.local", autospec=True)
 def test_dnf_install_libfuse(mock_local, mock_install):
     mock_local.__getitem__.return_value = MagicMock()
     pm = DnfPackageManager()
@@ -278,13 +278,13 @@ def test_dnf_install_libfuse(mock_local, mock_install):
 # --- REPR -----------------------------------------------------------------
 
 
-@patch("setup.pm.local", autospec=True)
+@patch("src.setup.pm.local", autospec=True)
 def test_repr_apt(mock_local):
     mock_local.__getitem__.return_value = MagicMock()
     assert repr(AptPackageManager()) == "APT Package manager"
 
 
-@patch("setup.pm.local", autospec=True)
+@patch("src.setup.pm.local", autospec=True)
 def test_repr_dnf(mock_local):
     mock_local.__getitem__.return_value = MagicMock()
     assert repr(DnfPackageManager()) == "DNF Package manager"
