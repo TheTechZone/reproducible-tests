@@ -6,7 +6,7 @@ import sys
 import shutil
 import argparse
 from typing import Optional, Union
-from setup.shell import execute
+from src.setup import execute
 from plumbum import local
 from pathlib import Path
 

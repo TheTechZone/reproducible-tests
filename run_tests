@@ -39,7 +39,7 @@ done
 CMD="pytest"
 
 if [ "$ENABLE_COV" = true ]; then
-    CMD="$CMD --cov=analysis --cov=setup"
+    CMD="$CMD --cov=src.analysis --cov=src.setup"
     if [ "$GENERATE_HTML" = true ]; then
         CMD="$CMD --cov-report html:cov_html"
     fi

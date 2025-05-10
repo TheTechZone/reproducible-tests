@@ -6,14 +6,9 @@ Manual checking and integration testing are still very recommended ;)
 import pytest
 from unittest.mock import patch, MagicMock
 
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-import analysis.analyse  # Import the module to patch things within it
-
 # Import the functions to be tested and the dataclass
-from analysis.analyse import (
+import src
+from src.analysis import (
     check_for_same_version,
     check_for_same_params,
     SortedRuns,
@@ -115,11 +110,11 @@ def common_patches(monkeypatch):
     """
     # Patch global Path and SUMMARY_ROOT
     mock_summary_root = MockPath("/mock/summary/root")
-    monkeypatch.setattr("analysis.analyse.SUMMARY_ROOT", mock_summary_root)
+    monkeypatch.setattr("src.analysis.analyse.SUMMARY_ROOT", mock_summary_root)
 
     # Patch Path class itself. Side effect ensures each Path() call returns a new MockPath instance.
     mock_path_class = MagicMock(side_effect=lambda p: MockPath(str(p)))
-    monkeypatch.setattr("analysis.analyse.Path", mock_path_class)
+    monkeypatch.setattr("src.analysis.analyse.Path", mock_path_class)
 
     # Mock the version_and_run_from_tar_filename
     mock_version_run_map = {
@@ -142,7 +137,7 @@ def common_patches(monkeypatch):
         side_effect=lambda filename: mock_version_run_map.get(filename, (None, None))
     )
     monkeypatch.setattr(
-        "analysis.analyse.version_and_run_from_tar_filename", mock_version_and_run
+        "src.analysis.analyse.version_and_run_from_tar_filename", mock_version_and_run
     )
 
     # Mock summary_path. This mock needs to return a Path-like object.
@@ -154,29 +149,30 @@ def common_patches(monkeypatch):
         )  # Matching spec structure
 
     monkeypatch.setattr(
-        "analysis.analyse.summary_path", MagicMock(side_effect=mock_summary_path_func)
+        "src.analysis.analyse.summary_path",
+        MagicMock(side_effect=mock_summary_path_func),
     )
 
     # Mock are_classified_runs_consistent - we only check if it was called correctly
     mock_are_consistent = MagicMock()
     monkeypatch.setattr(
-        "analysis.analyse.are_classified_runs_consistent", mock_are_consistent
+        "src.analysis.analyse.are_classified_runs_consistent", mock_are_consistent
     )
 
     # Mock all_tarfiles as it's used by _tarfiles_with_params and all_versions (via iteration)
     mock_all_tarfiles = MagicMock(return_value=TEST_TARFILES)
-    monkeypatch.setattr("analysis.analyse.all_tarfiles", mock_all_tarfiles)
+    monkeypatch.setattr("src.analysis.analyse.all_tarfiles", mock_all_tarfiles)
 
     # Patch COMPARE_TO_CHECK_NAME with our local map
     monkeypatch.setattr(
-        "analysis.analyse.COMPARE_TO_CHECK_NAME", MOCK_COMPARE_TO_CHECK_NAME_MAP
+        "src.analysis.analyse.COMPARE_TO_CHECK_NAME", MOCK_COMPARE_TO_CHECK_NAME_MAP
     )
 
     return {
-        "summary_path": analysis.analyse.summary_path,
+        "summary_path": src.analysis.analyse.summary_path,
         "are_classified_runs_consistent": mock_are_consistent,
         "SUMMARY_ROOT": mock_summary_root,
-        "Path": analysis.analyse.Path,
+        "Path": src.analysis.analyse.Path,
     }
 
 
@@ -196,7 +192,7 @@ def get_summary_mock_path(mock_path_class, expected_filename):
 
 # --- Test A: check_for_same_version (v7.37.2) ---
 @patch(
-    "analysis.analyse.create_or_clear_summary_directory_for"
+    "src.analysis.analyse.create_or_clear_summary_directory_for"
 )  # Keep patched even if not asserted
 def test_check_for_same_version_v37(_mock_create_or_clear, common_patches):
     """
@@ -271,7 +267,7 @@ def test_check_for_same_version_v37(_mock_create_or_clear, common_patches):
     assert actual_compare_func == compare_func
 
     # Assert the summary file path object returned by the patched summary_path
-    expected_summary_path_obj = analysis.analyse.summary_path(
+    expected_summary_path_obj = src.analysis.analyse.summary_path(
         expected_check_name, version_to_check
     )
     assert actual_summary_file == expected_summary_path_obj
@@ -279,7 +275,7 @@ def test_check_for_same_version_v37(_mock_create_or_clear, common_patches):
 
 # --- Remaining Test: check_for_same_version (v7.28.4) ---
 @patch(
-    "analysis.analyse.create_or_clear_summary_directory_for"
+    "src.analysis.analyse.create_or_clear_summary_directory_for"
 )  # Keep patched even if not asserted
 def test_check_for_same_version_v28(mock_create_or_clear, common_patches):
     """
@@ -346,7 +342,7 @@ def test_check_for_same_version_v28(mock_create_or_clear, common_patches):
         assert actual_classified_runs[key] == expected_classified_runs[key]
 
     assert actual_compare_func == compare_func
-    expected_summary_path_obj = analysis.analyse.summary_path(
+    expected_summary_path_obj = src.analysis.analyse.summary_path(
         expected_check_name, version_to_check
     )
     assert actual_summary_file == expected_summary_path_obj
@@ -354,10 +350,10 @@ def test_check_for_same_version_v28(mock_create_or_clear, common_patches):
 
 # --- Remaining Test: check_for_same_params (dfs=False - vanilla) ---
 @patch(
-    "analysis.analyse.create_or_clear_summary_directory_for"
+    "src.analysis.analyse.create_or_clear_summary_directory_for"
 )  # Keep patched even if not asserted
-@patch("analysis.analyse.all_versions")
-@patch("analysis.analyse._tarfiles_with_params")
+@patch("src.analysis.analyse.all_versions")
+@patch("src.analysis.analyse._tarfiles_with_params")
 def test_check_for_same_params_vanilla_dfs_false(
     mock__tarfiles_with_params, mock_all_versions, mock_create_or_clear, common_patches
 ):
@@ -379,7 +375,7 @@ def test_check_for_same_params_vanilla_dfs_false(
                 [
                     v
                     for v, _ in [
-                        analysis.analyse.version_and_run_from_tar_filename(f)
+                        src.analysis.analyse.version_and_run_from_tar_filename(f)
                         for f in TEST_TARFILES
                     ]
                     if v is not None
@@ -408,7 +404,7 @@ def test_check_for_same_params_vanilla_dfs_false(
             expected_classified_runs[version] = SortedRuns(True, files_for_this_version)
 
     # Expected description string
-    expected_description = analysis.analyse.description_from_params(
+    expected_description = src.analysis.analyse.description_from_params(
         **params
     )  # "without disorderfs"
 
@@ -444,7 +440,7 @@ def test_check_for_same_params_vanilla_dfs_false(
         assert actual_classified_runs[key] == expected_classified_runs[key]
 
     assert actual_compare_func == compare_func
-    expected_summary_path_obj = analysis.analyse.summary_path(
+    expected_summary_path_obj = src.analysis.analyse.summary_path(
         expected_check_name, expected_description
     )
     assert actual_summary_file == expected_summary_path_obj
@@ -478,10 +474,10 @@ def test_check_for_same_params_vanilla_dfs_false(
     ],  # Easier test names
 )
 @patch(
-    "analysis.analyse.create_or_clear_summary_directory_for"
+    "src.analysis.analyse.create_or_clear_summary_directory_for"
 )  # Keep patched even if not asserted
-@patch("analysis.analyse.all_versions")
-@patch("analysis.analyse._tarfiles_with_params")
+@patch("src.analysis.analyse.all_versions")
+@patch("src.analysis.analyse._tarfiles_with_params")
 def test_check_for_same_params_dfs_combinations(
     mock__tarfiles_with_params,
     mock_all_versions,
@@ -504,7 +500,7 @@ def test_check_for_same_params_dfs_combinations(
                 [
                     v
                     for v, _ in [
-                        analysis.analyse.version_and_run_from_tar_filename(f)
+                        src.analysis.analyse.version_and_run_from_tar_filename(f)
                         for f in TEST_TARFILES
                     ]
                     if v is not None
@@ -603,7 +599,7 @@ def test_check_for_same_params_dfs_combinations(
         assert actual_classified_runs[key] == expected_classified_runs[key]
 
     assert actual_compare_func == compare_func
-    expected_summary_path_obj = analysis.analyse.summary_path(
+    expected_summary_path_obj = src.analysis.analyse.summary_path(
         expected_check_name, expected_description
     )
     assert actual_summary_file == expected_summary_path_obj

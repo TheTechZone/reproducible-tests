@@ -1,7 +1,7 @@
 import pytest
 import json
 from pathlib import Path
-from setup.structure import (
+from src.setup.structure import (
     turn_cvc_code_mapping_to_json,
     parameters_from_tar_filename,
     version_and_run_from_tar_filename,
@@ -42,8 +42,8 @@ def test_turn_cvc_code_mapping_to_json_parametrized(
     input_file.write_text(input_lines)
 
     # Monkeypatch the module-level constants used in the function
-    monkeypatch.setattr("setup.structure.PLAYSTORE_APKS_ROOT", mock_root)
-    monkeypatch.setattr("setup.structure.VERSION_CVC_FILE", output_file)
+    monkeypatch.setattr("src.setup.structure.PLAYSTORE_APKS_ROOT", mock_root)
+    monkeypatch.setattr("src.setup.structure.VERSION_CVC_FILE", output_file)
 
     # Act
     turn_cvc_code_mapping_to_json()

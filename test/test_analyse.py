@@ -1,12 +1,9 @@
 import pytest
-import os
-import sys
 import json
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from analysis.analyse import (
+from src.analysis import (
     are_classified_runs_consistent,
     SortedRuns,
     assemble_consistent_tarfile_list,
@@ -82,7 +79,7 @@ def mock_tarfiles():
         (dummy_check_version_28, [f for f in dummy_tarfiles if "v7.28" in f]),
     ],
 )
-@patch("analysis.analyse.TARS_ROOT", new_callable=lambda: Path("/fake/tars"))
+@patch("src.analysis.analyse.TARS_ROOT", new_callable=lambda: Path("/fake/tars"))
 @patch("pathlib.Path.iterdir")
 def test_assemble_consistent_tarfile_list(
     mock_iterdir, mock_tars_root, check_fn, expected
@@ -231,7 +228,7 @@ def test_get_all_versions(
         (tmp_path / file).touch()
 
     # Patch the location where TARS_ROOT is defined in the target module
-    monkeypatch.setattr("analysis.analyse.TARS_ROOT", tmp_path)
+    monkeypatch.setattr("src.analysis.analyse.TARS_ROOT", tmp_path)
 
     versions = all_versions()
     assert sorted(versions) == sorted(expected_versions)
@@ -241,26 +238,30 @@ def test_get_all_versions(
     "kwargs, expected_files",
     [
         # A
-        ({"dfs": True}, 
-        {
-            "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
-            "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
-            "signal-android-alph-reversed_v7.1.22_04.tar.gz",
-            "signal-android-alph-sort_v7.1.1.tar.gz",
-            "signal-android-ctime-sort_v7.1.2.tar.gz"
-        }),
+        (
+            {"dfs": True},
+            {
+                "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
+                "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
+                "signal-android-alph-reversed_v7.1.22_04.tar.gz",
+                "signal-android-alph-sort_v7.1.1.tar.gz",
+                "signal-android-ctime-sort_v7.1.2.tar.gz",
+            },
+        ),
         # B
         (
             {"dfs": False},
             {"signal-android_v7.1.2.tar.gz", "signal-android_v7.1.2_02.tar.gz"},
         ),
         # C
-        ({"dfs": True, "ctime": True}, 
-        {
-            "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
-            "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
-            "signal-android-ctime-sort_v7.1.2.tar.gz",
-        }),
+        (
+            {"dfs": True, "ctime": True},
+            {
+                "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
+                "dfstest-signal-android-ctime-sort.v7.1.3_02.tar.gz",
+                "signal-android-ctime-sort_v7.1.2.tar.gz",
+            },
+        ),
         # C - inverse
         (
             {"dfs": True, "ctime": True, "reverse": True, "sort": True},
@@ -275,7 +276,7 @@ def test_get_all_versions(
             {"dfs": True, "reverse": True},
             {
                 "dfstest-signal-android-ctime-reversed_v7.1.3_01.tar.gz",
-                "signal-android-alph-reversed_v7.1.22_04.tar.gz"
+                "signal-android-alph-reversed_v7.1.22_04.tar.gz",
             },
         ),
         # E
@@ -351,7 +352,7 @@ def test_tarfiles_with_params(tmp_path, monkeypatch, kwargs, expected_files):
     for fname in filenames:
         (tmp_path / fname).touch()
 
-    monkeypatch.setattr("analysis.analyse.TARS_ROOT", tmp_path)
+    monkeypatch.setattr("src.analysis.analyse.TARS_ROOT", tmp_path)
 
     result = _tarfiles_with_params(**kwargs)
     result_names = {f for f in result}
@@ -436,10 +437,18 @@ def test_compare_amongst_runs_variants(
 def test_compare_amongst_runs_writes_json(tmp_path, monkeypatch):
     # todo: @xy example for test C) looks borked :p
     classified_runs = {
-    "1-run": SortedRuns(True, ["example_v7.16.256.tar.gz"]),
-    "no-runs": SortedRuns(True, []),
-    "all v_28": SortedRuns(True, ["example_v7.28.1.tar.gz", "example_v7.28.1_02.tar.gz"]),
-    "more_v_28": SortedRuns(True, ["example_v7.29.1_02.tar.gz", "example_v7.28.1.tar.gz",])
+        "1-run": SortedRuns(True, ["example_v7.16.256.tar.gz"]),
+        "no-runs": SortedRuns(True, []),
+        "all v_28": SortedRuns(
+            True, ["example_v7.28.1.tar.gz", "example_v7.28.1_02.tar.gz"]
+        ),
+        "more_v_28": SortedRuns(
+            True,
+            [
+                "example_v7.29.1_02.tar.gz",
+                "example_v7.28.1.tar.gz",
+            ],
+        ),
     }
 
     # Set the path for the JSON file

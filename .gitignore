@@ -35,3 +35,4 @@ data/playstore-universal-unzipped
 .mypy_cache
 .pytest_cache
 .ropeproject
+androguard.db*
