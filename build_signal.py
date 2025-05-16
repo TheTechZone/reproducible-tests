@@ -253,7 +253,8 @@ class SignalBuilder:
         execute(local["mkdir"][dfs_mount_dir], log=True, retcodes=(0, 1))
         command = ["sudo", "-S", "disorderfs", "--multi-user=yes"]
         if dfs == "chaos":
-            command.append("--sort-dirents=no")
+            # command.append("--sort-dirents=no")
+            command.append("--shuffle-dirents=yes")
         else:
             command.append("--sort-dirents=yes")
             command.append(f"--sort-by-ctime={'yes' if 'ctime' in dfs else 'no'}")
