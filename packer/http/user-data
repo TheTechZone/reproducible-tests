@@ -1,0 +1,40 @@
+#cloud-config
+autoinstall:
+  version: 1
+  locale: en_US.UTF-8
+  keyboard:
+    layout: us
+  network:
+    version: 2
+    ethernets:
+      all-eth:
+        match:
+          name: "e*"             # Matches ens33, enp0s3, eth0, etc.
+        dhcp4: true
+        dhcp6: false
+        set-name: eth0           
+      # eth0:
+      #   dhcp4: true
+
+  storage:
+    layout:
+      name: direct
+
+  identity:
+    hostname: ubuntu-server
+    username: ubuntu
+    password: "$6$1CkcLV.PrCWrrjSr$.ihewE7aVFuREcj9Mv1LyTHhhDHZypiJeT4qGD3kdiV5v82H9dwWzNkmWn.1LKL.0DosEAkUqIOPNd3WuhYiB1"  # password: ubuntu
+    # Use `openssl passwd -6` to generate this if you change it
+
+  ssh:
+    allow-pw: true
+    install-server: true
+
+  user-data:
+    disable_root: false
+
+  late-commands:
+    - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
+    - curtin in-target -- systemctl enable ssh
+    - curtin in-target -- systemctl start ssh
+

@@ -1,0 +1,6 @@
+output-vmware-ubuntu/
+packer_cache/
+
+# todo: add relevant ones to git-lfs later
+play/
+results/
