@@ -195,7 +195,7 @@ def manage_vm_clone(original_vmx, clone_name):
     result = ssh_to_vm_cmd(ip_address, "sudo mkdir -p /signal")
     result = ssh_to_vm_cmd(ip_address, "sudo chown $USER:$USER /signal")
 
-    script_path_input = "./scripts/signal.sh"
+    # script_path_input = "./scripts/signal.sh"
     if not script_path_input:
         script_path_input = input(
             "Enter the path to the script you want to run on the VM: "
