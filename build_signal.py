@@ -302,8 +302,8 @@ class SignalBuilder:
                 "1",
                 "--branch",
                 version,
-                # "https://github.com/signalapp/Signal-Android.git",
-                "https://github.com/thetechzone/Signal-Android.git", # temporary for testing
+                "https://github.com/signalapp/Signal-Android.git",
+                # "https://github.com/thetechzone/Signal-Android.git", # temporary for testing
             ],
             cwd=self.disorderfs_root_dir if self.dfs else self.script_dir,
         )
@@ -320,21 +320,21 @@ class SignalBuilder:
         """Build Signal using Docker."""
         print("Building Signal...")
 
-        self.run_command([
-            "docker",
-            "run",
-            "--rm",
-            "-v",
-            f"{self.signal_repo_dir}:/project",
-            "-w",
-            "/project",
-            "signal-android",
-            "./gradlew",
-            "--write-verification-metadata",
-            "sha256",
-            "help"
-        ])
-        
+        # self.run_command([
+        #     "docker",
+        #     "run",
+        #     "--rm",
+        #     "-v",
+        #     f"{self.signal_repo_dir}:/project",
+        #     "-w",
+        #     "/project",
+        #     "signal-android",
+        #     "./gradlew",
+        #     "--write-verification-metadata",
+        #     "sha256",
+        #     "help"
+        # ])
+
         # Base command for both platforms
         cmd = [
             "docker",
