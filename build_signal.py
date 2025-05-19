@@ -320,6 +320,21 @@ class SignalBuilder:
         """Build Signal using Docker."""
         print("Building Signal...")
 
+        self.run_command([
+            "docker",
+            "run",
+            "--rm",
+            "-v",
+            f"{self.signal_repo_dir}:/project",
+            "-w",
+            "/project",
+            "signal-android",
+            "./gradlew",
+            "--write-verification-metadata",
+            "sha256",
+            "help"
+        ])
+        
         # Base command for both platforms
         cmd = [
             "docker",
