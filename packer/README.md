@@ -12,6 +12,7 @@ This will create the Ubuntu VM. To avoid potential VNC issues, it's recommended 
 
 If you need to customize the VM, you can edit `packer/scripts/setup.sh` to handle post-installation tasks.
 
+For any issues with packer, consult the [docs on debugging](https://developer.hashicorp.com/packer/docs/debugging).
 ## Running Signal Builds
 
 The `./execute_on_clone.py` script wraps around `vmrun` to:
