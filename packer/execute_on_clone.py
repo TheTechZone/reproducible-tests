@@ -130,18 +130,44 @@ def _recursive_scp(sftp, remote_dir, local_dir):
 
 
 # Get the IP address of the VM using vmrun's getGuestIPAddress
-def get_vm_ip(clone_vmx):
-    """Get the IP address of the cloned VM via vmrun's getGuestIPAddress."""
+def get_vm_ip(clone_vmx, timeout=900, poll_interval=5):
+    """
+    Poll vmrun to get the IP address of the cloned VM.
+    Stops when the IP is retrieved or timeout is reached.
+    
+    Args:
+        clone_vmx (str): Path to the VMX file.
+        timeout (int): Maximum time in seconds to wait for an IP.
+        poll_interval (int): How often to check for the IP (seconds).
+    
+    Returns:
+        str: The IP address if retrieved.
+    
+    Raises:
+        TimeoutError: If the IP address is not retrieved in time.
+    """
     print(f"Fetching IP address for VM {clone_vmx}...")
-    output = vmrun(["getGuestIPAddress", str(clone_vmx)])
 
-    # Extract the IP address from the output
-    ip_address = output.strip()  # vmrun should output the IP directly
-    return ip_address
+    start_time = time.time()
+
+    while time.time() - start_time < timeout:
+        try:
+            output = vmrun(["getGuestIPAddress", str(clone_vmx)])
+            ip_address = output.strip()
+
+            if ip_address and ip_address.lower() != "unknown":
+                return ip_address
+        except Exception as e:
+            # You can log or ignore this depending on how vmrun behaves
+            pass
+
+        time.sleep(poll_interval)
+
+    raise TimeoutError(f"Timed out after {timeout} seconds waiting for VM IP.")
 
 
 # Main script to create, manage and delete VM clone
-def manage_vm_clone(original_vmx, clone_name):
+def manage_vm_clone(original_vmx, clone_name, script_path_input="./scripts/signal.sh"):
     # Check if the original VMX file exists
     if not check_vmx_exists(original_vmx):
         print(f"Error: Original VM {original_vmx} does not exist.")
@@ -176,7 +202,6 @@ def manage_vm_clone(original_vmx, clone_name):
 
     # Give the VM some time to boot up (adjust time as needed)
     print("Waiting a bit...")
-    time.sleep(60)  # Wait for the VM to fully boot
 
     ip_address = get_vm_ip(clone_vmx)
     print(f"Cloned VM's IP address: {ip_address}")

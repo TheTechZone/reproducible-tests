@@ -30,6 +30,11 @@ autoinstall:
     allow-pw: true
     install-server: true
 
+  codecs:
+    install: false
+  drivers:
+    install: false
+  
   user-data:
     disable_root: false
 

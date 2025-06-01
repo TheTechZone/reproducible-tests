@@ -18,8 +18,8 @@ source "vmware-iso" "ubuntu-24_04" {
   guest_os_type    = "ubuntu-64"
   ssh_username     = "ubuntu"
   ssh_password     = "ubuntu"
-  ssh_handshake_attempts = 50
-  ssh_wait_timeout = "60m"
+  ssh_handshake_attempts = 100
+  ssh_wait_timeout = "90m"
   shutdown_command = "shutdown now"
   # tools_upload_flavor = "linux"
   output_directory = "output-vmware-ubuntu"
